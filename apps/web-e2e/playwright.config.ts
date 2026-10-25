@@ -17,7 +17,7 @@ export default defineConfig({
     : [['list'], ['html', { open: 'never', outputFolder: '../../dist/.playwright/report' }]],
   outputDir: '../../dist/.playwright/results',
   use: {
-    baseURL: `http://localhost:${PORT}`,
+    baseURL: `http://127.0.0.1:${PORT}`,
     trace: 'retain-on-failure',
   },
   projects: [
@@ -26,7 +26,7 @@ export default defineConfig({
   ],
   webServer: {
     command: `node static-server.mjs ${PORT}`,
-    url: `http://localhost:${PORT}`,
+    url: `http://127.0.0.1:${PORT}`,
     reuseExistingServer: !ci,
   },
 });
