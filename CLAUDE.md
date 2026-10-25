@@ -71,7 +71,8 @@ LLM answer with citations, streamed (SSE) to the frontend.
 - `docker compose up` brings up the whole stack locally.
 
 ## Current state
-Indexed: Vue 2–3, Node 14–26 (even majors), Next.js 12–16, Angular 12–22 (25 versions).
+Indexed (44 versions): Angular 12–22, Express 3–5, NestJS 10–12, Next.js 12–16, Node 14–26 (even
+majors), Nuxt 2–4, React 17–19, Svelte 3–5, TypeScript 3–6 (website snapshots), Vue 2–3.
 - `docker-compose.yml`: full stack (Postgres, migrate, Ollama + model pull, app on :8080);
   `ingestion` service under the `tools` profile. `Dockerfile` targets: `ingestion`, `app` (last).
 - `db/migrations/001_chunks.sql`: `doc_versions` + deduplicated `chunks` (versions stored as
@@ -80,23 +81,26 @@ Indexed: Vue 2–3, Node 14–26 (even majors), Next.js 12–16, Angular 12–22
   (bge-small, 384d), `Reranker` (bge-reranker-base), `Retriever` (hybrid + RRF + rerank, with
   ablation switches), scope/comparison resolution, LLM providers, prompts.
 - `apps/ingestion`: CLI (`migrate | versions <fw> | ingest <fw|all> | reset <fw> | status`).
-  Adapters (`sources/`: vue, node, nextjs, angular) discover versions from git tags (newest
-  release per major) and do sparse checkouts (needed on Windows: path-length limits).
-  Chunk hash = sha256(url path + section + normalized text).
+  One adapter per framework in `sources/`; versions come from git tags, branches (React, NestJS)
+  or history (TypeScript: website snapshot before each next major's release notes). Checkouts are
+  sparse and accept any ref incl. SHAs (needed on Windows: path-length limits).
+  Chunk hash = sha256(url path + section + normalized text): url paths must be identical across
+  versions to dedupe, which is why TypeScript cites GitHub for every version.
 - `apps/api`: `POST /api/ask` (SSE: scope → citations → tokens → done; compare mode adds
   `compare` scope), throttled per IP; serves the web build when `STATIC_DIR` is set.
 - `apps/web`: signal store reading the SSE stream, animated SVG sage, typewriter dialog box,
   citation cards with version badges, framework/version/compare pickers, package.json upload.
-- `evals/`: 74 golden questions; `npm run eval` (ablation), `--check` (labels exist in index),
+- `evals/`: 149 golden questions; `npm run eval` (ablation), `--check` (labels exist in index),
   `--assert` (vs `baseline.json`), `--answers N --judge`. Results in `evals/results/latest.md`.
 - CI: `.github/workflows/{ci,evals,reingest}.yml`. Hosted demo guide: `docs/DEPLOY.md`.
 
 ## Next steps
 1. Tune keyword search: on the golden set, hybrid without rerank is below vector-only.
 2. Faster reranking on CPU (smaller cross-encoder or fewer candidates), measured with the evals.
-3. Remaining frameworks: React (react.dev + legacy reactjs.org), Express, NestJS, Nuxt.
-4. Index the Vue 3 migration guide (separate repo) for "what replaced X" questions.
+3. SSE keep-alive pings, longer LLM fetch timeout and larger Ollama context (found by benchmark).
+4. Index migration guides kept in separate repos (Vue 3) for "what replaced X" questions.
 5. Deploy the hosted demo (HF Spaces + Neon + Groq) and set the `DATABASE_URL` secret.
+6. Candidates beyond the list: SvelteKit, React Router/Remix, Astro, Fastify.
 
 ## Commands
 - Postgres: `npm run db:up`, then `npm run db:migrate`
