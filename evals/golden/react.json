@@ -1,0 +1,110 @@
+[
+  {
+    "id": "react17-class-state",
+    "question": "How do I add local state to a class component in React 17?",
+    "framework": "react", "version": "17",
+    "expect": ["docs/state-and-lifecycle.html"],
+    "tags": ["version-specific", "changed-later"]
+  },
+  {
+    "id": "react17-use-effect",
+    "question": "How does the effect hook work in React 17?",
+    "framework": "react", "version": "17",
+    "expect": ["docs/hooks-effect.html"]
+  },
+  {
+    "id": "react17-context",
+    "question": "How do I share data with Context in React 17?",
+    "framework": "react", "version": "17",
+    "expect": ["docs/context.html"]
+  },
+  {
+    "id": "react17-error-boundaries",
+    "question": "What are error boundaries in React 17?",
+    "framework": "react", "version": "17",
+    "expect": ["docs/error-boundaries.html"]
+  },
+  {
+    "id": "react17-render",
+    "question": "How do I render my app into a DOM node?",
+    "request": { "framework": "react", "version": "17.0.2" },
+    "framework": "react", "version": "17",
+    "expect": ["docs/react-dom.html", "docs/rendering-elements.html"],
+    "tags": ["version-from-request", "changed-later"]
+  },
+  {
+    "id": "react18-create-root",
+    "question": "How do I create a root with createRoot in React 18?",
+    "framework": "react", "version": "18",
+    "expect": ["reference/react-dom/client/createRoot"],
+    "tags": ["added"]
+  },
+  {
+    "id": "react18-use-transition",
+    "question": "What is useTransition for in React 18?",
+    "framework": "react", "version": "18",
+    "expect": ["reference/react/useTransition"],
+    "tags": ["added"]
+  },
+  {
+    "id": "react18-use-memo",
+    "question": "How do I cache an expensive calculation with useMemo in React 18?",
+    "framework": "react", "version": "18",
+    "expect": ["reference/react/useMemo"]
+  },
+  {
+    "id": "react18-suspense",
+    "question": "How do I show a loading fallback with Suspense in React 18?",
+    "framework": "react", "version": "18",
+    "expect": ["reference/react/Suspense"]
+  },
+  {
+    "id": "react18-custom-hook",
+    "question": "How do I write a custom hook in React 18?",
+    "framework": "react", "version": "18",
+    "expect": ["learn/reusing-logic-with-custom-hooks"]
+  },
+  {
+    "id": "react19-use",
+    "question": "What does the use() API do in React 19?",
+    "framework": "react", "version": "19",
+    "expect": ["reference/react/use"],
+    "tags": ["added"]
+  },
+  {
+    "id": "react19-action-state",
+    "question": "How do I handle form actions with useActionState in React 19?",
+    "framework": "react", "version": "19",
+    "expect": ["reference/react/useActionState"],
+    "tags": ["added"]
+  },
+  {
+    "id": "react19-optimistic",
+    "question": "How do I show an optimistic update with useOptimistic in React 19?",
+    "framework": "react", "version": "19",
+    "expect": ["reference/react/useOptimistic"],
+    "tags": ["added"]
+  },
+  {
+    "id": "react19-ref-prop",
+    "question": "How do I pass a ref to my own component in React 19?",
+    "framework": "react", "version": "19",
+    "expect": ["reference/react/forwardRef", "learn/manipulating-the-dom-with-refs"],
+    "tags": ["changed"]
+  },
+  {
+    "id": "react-server-components",
+    "question": "What are React Server Components?",
+    "framework": "react", "version": "19",
+    "expect": ["reference/rsc/server-components"],
+    "tags": ["latest-by-default"]
+  },
+  {
+    "id": "react19-compiler",
+    "question": "What does the React Compiler do?",
+    "request": { "framework": "react" },
+    "framework": "react", "version": "19",
+    "expect": ["learn/react-compiler"],
+    "tags": ["latest-by-default", "added"]
+  }
+]

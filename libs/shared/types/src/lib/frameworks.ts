@@ -7,6 +7,8 @@ export const FRAMEWORK_IDS = [
   'nestjs',
   'nextjs',
   'nuxt',
+  'svelte',
+  'typescript',
 ] as const;
 
 export type Framework = (typeof FRAMEWORK_IDS)[number];
@@ -34,7 +36,8 @@ export const FRAMEWORKS: Record<Framework, FrameworkInfo> = {
   angular: {
     id: 'angular',
     label: 'Angular',
-    aliases: [{ pattern: 'angular' }],
+    // Not "angular.js" / "AngularJS": that's the separate 1.x framework (see isAngularJsQuestion).
+    aliases: [{ pattern: 'angular(?!\\.?js)' }],
     packages: ['@angular/core'],
   },
   react: {
@@ -60,6 +63,8 @@ export const FRAMEWORKS: Record<Framework, FrameworkInfo> = {
       { pattern: 'node\\.?js' },
       { pattern: 'Node', caseSensitive: true },
       { pattern: 'node', needsVersion: true },
+      // io.js 1–3 merged back into Node and is indexed as Node 1–3.
+      { pattern: 'io\\.?js' },
     ],
     packages: [],
   },
@@ -96,6 +101,19 @@ export const FRAMEWORKS: Record<Framework, FrameworkInfo> = {
     label: 'Nuxt',
     aliases: [{ pattern: 'nuxt(?:\\.?js)?' }],
     packages: ['nuxt'],
+  },
+  svelte: {
+    id: 'svelte',
+    label: 'Svelte',
+    // "SvelteKit" is a different framework: the alias regex requires a word boundary after "svelte".
+    aliases: [{ pattern: 'svelte' }],
+    packages: ['svelte'],
+  },
+  typescript: {
+    id: 'typescript',
+    label: 'TypeScript',
+    aliases: [{ pattern: 'typescript' }, { pattern: 'TS', caseSensitive: true }],
+    packages: ['typescript'],
   },
 };
 

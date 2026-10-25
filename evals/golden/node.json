@@ -104,5 +104,73 @@
     "framework": "node", "version": "18",
     "expect": ["api/globals.html#globals_fetch"],
     "tags": ["version-from-request", "changed-later"]
+  },
+  {
+    "id": "iojs1-readfile",
+    "question": "How do I read a file asynchronously in io.js 1?",
+    "framework": "node", "version": "1",
+    "expect": ["api/fs.html#fs_fs_readfile_filename_options_callback"],
+    "tags": ["iojs"]
+  },
+  {
+    "id": "iojs3-readable-stream",
+    "question": "How do readable streams work in io.js 3?",
+    "framework": "node", "version": "3",
+    "expect": ["api/stream.html"],
+    "tags": ["iojs"]
+  },
+  {
+    "id": "node4-buffer-from",
+    "question": "How do I create a Buffer from an array in Node 4?",
+    "framework": "node", "version": "4",
+    "expect": ["api/buffer.html#buffer_class_method_buffer_from", "api/buffer.html#buffer_new_buffer"]
+  },
+  {
+    "id": "node6-buffer-from",
+    "question": "Why should I use Buffer.from instead of new Buffer() in Node 6?",
+    "framework": "node", "version": "6",
+    "expect": ["api/buffer.html#buffer_class_method_buffer_from", "api/buffer.html#buffer_buffer_from_buffer_alloc_and_buffer_allocunsafe"],
+    "tags": ["changed"]
+  },
+  {
+    "id": "node8-promisify",
+    "question": "How do I convert a callback-based function to a promise with util.promisify in Node 8?",
+    "framework": "node", "version": "8",
+    "expect": ["api/util.html#util_util_promisify"],
+    "tags": ["added"]
+  },
+  {
+    "id": "node9-http2",
+    "question": "How do I create an HTTP/2 server in Node 9?",
+    "framework": "node", "version": "9",
+    "expect": ["api/http2.html"],
+    "tags": ["odd-major", "added"]
+  },
+  {
+    "id": "node10-fs-promises",
+    "question": "How do I use the fs promises API in Node 10?",
+    "framework": "node", "version": "10",
+    "expect": ["api/fs.html#fs_fs_promises_api", "api/fs.html#fs_fspromises_", "api/fs.html#fs_filehandle"],
+    "tags": ["added"]
+  },
+  {
+    "id": "node12-workers",
+    "question": "How do I start a worker thread in Node 12?",
+    "framework": "node", "version": "12",
+    "expect": ["api/worker_threads.html"]
+  },
+  {
+    "id": "node17-fetch",
+    "question": "Is fetch available in Node 17?",
+    "framework": "node", "version": "17",
+    "expect": ["api/globals.html#globals_fetch"],
+    "tags": ["odd-major", "since-when"]
+  },
+  {
+    "id": "node19-watch",
+    "question": "What does the --watch flag do in Node 19?",
+    "framework": "node", "version": "19",
+    "expect": ["api/cli.html#cli_watch"],
+    "tags": ["odd-major"]
   }
 ]

@@ -4,7 +4,7 @@ import { createPool, Embedder, getConfig, runMigrations } from '@semver-sage/ser
 import { FRAMEWORK_IDS, isFramework } from '@semver-sage/types';
 import { resolve } from 'node:path';
 import { parseArgs } from 'node:util';
-import { ingestVersion, resetFramework } from './ingest';
+import { finishRebuild, ingestVersion, resetFramework, startRebuild } from './ingest';
 import { ADAPTERS, SourceAdapter } from './sources';
 
 const USAGE = `Usage: ingestion <command>
@@ -13,17 +13,17 @@ const USAGE = `Usage: ingestion <command>
   ingest <framework|all> [--version v]
                                    ingest every release the adapter lists (or one);
                                    already-ingested versions are skipped
+  rebuild <framework>              re-ingest every version in order (to add older or in-between
+                                   versions), reusing existing embeddings
   versions <framework>             list the versions an adapter would ingest
   reset <framework>                delete a framework's chunks and versions
   status                           show what is indexed
 
-Frameworks with a source adapter: ${Object.keys(ADAPTERS).join(', ')}`;
+Frameworks: ${FRAMEWORK_IDS.join(', ')}`;
 
 function adapterFor(target: string | undefined): SourceAdapter {
   if (!isFramework(target)) throw new Error(`Unknown framework "${target}". One of: ${FRAMEWORK_IDS.join(', ')}`);
-  const adapter = ADAPTERS[target];
-  if (!adapter) throw new Error(`No source adapter for ${target} yet`);
-  return adapter;
+  return ADAPTERS[target];
 }
 
 async function main() {
@@ -46,7 +46,7 @@ async function main() {
         const adapters = target === 'all' ? Object.values(ADAPTERS) : [adapterFor(target)];
         const embedder = new Embedder(config.embeddingModel, config.modelCacheDir);
         for (const adapter of adapters) {
-          const all = await adapter.versions();
+          const all = await adapter.versions({ repoCacheDir: config.repoCacheDir });
           const versions = values.version ? all.filter((v) => v.version === values.version) : all;
           if (!versions.length) throw new Error(`${adapter.framework} has no version "${values.version}"`);
           for (const source of versions) {
@@ -55,8 +55,20 @@ async function main() {
         }
         break;
       }
+      case 'rebuild': {
+        const adapter = adapterFor(target);
+        const versions = await adapter.versions({ repoCacheDir: config.repoCacheDir });
+        const parked = await startRebuild(pool, adapter.framework);
+        console.log(`${adapter.framework}: parked ${parked} embeddings, re-ingesting ${versions.length} versions in order`);
+        const embedder = new Embedder(config.embeddingModel, config.modelCacheDir);
+        for (const source of versions) {
+          await ingestVersion(pool, embedder, adapter, source, config.repoCacheDir);
+        }
+        await finishRebuild(pool, adapter.framework);
+        break;
+      }
       case 'versions': {
-        console.table(await adapterFor(target).versions());
+        console.table(await adapterFor(target).versions({ repoCacheDir: config.repoCacheDir }));
         break;
       }
       case 'reset': {

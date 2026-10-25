@@ -1,56 +1,87 @@
-<header>
-  <h1>Semver Sage</h1>
+<header class="topbar">
+  <div class="brand">
+    <svg class="mark" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 2 L19 12 L12 22 L5 12 Z" />
+    </svg>
+    <h1>Semver Sage</h1>
+  </div>
   <p class="tagline">Version-aware answers for JavaScript frameworks, with citations.</p>
 </header>
 
 <main>
-  <section class="stage">
+  <aside class="sage-panel">
     <app-sage [mood]="mood()" />
+    <p class="caption" [class]="mood()">
+      <span class="dot"></span>{{ caption() }}
+    </p>
 
-    <div class="conversation">
-      @if (store.question() && store.status() !== 'idle') {
-        <p class="you"><span>You</span>{{ store.question() }}</p>
-      }
-      @if (scopeLabel(); as label) {
-        <p class="scope">
-          📜 {{ label }}
-          @if (store.scope()?.note; as note) {
-            <span class="note">{{ note }}</span>
+    @if (indexed().length) {
+      <div class="indexed">
+        <h2>Knows the docs of</h2>
+        <ul>
+          @for (f of indexed(); track f.label) {
+            <li><span>{{ f.label }}</span><span class="range">{{ f.range }}</span></li>
           }
-        </p>
-      }
+        </ul>
+      </div>
+    } @else if (versions.error()) {
+      <p class="offline">API unreachable. Is it running?</p>
+    }
+  </aside>
 
-      <app-dialog-box
-        [text]="dialogText()"
-        [thinking]="store.status() === 'thinking'"
-        (typingChange)="typing.set($event)"
-      >
-        @if (store.error(); as error) {
-          <p class="error">⚠ {{ error }}</p>
+  <section class="conversation" [class.landing]="store.status() === 'idle'">
+    <!-- 1. What was asked, and which docs answer it -->
+    @if (store.question() && store.status() !== 'idle') {
+      <div class="asked">
+        <h2 class="question">{{ store.question() }}</h2>
+        @if (scopeLabel() || store.scope()?.note) {
+          <div class="scope">
+            @if (scopeLabel(); as label) {
+              <span class="chip">{{ label }}</span>
+            }
+            @if (store.scope()?.note; as note) {
+              <span class="note">{{ note }}</span>
+            }
+          </div>
         }
-      </app-dialog-box>
+      </div>
+    }
+
+    <!-- 2. Sources arrive long before the answer: show them first -->
+    @if (store.citations().length) {
+      <app-citation-list [citations]="store.citations()" />
+    }
+
+    <!-- 3. The answer (the greeting until a question is asked) -->
+    <app-answer-card
+      [text]="answerText()"
+      [status]="store.status() === 'idle' ? null : caption()"
+      [thinking]="store.status() === 'thinking'"
+      [meta]="answerMeta()"
+      (typingChange)="typing.set($event)"
+    >
+      @if (store.error(); as error) {
+        <p class="error">{{ error }}</p>
+      }
+    </app-answer-card>
+
+    @if (store.status() === 'idle') {
+      <div class="examples" aria-label="Example questions">
+        <span class="label">Try</span>
+        @for (example of examples; track example) {
+          <button type="button" class="chip" (click)="ask({ question: example })">{{ example }}</button>
+        }
+      </div>
+    }
+
+    <!-- 4. The question box stays in reach at the bottom of the screen -->
+    <div class="dock">
+      <app-ask-form
+        [indexed]="versions.value()"
+        [busy]="busy()"
+        (ask)="ask($event)"
+        (stop)="store.stop()"
+      />
     </div>
   </section>
-
-  <app-ask-form
-    [indexed]="versions.value()"
-    [busy]="busy()"
-    (ask)="store.ask($event)"
-    (stop)="store.stop()"
-  />
-
-  @if (store.citations().length) {
-    <app-citation-list [citations]="store.citations()" />
-  }
 </main>
-
-<footer>
-  @if (versions.error()) {
-    <span>⚠ API unreachable. Is it running?</span>
-  } @else if (indexedSummary()) {
-    <span>Indexed: {{ indexedSummary() }}</span>
-  }
-  @if (store.model(); as model) {
-    <span>Answered by {{ model }}</span>
-  }
-</footer>

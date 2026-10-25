@@ -1,30 +1,55 @@
 # Retrieval evals
 
-74 golden questions (angular, nextjs, node, vue). A result is relevant only if it comes from the
+171 golden questions (angular, express, nestjs, nextjs, node, nuxt, react, svelte, typescript, vue). A result is relevant only if it comes from the
 asked framework **and version** and matches an expected docs page or anchor.
 
 | Pipeline | Hit@1 | Hit@5 | Recall@5 | MRR | Version precision@5 | Latency |
 | --- | --- | --- | --- | --- | --- | --- |
-| Vector only, no version filter | 37.8% | 70.3% | 64.0% | 0.507 | 37.0% | 25 ms |
-| + full-text (hybrid, RRF) | 31.1% | 68.9% | 57.4% | 0.470 | 37.0% | 284 ms |
-| + rerank | 35.1% | 70.3% | 63.5% | 0.504 | 36.5% | 6940 ms |
-| Vector + version filter | 71.6% | 95.9% | 87.4% | 0.822 | 100.0% | 48 ms |
-| Hybrid + version filter (no rerank) | 73.0% | 90.5% | 82.7% | 0.813 | 100.0% | 73 ms |
-| Full: hybrid + rerank + version filter | 77.0% | 98.6% | 91.4% | 0.861 | 100.0% | 5605 ms |
+| Vector search + version filter (production) | 75.4% | 95.9% | 89.9% | 0.846 | 100.0% | 28 ms |
 
-## Full pipeline by framework
+## Production pipeline by framework
 
 | Framework | Questions | Hit@1 | Hit@5 | MRR | Version precision@5 |
 | --- | --- | --- | --- | --- | --- |
-| Angular | 16 | 75.0% | 100.0% | 0.865 | 100.0% |
-| Next.js | 15 | 66.7% | 93.3% | 0.749 | 100.0% |
-| Node.js | 16 | 62.5% | 100.0% | 0.792 | 100.0% |
-| Vue | 27 | 92.6% | 100.0% | 0.963 | 100.0% |
+| Angular | 28 | 92.9% | 100.0% | 0.958 | 100.0% |
+| Express | 9 | 55.6% | 77.8% | 0.675 | 100.0% |
+| NestJS | 11 | 90.9% | 100.0% | 0.939 | 100.0% |
+| Next.js | 15 | 46.7% | 86.7% | 0.640 | 100.0% |
+| Node.js | 26 | 76.9% | 100.0% | 0.869 | 100.0% |
+| Nuxt | 11 | 54.5% | 90.9% | 0.685 | 100.0% |
+| React | 16 | 87.5% | 100.0% | 0.938 | 100.0% |
+| Svelte | 14 | 71.4% | 100.0% | 0.857 | 100.0% |
+| TypeScript | 14 | 71.4% | 85.7% | 0.776 | 100.0% |
+| Vue | 27 | 77.8% | 100.0% | 0.883 | 100.0% |
 
-## Misses (full pipeline, nothing relevant in the top 5)
+## Misses (production pipeline, nothing relevant in the top 5)
 
+- `express3-params`: "How do I read route parameters in Express 3?"
+  - got express@3 https://expressjs.com/en/3x/api/application/#appverbpath-callback-callback
+  - got express@3 https://expressjs.com/en/3x/api/#express
+  - got express@3 https://expressjs.com/en/3x/api/request/#reqroute
+- `express5-query`: "What does req.query contain in Express 5?"
+  - got express@5 https://expressjs.com/en/5x/api/application/#appquery
+  - got express@5 https://expressjs.com/en/5x/api/application/#appquery
+  - got express@5 https://expressjs.com/en/5x/api/
+- `next13-dynamic-routes`: "How do I create a dynamic route segment with the app router in Next.js 13?"
+  - got nextjs@13 https://nextjs.org/docs/13/getting-started/project-structure#dynamic-routes
+  - got nextjs@13 https://nextjs.org/docs/13/getting-started/project-structure#nested-routes
+  - got nextjs@13 https://nextjs.org/docs/13/app/building-your-application/routing#the-app-router
 - `next14-metadata`: "How do I set the page title and description in the Next.js 14 app router?"
-  - got nextjs@14 https://nextjs.org/docs/14/getting-started/installation#creating-directories
-  - got nextjs@14 https://nextjs.org/docs/14/app/building-your-application/routing/linking-and-navigating#examples
   - got nextjs@14 https://nextjs.org/docs/14/architecture/accessibility#route-announcements
+  - got nextjs@14 https://nextjs.org/docs/14/#app-router-vs-pages-router
+  - got nextjs@14 https://nextjs.org/docs/14/app/building-your-application/routing#the-app-router
+- `nuxt4-seo-meta`: "How do I set SEO meta tags with useSeoMeta in Nuxt 4?"
+  - got nuxt@4 https://nuxt.com/docs/4.x/migration/meta
+  - got nuxt@4 https://nuxt.com/docs/4.x/api/composables/use-server-seo-meta
+  - got nuxt@4 https://nuxt.com/docs/4.x/getting-started/seo-meta#useseometa
+- `ts4-mapped-types`: "How do mapped types work in TypeScript 4?"
+  - got typescript@4 https://github.com/microsoft/TypeScript-Website/blob/62f87a80f571762ff252eb38b53b890f9f864acb/packages/documentation/copy/en/release-notes/TypeScript%204.1.md#key-remapping-in-mapped-types
+  - got typescript@4 https://github.com/microsoft/TypeScript-Website/blob/62f87a80f571762ff252eb38b53b890f9f864acb/packages/documentation/copy/en/release-notes/TypeScript%203.1.md#mapped-types-on-tuples-and-arrays
+  - got typescript@4 https://github.com/microsoft/TypeScript-Website/blob/62f87a80f571762ff252eb38b53b890f9f864acb/packages/documentation/copy/en/release-notes/TypeScript%202.1.md#mapped-types
+- `ts5-using`: "What are using declarations in TypeScript 5.2?"
+  - got typescript@5 https://github.com/microsoft/TypeScript-Website/blob/2207cc60c964a43a61b58a611a3e7b9ba01a72ed/packages/documentation/copy/en/release-notes/TypeScript%202.8.md#better-handling-for-namespace-patterns-in-js-files
+  - got typescript@5 https://github.com/microsoft/TypeScript-Website/blob/2207cc60c964a43a61b58a611a3e7b9ba01a72ed/packages/documentation/copy/en/release-notes/TypeScript%202.8.md#defaulted-declarations
+  - got typescript@5 https://github.com/microsoft/TypeScript-Website/blob/2207cc60c964a43a61b58a611a3e7b9ba01a72ed/packages/documentation/copy/en/handbook-v2/Type%20Declarations.md#built-in-type-definitions
 

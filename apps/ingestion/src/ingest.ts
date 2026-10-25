@@ -58,7 +58,7 @@ export async function ingestVersion(
   if (prevNum !== null && versionNum < prevNum) {
     throw new Error(
       `${label}: ${framework}@${numToVersion(prevNum)} is already ingested. Versions must be ingested ` +
-        `in ascending order; run "reset ${framework}" and ingest again.`,
+        `in ascending order; run "rebuild ${framework}" to re-ingest every version in order.`,
     );
   }
 
@@ -96,10 +96,13 @@ export async function ingestVersion(
   const liveHashes = new Set(live.map((r) => r.hash));
   const toInsert = hashes.filter((h) => !liveHashes.has(h)).map((h) => chunks.get(h) as NewChunk);
 
-  // Text that existed in an older, non-adjacent version: reuse its embedding.
+  // Text seen before (an older, non-adjacent version, or parked by a rebuild): reuse its embedding.
   const { rows: known } = await pool.query<{ hash: string; embedding: string }>(
-    `SELECT DISTINCT ON (hash) hash, embedding::text AS embedding FROM chunks
-      WHERE framework = $1 AND hash = ANY($2)`,
+    `SELECT DISTINCT ON (hash) hash, embedding::text AS embedding FROM (
+       SELECT hash, embedding FROM chunks WHERE framework = $1 AND hash = ANY($2)
+       UNION ALL
+       SELECT hash, embedding FROM embedding_reuse WHERE framework = $1 AND hash = ANY($2)
+     ) known`,
     [framework, toInsert.map((c) => c.hash)],
   );
   const embeddings = new Map(known.map((r) => [r.hash, r.embedding]));
@@ -178,4 +181,34 @@ export async function ingestVersion(
 export async function resetFramework(pool: Pool, framework: string): Promise<void> {
   await pool.query(`DELETE FROM chunks WHERE framework = $1`, [framework]);
   await pool.query(`DELETE FROM doc_versions WHERE framework = $1`, [framework]);
+}
+
+/**
+ * Starts a rebuild (needed to add versions older than, or between, what is indexed): parks the
+ * framework's embeddings in embedding_reuse, then clears it. Safe to repeat if a rebuild failed.
+ */
+export async function startRebuild(pool: Pool, framework: string): Promise<number> {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const { rowCount } = await client.query(
+      `INSERT INTO embedding_reuse (framework, hash, embedding)
+       SELECT DISTINCT ON (hash) framework, hash, embedding FROM chunks WHERE framework = $1
+       ON CONFLICT DO NOTHING`,
+      [framework],
+    );
+    await client.query(`DELETE FROM chunks WHERE framework = $1`, [framework]);
+    await client.query(`DELETE FROM doc_versions WHERE framework = $1`, [framework]);
+    await client.query('COMMIT');
+    return rowCount ?? 0;
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
+export async function finishRebuild(pool: Pool, framework: string): Promise<void> {
+  await pool.query(`DELETE FROM embedding_reuse WHERE framework = $1`, [framework]);
 }

@@ -1,0 +1,59 @@
+[
+  {
+    "id": "express3-params",
+    "question": "How do I read route parameters in Express 3?",
+    "framework": "express", "version": "3",
+    "expect": ["en/3x/api/request/#reqparams"]
+  },
+  {
+    "id": "express3-app-settings",
+    "question": "How do I change application settings with app.set in Express 3?",
+    "framework": "express", "version": "3",
+    "expect": ["en/3x/api/application/"]
+  },
+  {
+    "id": "express4-router",
+    "question": "How do I create a modular router with express.Router in Express 4?",
+    "framework": "express", "version": "4",
+    "expect": ["en/4x/api/router/", "en/4x/guide/routing/"]
+  },
+  {
+    "id": "express4-static",
+    "question": "How do I serve static files in Express 4?",
+    "framework": "express", "version": "4",
+    "expect": ["en/4x/starter/static-files/", "en/4x/api/express/#expressstatic"]
+  },
+  {
+    "id": "express4-error-middleware",
+    "question": "How do I write error-handling middleware in Express 4?",
+    "framework": "express", "version": "4",
+    "expect": ["en/4x/guide/error-handling/"]
+  },
+  {
+    "id": "express5-async-errors",
+    "question": "Do rejected promises in route handlers get passed to the error handler in Express 5?",
+    "framework": "express", "version": "5",
+    "expect": ["en/5x/guide/error-handling/"],
+    "tags": ["changed"]
+  },
+  {
+    "id": "express5-redirect",
+    "question": "How does res.redirect work in Express 5?",
+    "framework": "express", "version": "5",
+    "expect": ["en/5x/api/response/#resredirect"]
+  },
+  {
+    "id": "express5-query",
+    "question": "What does req.query contain in Express 5?",
+    "framework": "express", "version": "5",
+    "expect": ["en/5x/api/request/#reqquery"],
+    "tags": ["changed"]
+  },
+  {
+    "id": "express-template-engines",
+    "question": "How do I set up a template engine in Express?",
+    "framework": "express", "version": "5",
+    "expect": ["en/5x/guide/using-template-engines/"],
+    "tags": ["latest-by-default"]
+  }
+]

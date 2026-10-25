@@ -1,4 +1,4 @@
-import { cleanAngularMarkdown, parseAdevRoutes } from './angular';
+import { cleanAngularMarkdown, jadeToMarkdown, parseAdevRoutes } from './angular';
 
 describe('cleanAngularMarkdown', () => {
   it('turns inline code tags into fences and decodes entities', () => {
@@ -36,5 +36,29 @@ describe('parseAdevRoutes', () => {
     const routes = parseAdevRoutes(nav);
     expect(routes.get('introduction/what-is-angular')).toBe('overview');
     expect(routes.get('guide/signals/overview')).toBe('guide/signals');
+  });
+});
+
+describe('jadeToMarkdown', () => {
+  it('keeps :marked prose and inline code examples, under the page title', () => {
+    const jade = [
+      'block includes',
+      "  include ../_util-fns",
+      '',
+      ':marked',
+      '  ## Modules',
+      '',
+      '  Angular apps are modular.',
+      'figure',
+      '  img(src="x.png")',
+      "+makeExample('app/app.module.ts')",
+      'code-example(language="sh").',
+      '  npm install',
+    ].join('\n');
+    expect(jadeToMarkdown(jade, 'Architecture Overview')).toBe(
+      ['# Architecture Overview', '', '## Modules', '', 'Angular apps are modular.', '', '```sh', 'npm install', '```', ''].join(
+        '\n',
+      ),
+    );
   });
 });

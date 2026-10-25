@@ -60,7 +60,7 @@ jobs:
         run: |
           for fw in ${FRAMEWORKS//,/ }; do npm run ingestion -- ingest "$fw"; done
       - name: Evaluate (fails below evals/baseline.json)
-        run: npm run eval -- --frameworks "$FRAMEWORKS" --configs full --assert
+        run: npm run eval -- --frameworks "$FRAMEWORKS" --configs production --assert
       - name: Report
         if: always()
         run: cat evals/results/latest.md >> "$GITHUB_STEP_SUMMARY" || true

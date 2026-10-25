@@ -5,8 +5,12 @@ import { loadMarkdownPages } from './markdown-repo';
 import type { SourceAdapter } from './types';
 
 const REPO = 'nodejs/node';
-const MIN_MAJOR = 14;
-const SKIP_FILES = new Set(['index.md', 'all.md']);
+const MIN_MAJOR = 1;
+const LAST_IOJS_MAJOR = 3;
+const SKIP_PAGES = new Set(['index', 'all', '_toc']);
+
+/** "doc/api/child_process.markdown" -> "child_process" */
+const pageName = (sourcePath: string) => posix.basename(sourcePath).replace(/\.(md|markdown)$/, '');
 
 const list = (value: unknown): string =>
   (Array.isArray(value) ? value : [value]).filter((v) => v !== undefined && v !== null).join(', ');
@@ -50,7 +54,7 @@ export function renderNodeMetadata(markdown: string): string {
 
 /** nodejs.org's stable "legacy" anchors: "fs" + "`fs.readFile(path[, options])`" -> "fs_fs_readfile_path_options". */
 export function nodeLegacyId(heading: string, sourcePath: string): string {
-  const module = posix.basename(sourcePath, '.md').replace(/-/g, '_');
+  const module = pageName(sourcePath).replace(/-/g, '_');
   const slug = heading
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '_')
@@ -58,30 +62,36 @@ export function nodeLegacyId(heading: string, sourcePath: string): string {
   return `${module}_${slug}`;
 }
 
-/** Node.js API docs from nodejs/node `doc/api`, newest release of each LTS (even) major. */
+/**
+ * Node.js API docs from nodejs/node `doc/api`, newest release of every major since 1. Majors 1–3
+ * were io.js (the fork that merged back as Node 4); their docs are cited on iojs.org.
+ */
 export const nodeAdapter: SourceAdapter = {
   framework: 'node',
 
   async versions() {
-    const tags = latestPerMajor(await listReleaseTags(REPO), (t) => t.major >= MIN_MAJOR && t.major % 2 === 0);
+    const tags = latestPerMajor(await listReleaseTags(REPO), (t) => t.major >= MIN_MAJOR);
     return tags.map((t) => ({
       version: String(t.major),
       repo: REPO,
       ref: t.tag,
       paths: ['doc/api'],
-      docsBaseUrl: `https://nodejs.org/docs/${t.tag}/`,
+      docsBaseUrl:
+        t.major <= LAST_IOJS_MAJOR ? `https://iojs.org/dist/${t.tag}/doc/` : `https://nodejs.org/docs/${t.tag}/`,
     }));
   },
 
   loadPages(checkoutDir, source) {
     return loadMarkdownPages(checkoutDir, source, {
+      // io.js and early Node used ".markdown"
+      extensions: ['.md', '.markdown'],
       // Methods live at h3/h4 ("Class: FileHandle" > "filehandle.read()").
       splitDepth: 4,
       slugify: nodeLegacyId,
       preprocess: renderNodeMetadata,
       // "doc/api/fs.md" -> "api/fs.html"
       toUrlPath: (sourcePath) =>
-        SKIP_FILES.has(posix.basename(sourcePath)) ? null : sourcePath.replace(/^doc\//, '').replace(/\.md$/, '.html'),
+        SKIP_PAGES.has(pageName(sourcePath)) ? null : `api/${pageName(sourcePath)}.html`,
     });
   },
 };

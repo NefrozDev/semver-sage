@@ -1,5 +1,6 @@
 import { FRAMEWORKS, FRAMEWORK_IDS, Framework } from './frameworks';
-import { minVersionFromRange, versionToNum } from './version';
+import type { AskRequest } from './types';
+import { minVersionFromRange, parseVersion, versionToNum } from './version';
 
 export interface FrameworkMention {
   framework: Framework;
@@ -59,7 +60,7 @@ const FOLLOWED_BY_RE = new RegExp(String.raw`^\s*(?:to|vs\.?|versus|and|->|→)\
  */
 export function detectComparison(question: string): Comparison | null {
   const mentions = detectFrameworks(question);
-  const framework = mentions[0]?.framework;
+  const framework = primaryMention(mentions)?.framework;
   if (!framework) return null;
   const versioned = mentions.filter((m) => m.framework === framework && m.version);
 
@@ -99,6 +100,40 @@ export function comparisonTopic(question: string): string {
   return topic.length >= 3 ? topic : question;
 }
 
+/**
+ * The mention a question is mainly about. A framework given with a version wins; TypeScript is
+ * often only the language ("run a TypeScript file in Node 22", "Vue 3 with TypeScript"), so any
+ * other framework wins over it.
+ */
+export function primaryMention(mentions: FrameworkMention[]): FrameworkMention | null {
+  return (
+    mentions.find((m) => m.version) ?? mentions.find((m) => m.framework !== 'typescript') ?? mentions[0] ?? null
+  );
+}
+
+const ANGULARJS_RE = /(?<![\w@/.-])angular(?:\.?js(?![\w])|\s*(?:@|v(?:ersion)?\s*)?1(?:\.(?:\d+|x))*(?![\d.\w]))/i;
+const major = (version: string | null | undefined) => (version ? (parseVersion(version)?.major ?? null) : null);
+
+/** Angular 1.x, i.e. AngularJS: a different framework, not an older Angular. */
+export const isAngularJsVersion = (version: string | null | undefined) => {
+  const m = major(version);
+  return m !== null && m < 2;
+};
+
+/**
+ * Is this question about AngularJS ("AngularJS", "angular.js", "Angular 1.5", or Angular 1.x picked
+ * from the UI or a package.json)? Not when Angular 2+ is named too: "migrate from AngularJS to
+ * Angular 17" is answered from the Angular 17 docs, which cover upgrading.
+ */
+export function isAngularJsQuestion(request: Pick<AskRequest, 'question' | 'framework' | 'version'>): boolean {
+  if (request.framework === 'angular' && request.version) return isAngularJsVersion(request.version);
+  if (!ANGULARJS_RE.test(request.question)) return false;
+  const angular2Plus = detectFrameworks(request.question).some(
+    (m) => m.framework === 'angular' && m.version && !isAngularJsVersion(m.version),
+  );
+  return !angular2Plus;
+}
+
 export interface DetectedDependency {
   framework: Framework;
   version: string;
@@ -124,6 +159,16 @@ export function detectFromPackageJson(pkg: PackageJsonLike): DetectedDependency[
       }
     }
     if (hit) found.push(hit);
+  }
+  // The "angular" npm package is AngularJS (1.x); Angular 2+ is "@angular/core".
+  if (!found.some((d) => d.framework === 'angular')) {
+    for (const section of sections) {
+      const version = pkg[section]?.['angular'] ? minVersionFromRange(pkg[section]['angular']) : null;
+      if (version) {
+        found.push({ framework: 'angular', version, from: `${section}.angular` });
+        break;
+      }
+    }
   }
   const nodeRange = pkg.engines?.['node'];
   const nodeVersion = nodeRange ? minVersionFromRange(nodeRange) : null;

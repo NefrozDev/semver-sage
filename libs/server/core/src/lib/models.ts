@@ -1,8 +1,4 @@
-import type {
-  FeatureExtractionPipeline,
-  PreTrainedModel,
-  PreTrainedTokenizer,
-} from '@huggingface/transformers';
+import type { FeatureExtractionPipeline } from '@huggingface/transformers';
 
 export const EMBEDDING_DIM = 384;
 
@@ -43,44 +39,6 @@ export class Embedder {
   async embedQuery(text: string): Promise<number[]> {
     const [embedding] = await this.embedDocuments([BGE_QUERY_PREFIX + text]);
     return embedding;
-  }
-
-  warmUp(): Promise<unknown> {
-    return this.load();
-  }
-}
-
-/** Local cross-encoder (bge-reranker-base): scores how well each passage answers the query. */
-export class Reranker {
-  private loaded?: Promise<{ tokenizer: PreTrainedTokenizer; model: PreTrainedModel }>;
-
-  constructor(
-    private readonly modelId: string,
-    private readonly cacheDir: string,
-  ) {}
-
-  private load() {
-    this.loaded ??= loadTransformers(this.cacheDir).then(async (t) => ({
-      tokenizer: await t.AutoTokenizer.from_pretrained(this.modelId),
-      model: await t.AutoModelForSequenceClassification.from_pretrained(this.modelId, {
-        dtype: 'q8',
-      }),
-    }));
-    return this.loaded;
-  }
-
-  /** Returns one relevance score (0..1) per passage, in input order. */
-  async score(query: string, passages: string[]): Promise<number[]> {
-    if (!passages.length) return [];
-    const { tokenizer, model } = await this.load();
-    const inputs = tokenizer(new Array(passages.length).fill(query), {
-      text_pair: passages,
-      padding: true,
-      truncation: true,
-      max_length: 512,
-    });
-    const { logits } = await model(inputs);
-    return (logits.sigmoid().tolist() as number[][]).map(([score]) => score);
   }
 
   warmUp(): Promise<unknown> {

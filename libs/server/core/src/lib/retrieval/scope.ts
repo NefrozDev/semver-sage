@@ -4,6 +4,7 @@ import {
   detectFrameworks,
   FRAMEWORKS,
   parseVersion,
+  primaryMention,
   ResolvedScope,
   versionToNum,
   type Framework,
@@ -27,7 +28,7 @@ export interface SearchScope extends ResolvedScope {
  */
 export function resolveScope(request: AskRequest, indexed: IndexedVersionRow[]): SearchScope {
   const mentions = detectFrameworks(request.question);
-  const framework = request.framework ?? mentions[0]?.framework ?? null;
+  const framework = request.framework ?? primaryMention(mentions)?.framework ?? null;
 
   if (!framework) {
     return { framework: null, requestedVersion: null, version: null, versionNum: null, source: 'none' };

@@ -1,104 +1,247 @@
 :host {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  max-width: 920px;
-  min-height: 100vh;
+  display: block;
+  max-width: 1120px;
   margin: 0 auto;
-  padding: 28px 16px;
+  padding: 28px 16px 0;
 }
 
-header {
-  text-align: center;
+.topbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 24px;
+  margin-bottom: 28px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 
   h1 {
     margin: 0;
-    font-family: var(--font-pixel);
-    font-size: clamp(20px, 4vw, 30px);
-    color: var(--gold);
-    text-shadow: 3px 3px 0 #3a2786;
+    font-family: var(--font-display);
+    font-size: clamp(26px, 4vw, 34px);
+    font-weight: 600;
+    letter-spacing: -0.01em;
   }
+}
 
-  .tagline {
-    margin: 10px 0 0;
-    color: var(--muted);
-  }
+.mark {
+  width: 22px;
+  height: 22px;
+  fill: var(--accent);
+}
+
+.tagline {
+  margin: 0;
+  color: var(--muted);
 }
 
 main {
   display: grid;
-  gap: 24px;
+  grid-template-columns: minmax(220px, 300px) minmax(0, 1fr);
+  gap: 32px;
+  align-items: start;
 }
 
-.stage {
+.sage-panel {
+  position: sticky;
+  top: 24px;
   display: grid;
-  grid-template-columns: minmax(120px, 200px) 1fr;
-  gap: 16px;
-  align-items: end;
-}
-
-.conversation {
-  display: grid;
-  gap: 10px;
-  min-width: 0;
-}
-
-.you {
-  justify-self: end;
-  max-width: 90%;
-  margin: 0;
-  padding: 8px 12px;
+  justify-items: center;
+  gap: 12px;
+  padding: 20px 20px 24px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 10px 10px 2px 10px;
+  border-radius: 24px;
+  box-shadow: var(--shadow);
+}
 
-  span {
-    display: block;
-    font-size: 11px;
-    font-weight: 700;
+.caption {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-weight: 600;
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--muted);
+  }
+
+  &.reflecting .dot { background: var(--accent); animation: pulse 1.2s ease-in-out infinite; }
+  &.talking .dot { background: var(--teal); animation: pulse 0.6s ease-in-out infinite; }
+  &.error .dot { background: var(--danger); }
+}
+
+.indexed {
+  width: 100%;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+
+  h2 {
+    margin: 0 0 8px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  ul {
+    display: grid;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 14px;
+  }
+
+  li {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .range {
+    font-variant-numeric: tabular-nums;
     color: var(--muted);
   }
 }
 
-.scope {
+.offline {
   margin: 0;
-  font-size: 13px;
-  color: var(--teal);
+  font-size: 14px;
+  color: var(--danger);
+}
+
+// A column as tall as the viewport, so the question box sits at the bottom even before
+// there's an answer, in line with the end of the sage panel.
+.conversation {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+  min-height: calc(100vh - 110px);
+
+  // Before the first question: greeting, examples and the question box stay together.
+  &.landing {
+    min-height: 0;
+
+    .dock {
+      position: static;
+    }
+  }
+}
+
+.asked {
+  display: grid;
+  gap: 8px;
+}
+
+.question {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(22px, 2.6vw, 28px);
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+}
+
+.examples {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+
+  .label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .chip {
+    padding: 6px 12px;
+    font: inherit;
+    font-size: 13px;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+
+    &:hover {
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+  }
+}
+
+// The question box: docked to the bottom of the viewport once the page scrolls.
+.dock {
+  position: sticky;
+  bottom: 0;
+  margin-top: auto;
+  padding: 12px 0 16px;
+  background: linear-gradient(to top, var(--bg) 75%, transparent);
+}
+
+.scope {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+
+  .chip {
+    padding: 4px 12px;
+    font-weight: 600;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border-radius: 999px;
+  }
 
   .note {
-    display: block;
-    margin-top: 2px;
     color: var(--gold);
   }
 }
 
 .error {
-  margin: 12px 0 0;
-  color: #ffb4b4;
+  margin: 14px 0 0;
+  padding: 10px 14px;
+  font-size: 14px;
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
+  border-radius: 10px;
 }
 
-footer {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 4px 16px;
-  margin-top: auto;
-  font-size: 12px;
-  color: var(--muted);
+@keyframes pulse {
+  50% { opacity: 0.3; }
 }
 
-@media (max-width: 600px) {
-  .stage {
+@media (max-width: 760px) {
+  main {
     grid-template-columns: 1fr;
-    justify-items: center;
+    gap: 20px;
   }
 
-  app-sage {
-    max-width: 130px;
+  .sage-panel {
+    position: static;
+    grid-template-columns: 110px 1fr;
+    justify-items: start;
+    align-items: center;
+    padding: 12px 16px;
   }
 
-  .conversation {
-    width: 100%;
+  .indexed {
+    display: none;
   }
 }

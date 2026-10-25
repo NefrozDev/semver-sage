@@ -15,6 +15,8 @@ export class SageStore {
   readonly answer = signal('');
   readonly error = signal<string | null>(null);
   readonly model = signal<string | null>(null);
+  /** Time from asking to the end of the answer. */
+  readonly elapsedMs = signal<number | null>(null);
 
   private controller?: AbortController;
 
@@ -28,6 +30,7 @@ export class SageStore {
     this.answer.set('');
     this.error.set(null);
     this.model.set(null);
+    this.elapsedMs.set(null);
     this.status.set('thinking');
 
     try {
@@ -86,6 +89,7 @@ export class SageStore {
         break;
       case 'done':
         this.model.set(event.model);
+        this.elapsedMs.set(event.elapsedMs);
         this.status.set('done');
         break;
       case 'error':

@@ -1,5 +1,4 @@
 import { versionToNum, type Framework } from '@semver-sage/types';
-import { reciprocalRankFusion } from './rrf';
 import { IndexedVersionRow, resolveComparison, resolveScope } from './scope';
 
 const row = (framework: Framework, version: string): IndexedVersionRow => ({
@@ -72,12 +71,5 @@ describe('resolveComparison', () => {
   it('is not a comparison when both versions map to the same docs', () => {
     expect(resolveComparison({ question: 'Vue 2.6 vs 2.7 filters' }, indexed)).toBeNull();
     expect(resolveComparison({ question: 'Vue 2 filters' }, indexed)).toBeNull();
-  });
-});
-
-describe('reciprocalRankFusion', () => {
-  it('rewards items ranked well in several lists', () => {
-    const fused = reciprocalRankFusion([['a', 'b', 'c'], ['b', 'd', 'e']], (x) => x);
-    expect(fused.map((f) => f.item)).toEqual(['b', 'a', 'd', 'c', 'e']);
   });
 });

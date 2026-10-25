@@ -1,0 +1,94 @@
+[
+  {
+    "id": "ts3-optional-chaining",
+    "question": "How do optional chaining and nullish coalescing work in TypeScript 3.7?",
+    "framework": "typescript", "version": "3",
+    "expect": ["release-notes/TypeScript%203.7.md"],
+    "tags": ["since-when"]
+  },
+  {
+    "id": "ts3-interfaces",
+    "question": "How do I declare an interface in TypeScript 3?",
+    "framework": "typescript", "version": "3",
+    "expect": ["handbook-v1/Interfaces.md"]
+  },
+  {
+    "id": "ts3-project-references",
+    "question": "How do project references work in TypeScript 3?",
+    "framework": "typescript", "version": "3",
+    "expect": ["project-config/Project%20References.md"]
+  },
+  {
+    "id": "ts4-satisfies",
+    "question": "What does the satisfies operator do in TypeScript 4.9?",
+    "framework": "typescript", "version": "4",
+    "expect": ["release-notes/TypeScript%204.9.md#the-satisfies-operator"],
+    "tags": ["since-when"]
+  },
+  {
+    "id": "ts4-template-literal-types",
+    "question": "How do template literal types work in TypeScript 4?",
+    "framework": "typescript", "version": "4",
+    "expect": ["Template%20Literal%20Types.md", "release-notes/TypeScript%204.1.md"]
+  },
+  {
+    "id": "ts4-generics",
+    "question": "How do I write a generic function in TypeScript 4?",
+    "framework": "typescript", "version": "4",
+    "expect": ["Type%20Manipulation/Generics.md", "handbook-v2/More%20on%20Functions.md"]
+  },
+  {
+    "id": "ts4-mapped-types",
+    "question": "How do mapped types work in TypeScript 4?",
+    "framework": "typescript", "version": "4",
+    "expect": ["Mapped%20Types.md"]
+  },
+  {
+    "id": "ts5-decorators",
+    "question": "How do the new decorators work in TypeScript 5.0?",
+    "framework": "typescript", "version": "5",
+    "expect": ["release-notes/TypeScript%205.0.md#decorators"],
+    "tags": ["since-when", "changed"]
+  },
+  {
+    "id": "ts5-const-type-parameters",
+    "question": "What are const type parameters in TypeScript 5?",
+    "framework": "typescript", "version": "5",
+    "expect": ["release-notes/TypeScript%205.0.md#const-type-parameters"],
+    "tags": ["since-when"]
+  },
+  {
+    "id": "ts5-using",
+    "question": "What are using declarations in TypeScript 5.2?",
+    "framework": "typescript", "version": "5",
+    "expect": ["release-notes/TypeScript%205.2.md"],
+    "tags": ["since-when"]
+  },
+  {
+    "id": "ts5-module-resolution-bundler",
+    "question": "What does moduleResolution bundler do in TypeScript 5?",
+    "framework": "typescript", "version": "5",
+    "expect": ["options/moduleResolution.md", "modules-reference/"]
+  },
+  {
+    "id": "ts6-whats-new",
+    "question": "What is new in TypeScript 6.0?",
+    "framework": "typescript", "version": "6",
+    "expect": ["release-notes/TypeScript%206.0.md"]
+  },
+  {
+    "id": "ts-strict-null-checks",
+    "question": "What does strictNullChecks do?",
+    "request": { "framework": "typescript" },
+    "framework": "typescript", "version": "6",
+    "expect": ["options/strictNullChecks.md", "handbook-v2/Basics.md#strictnullchecks"],
+    "tags": ["latest-by-default"]
+  },
+  {
+    "id": "ts-isolated-declarations",
+    "question": "What does the isolatedDeclarations option do in TypeScript?",
+    "framework": "typescript", "version": "6",
+    "expect": ["options/isolatedDeclarations.md", "release-notes/TypeScript%205.5.md"],
+    "tags": ["latest-by-default"]
+  }
+]

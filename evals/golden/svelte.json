@@ -1,0 +1,94 @@
+[
+  {
+    "id": "svelte3-reactive-statements",
+    "question": "How do reactive statements with $: work in Svelte 3?",
+    "framework": "svelte", "version": "3",
+    "expect": ["site/content/docs/02-component-format.md"],
+    "tags": ["version-specific", "replaced-later"]
+  },
+  {
+    "id": "svelte3-writable-store",
+    "question": "How do I create a writable store in Svelte 3?",
+    "framework": "svelte", "version": "3",
+    "expect": ["site/content/docs/04-run-time.md#sveltestore"]
+  },
+  {
+    "id": "svelte3-each",
+    "question": "How do I loop over a list in Svelte 3 markup?",
+    "framework": "svelte", "version": "3",
+    "expect": ["site/content/docs/03-template-syntax.md#each"]
+  },
+  {
+    "id": "svelte4-slots",
+    "question": "How do slots work in Svelte 4?",
+    "framework": "svelte", "version": "4",
+    "expect": ["special-elements#slot"],
+    "tags": ["replaced-later"]
+  },
+  {
+    "id": "svelte4-dispatch",
+    "question": "How do I dispatch a custom component event in Svelte 4?",
+    "framework": "svelte", "version": "4",
+    "expect": ["svelte#createeventdispatcher", "element-directives"],
+    "tags": ["replaced-later"]
+  },
+  {
+    "id": "svelte4-bind",
+    "question": "How do I bind an input's value in Svelte 4?",
+    "framework": "svelte", "version": "4",
+    "expect": ["element-directives"]
+  },
+  {
+    "id": "svelte4-store",
+    "question": "How do I use stores in Svelte 4?",
+    "framework": "svelte", "version": "4",
+    "expect": ["svelte-store", "svelte-components"]
+  },
+  {
+    "id": "svelte4-transition",
+    "question": "How do I add a fade transition in Svelte 4?",
+    "framework": "svelte", "version": "4",
+    "expect": ["svelte-transition", "element-directives"]
+  },
+  {
+    "id": "svelte5-state",
+    "question": "How do I declare reactive state with $state in Svelte 5?",
+    "framework": "svelte", "version": "5",
+    "expect": ["$state"],
+    "tags": ["added"]
+  },
+  {
+    "id": "svelte5-derived",
+    "question": "What is $derived?",
+    "framework": "svelte", "version": "5",
+    "expect": ["$derived"],
+    "tags": ["latest-by-default", "added"]
+  },
+  {
+    "id": "svelte5-effect",
+    "question": "How do I run side effects with $effect in Svelte 5?",
+    "framework": "svelte", "version": "5",
+    "expect": ["$effect"],
+    "tags": ["added"]
+  },
+  {
+    "id": "svelte5-props",
+    "question": "How do I declare component props in Svelte 5?",
+    "framework": "svelte", "version": "5",
+    "expect": ["$props"],
+    "tags": ["changed"]
+  },
+  {
+    "id": "svelte5-snippets",
+    "question": "How do snippets work in Svelte 5?",
+    "framework": "svelte", "version": "5",
+    "expect": ["snippet"],
+    "tags": ["added"]
+  },
+  {
+    "id": "svelte5-bind",
+    "question": "How do I bind an input's value in Svelte 5?",
+    "framework": "svelte", "version": "5",
+    "expect": ["bind", "$bindable"]
+  }
+]

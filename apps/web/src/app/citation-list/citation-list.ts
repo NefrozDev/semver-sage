@@ -1,30 +1,32 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { Citation, FRAMEWORKS, Framework } from '@semver-sage/types';
 
+/** Compact source cards, numbered like the [n] markers in the answer. */
 @Component({
   selector: 'app-citation-list',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <h2>Sources</h2>
+    <h2>{{ citations().length }} {{ citations().length === 1 ? 'source' : 'sources' }}</h2>
     <ol>
       @for (c of citations(); track c.n) {
         <li [id]="'source-' + c.n">
-          <span class="n">{{ c.n }}</span>
-          <div class="info">
-            <a [href]="c.url" target="_blank" rel="noopener">
-              {{ c.pageTitle }}@if (c.section !== c.pageTitle) {<span class="section"> › {{ c.section }}</span>}
-            </a>
-            <div class="badges">
+          <a [href]="c.url" target="_blank" rel="noopener" [title]="c.pageTitle + ' › ' + c.section">
+            <span class="top">
+              <span class="n">{{ c.n }}</span>
               <span class="badge version">{{ label(c.framework) }} {{ c.version }}</span>
-              <span class="badge range" title="Versions this exact text appears in">
+              <span class="range" title="Versions this exact text appears in">
                 @if (c.firstVersion === c.lastVersion) {
-                  only in {{ c.firstVersion }}
+                  only {{ c.firstVersion }}
                 } @else {
-                  same in {{ c.firstVersion }}–{{ c.lastVersion }}
+                  {{ c.firstVersion }}–{{ c.lastVersion }}
                 }
               </span>
-            </div>
-          </div>
+            </span>
+            <span class="title">{{ c.section === c.pageTitle ? c.pageTitle : c.section }}</span>
+            @if (c.section !== c.pageTitle) {
+              <span class="page">{{ c.pageTitle }}</span>
+            }
+          </a>
         </li>
       }
     </ol>

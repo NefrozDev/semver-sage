@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import {
+  ANGULARJS_NOTICE,
   buildCompareMessages,
   buildMessages,
   ChatMessage,
@@ -15,6 +16,7 @@ import {
   Citation,
   comparisonTopic,
   FRAMEWORKS,
+  isAngularJsQuestion,
   ResolvedScope,
 } from '@semver-sage/types';
 import { RetrievalService } from '../retrieval/retrieval.service';
@@ -40,6 +42,23 @@ export class AskService {
     const indexed = await this.retrieval.indexedVersions();
     if (!indexed.length) {
       yield { type: 'error', message: 'No docs are indexed yet. Run `npm run ingest:vue` first.' };
+      return;
+    }
+
+    if (isAngularJsQuestion(request)) {
+      yield {
+        type: 'scope',
+        scope: {
+          framework: 'angular',
+          requestedVersion: request.version ?? '1.x',
+          version: null,
+          source: request.framework ? 'request' : 'question',
+          note: 'AngularJS (1.x) is a separate framework from Angular 2+.',
+        },
+      };
+      yield { type: 'citations', citations: [] };
+      yield { type: 'token', text: ANGULARJS_NOTICE };
+      yield { type: 'done', model: 'none', elapsedMs: Date.now() - started };
       return;
     }
 

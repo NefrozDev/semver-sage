@@ -14,32 +14,43 @@ import { renderAnswer } from '../markdown';
 const TICK_MS = 24;
 
 /**
- * RPG-style dialog box. Reveals `text` with a typewriter effect as it streams in;
- * clicking the box skips to the end.
+ * The sage's answer. Reveals `text` with a typewriter effect as it streams in;
+ * clicking the card skips to the end.
  */
 @Component({
-  selector: 'app-dialog-box',
+  selector: 'app-answer-card',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '(click)': 'skip()', '[class.thinking]': 'thinking()' },
   template: `
-    <div class="nameplate">{{ speaker() }}</div>
+    <header>
+      <span class="avatar" aria-hidden="true"></span>
+      <span class="speaker">{{ speaker() }}</span>
+      @if (status(); as status) {
+        <span class="status">{{ status }}</span>
+      }
+    </header>
     <div class="body" aria-live="polite">
       @if (thinking() && !text()) {
-        <p class="thinking-text">Consulting the scrolls<span class="dots"><i>.</i><i>.</i><i>.</i></span></p>
+        <div class="reflecting" aria-label="Searching the docs">
+          <span></span><span></span><span></span>
+        </div>
       } @else {
-        <div class="answer" [innerHTML]="html()"></div>
+        <div class="answer" [class.typing]="typing()" [innerHTML]="html()"></div>
       }
       <ng-content />
     </div>
-    @if (!typing() && !thinking() && text()) {
-      <span class="next" aria-hidden="true">▼</span>
+    @if (meta(); as meta) {
+      <footer>{{ meta }}</footer>
     }
   `,
-  styleUrl: './dialog-box.scss',
+  styleUrl: './answer-card.scss',
 })
-export class DialogBox {
+export class AnswerCard {
   readonly text = input('');
   readonly speaker = input('Sage');
+  readonly status = input<string | null>(null);
+  /** Small print under the answer, e.g. which model answered and how long it took. */
+  readonly meta = input<string | null>(null);
   readonly thinking = input(false);
   readonly typingChange = output<boolean>();
 

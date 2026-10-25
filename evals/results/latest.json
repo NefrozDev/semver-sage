@@ -1,159 +1,37 @@
 [
   {
-    "name": "Vector only, no version filter",
+    "name": "Vector search + version filter (production)",
     "summary": {
-      "count": 74,
-      "hit1": 0.3783783783783784,
-      "hit5": 0.7027027027027027,
-      "recall5": 0.6396396396396395,
-      "reciprocalRank": 0.5069605319605319,
-      "versionPrecision5": 0.3702702702702703
-    },
-    "byFramework": {
-      "angular": {
-        "count": 16,
-        "hit1": 0.3125,
-        "hit5": 0.5625,
-        "recall5": 0.5625,
-        "reciprocalRank": 0.43549107142857146,
-        "versionPrecision5": 0.1625
-      },
-      "nextjs": {
-        "count": 15,
-        "hit1": 0.2,
-        "hit5": 0.6,
-        "recall5": 0.5666666666666667,
-        "reciprocalRank": 0.34500000000000003,
-        "versionPrecision5": 0.26666666666666666
-      },
-      "node": {
-        "count": 16,
-        "hit1": 0.1875,
-        "hit5": 0.5,
-        "recall5": 0.46875,
-        "reciprocalRank": 0.3149305555555556,
-        "versionPrecision5": 0.17500000000000002
-      },
-      "vue": {
-        "count": 27,
-        "hit1": 0.6296296296296297,
-        "hit5": 0.9629629629629629,
-        "recall5": 0.8271604938271605,
-        "reciprocalRank": 0.7530864197530862,
-        "versionPrecision5": 0.6666666666666669
-      }
-    },
-    "avgMs": 25.12162162162162
-  },
-  {
-    "name": "+ full-text (hybrid, RRF)",
-    "summary": {
-      "count": 74,
-      "hit1": 0.3108108108108108,
-      "hit5": 0.6891891891891891,
-      "recall5": 0.5743243243243243,
-      "reciprocalRank": 0.47000750750750747,
-      "versionPrecision5": 0.3702702702702702
-    },
-    "byFramework": {
-      "angular": {
-        "count": 16,
-        "hit1": 0.1875,
-        "hit5": 0.5625,
-        "recall5": 0.5,
-        "reciprocalRank": 0.3506944444444444,
-        "versionPrecision5": 0.17500000000000004
-      },
-      "nextjs": {
-        "count": 15,
-        "hit1": 0.2,
-        "hit5": 0.6666666666666666,
-        "recall5": 0.6333333333333333,
-        "reciprocalRank": 0.40222222222222226,
-        "versionPrecision5": 0.32000000000000006
-      },
-      "node": {
-        "count": 16,
-        "hit1": 0,
-        "hit5": 0.4375,
-        "recall5": 0.375,
-        "reciprocalRank": 0.1486111111111111,
-        "versionPrecision5": 0.1625
-      },
-      "vue": {
-        "count": 27,
-        "hit1": 0.6296296296296297,
-        "hit5": 0.9259259259259259,
-        "recall5": 0.7037037037037036,
-        "reciprocalRank": 0.7688271604938272,
-        "versionPrecision5": 0.637037037037037
-      }
-    },
-    "avgMs": 284.0135135135135
-  },
-  {
-    "name": "+ rerank",
-    "summary": {
-      "count": 74,
-      "hit1": 0.35135135135135137,
-      "hit5": 0.7027027027027027,
-      "recall5": 0.6351351351351351,
-      "reciprocalRank": 0.5037323037323037,
-      "versionPrecision5": 0.3648648648648649
-    },
-    "byFramework": {
-      "angular": {
-        "count": 16,
-        "hit1": 0.0625,
-        "hit5": 0.5625,
-        "recall5": 0.53125,
-        "reciprocalRank": 0.2865327380952381,
-        "versionPrecision5": 0.15000000000000002
-      },
-      "nextjs": {
-        "count": 15,
-        "hit1": 0.3333333333333333,
-        "hit5": 0.6,
-        "recall5": 0.5555555555555556,
-        "reciprocalRank": 0.43666666666666665,
-        "versionPrecision5": 0.23999999999999996
-      },
-      "node": {
-        "count": 16,
-        "hit1": 0.0625,
-        "hit5": 0.4375,
-        "recall5": 0.40625,
-        "reciprocalRank": 0.22760416666666666,
-        "versionPrecision5": 0.11249999999999999
-      },
-      "vue": {
-        "count": 27,
-        "hit1": 0.7037037037037037,
-        "hit5": 1,
-        "recall5": 0.8765432098765431,
-        "reciprocalRank": 0.8333333333333334,
-        "versionPrecision5": 0.7111111111111111
-      }
-    },
-    "avgMs": 6940.418918918919
-  },
-  {
-    "name": "Vector + version filter",
-    "summary": {
-      "count": 74,
-      "hit1": 0.7162162162162162,
-      "hit5": 0.9594594594594594,
-      "recall5": 0.8738738738738737,
-      "reciprocalRank": 0.8222972972972974,
+      "count": 171,
+      "hit1": 0.7543859649122807,
+      "hit5": 0.9590643274853801,
+      "recall5": 0.8986354775828459,
+      "reciprocalRank": 0.8459621275410751,
       "versionPrecision5": 1
     },
     "byFramework": {
       "angular": {
-        "count": 16,
-        "hit1": 0.9375,
+        "count": 28,
+        "hit1": 0.9285714285714286,
         "hit5": 1,
-        "recall5": 0.96875,
+        "recall5": 0.9642857142857143,
         "reciprocalRank": 0.9583333333333334,
+        "versionPrecision5": 1
+      },
+      "express": {
+        "count": 9,
+        "hit1": 0.5555555555555556,
+        "hit5": 0.7777777777777778,
+        "recall5": 0.7777777777777778,
+        "reciprocalRank": 0.6751322751322751,
+        "versionPrecision5": 1
+      },
+      "nestjs": {
+        "count": 11,
+        "hit1": 0.9090909090909091,
+        "hit5": 1,
+        "recall5": 1,
+        "reciprocalRank": 0.9393939393939393,
         "versionPrecision5": 1
       },
       "nextjs": {
@@ -165,11 +43,43 @@
         "versionPrecision5": 1
       },
       "node": {
+        "count": 26,
+        "hit1": 0.7692307692307693,
+        "hit5": 1,
+        "recall5": 0.9230769230769231,
+        "reciprocalRank": 0.8685897435897437,
+        "versionPrecision5": 1
+      },
+      "nuxt": {
+        "count": 11,
+        "hit1": 0.5454545454545454,
+        "hit5": 0.9090909090909091,
+        "recall5": 0.8181818181818182,
+        "reciprocalRank": 0.6848484848484849,
+        "versionPrecision5": 1
+      },
+      "react": {
         "count": 16,
-        "hit1": 0.625,
-        "hit5": 0.9375,
-        "recall5": 0.8125,
-        "reciprocalRank": 0.7552083333333334,
+        "hit1": 0.875,
+        "hit5": 1,
+        "recall5": 1,
+        "reciprocalRank": 0.9375,
+        "versionPrecision5": 1
+      },
+      "svelte": {
+        "count": 14,
+        "hit1": 0.7142857142857143,
+        "hit5": 1,
+        "recall5": 0.8928571428571429,
+        "reciprocalRank": 0.8571428571428571,
+        "versionPrecision5": 1
+      },
+      "typescript": {
+        "count": 14,
+        "hit1": 0.7142857142857143,
+        "hit5": 0.8571428571428571,
+        "recall5": 0.7857142857142857,
+        "reciprocalRank": 0.7761904761904762,
         "versionPrecision5": 1
       },
       "vue": {
@@ -181,98 +91,6 @@
         "versionPrecision5": 1
       }
     },
-    "avgMs": 48.486486486486484
-  },
-  {
-    "name": "Hybrid + version filter (no rerank)",
-    "summary": {
-      "count": 74,
-      "hit1": 0.7297297297297297,
-      "hit5": 0.9054054054054054,
-      "recall5": 0.8265765765765766,
-      "reciprocalRank": 0.8129826254826255,
-      "versionPrecision5": 1
-    },
-    "byFramework": {
-      "angular": {
-        "count": 16,
-        "hit1": 0.75,
-        "hit5": 1,
-        "recall5": 0.96875,
-        "reciprocalRank": 0.8645833333333333,
-        "versionPrecision5": 1
-      },
-      "nextjs": {
-        "count": 15,
-        "hit1": 0.6,
-        "hit5": 0.8,
-        "recall5": 0.7666666666666667,
-        "reciprocalRank": 0.6972222222222223,
-        "versionPrecision5": 1
-      },
-      "node": {
-        "count": 16,
-        "hit1": 0.5,
-        "hit5": 0.8125,
-        "recall5": 0.75,
-        "reciprocalRank": 0.6495535714285713,
-        "versionPrecision5": 1
-      },
-      "vue": {
-        "count": 27,
-        "hit1": 0.9259259259259259,
-        "hit5": 0.9629629629629629,
-        "recall5": 0.8209876543209875,
-        "reciprocalRank": 0.943562610229277,
-        "versionPrecision5": 1
-      }
-    },
-    "avgMs": 72.77027027027027
-  },
-  {
-    "name": "Full: hybrid + rerank + version filter",
-    "summary": {
-      "count": 74,
-      "hit1": 0.7702702702702703,
-      "hit5": 0.9864864864864865,
-      "recall5": 0.9144144144144145,
-      "reciprocalRank": 0.8612612612612611,
-      "versionPrecision5": 1
-    },
-    "byFramework": {
-      "angular": {
-        "count": 16,
-        "hit1": 0.75,
-        "hit5": 1,
-        "recall5": 0.96875,
-        "reciprocalRank": 0.8645833333333333,
-        "versionPrecision5": 1
-      },
-      "nextjs": {
-        "count": 15,
-        "hit1": 0.6666666666666666,
-        "hit5": 0.9333333333333333,
-        "recall5": 0.888888888888889,
-        "reciprocalRank": 0.7488888888888888,
-        "versionPrecision5": 1
-      },
-      "node": {
-        "count": 16,
-        "hit1": 0.625,
-        "hit5": 1,
-        "recall5": 0.90625,
-        "reciprocalRank": 0.7916666666666667,
-        "versionPrecision5": 1
-      },
-      "vue": {
-        "count": 27,
-        "hit1": 0.9259259259259259,
-        "hit5": 1,
-        "recall5": 0.9012345679012347,
-        "reciprocalRank": 0.9629629629629629,
-        "versionPrecision5": 1
-      }
-    },
-    "avgMs": 5605.013513513513
+    "avgMs": 27.538011695906434
   }
 ]
