@@ -63,6 +63,8 @@ export const FRAMEWORKS: Record<Framework, FrameworkInfo> = {
       { pattern: 'node\\.?js' },
       { pattern: 'Node', caseSensitive: true },
       { pattern: 'node', needsVersion: true },
+      // io.js 1–3 merged back into Node and is indexed as Node 1–3.
+      { pattern: 'io\\.?js' },
     ],
     packages: [],
   },

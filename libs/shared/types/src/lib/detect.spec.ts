@@ -27,6 +27,7 @@ describe('detectFrameworks', () => {
     ['express.js 4 router', 'express', '4'],
     ['Nuxt 3 server routes', 'nuxt', '3'],
     ['How do runes work in Svelte 5?', 'svelte', '5'],
+    ['How did streams work in io.js 3?', 'node', '3'],
     ['What are satisfies expressions in TypeScript 4.9?', 'typescript', '4.9'],
     ['TS 5 decorators', 'typescript', '5'],
   ])('%s', (question, framework, version) => {
