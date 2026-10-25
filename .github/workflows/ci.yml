@@ -44,3 +44,36 @@ jobs:
           name: playwright-report
           path: dist/.playwright/report
           retention-days: 7
+
+  # Coverage + analysis on the shared SonarQube server (infra/sonarqube). Needs the secrets
+  # SONAR_HOST_URL (reachable from GitHub, or use a self-hosted runner) and SONAR_TOKEN; skipped
+  # until they're set. Fails when the quality gate fails.
+  sonarqube:
+    runs-on: ubuntu-latest
+    env:
+      SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      SONAR_QUALITYGATE_WAIT: 'true'
+    steps:
+      - name: Check configuration
+        id: config
+        run: |
+          if [ -z "$SONAR_HOST_URL" ] || [ -z "$SONAR_TOKEN" ]; then
+            echo "::notice::SONAR_HOST_URL / SONAR_TOKEN secrets are not set; skipping SonarQube."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v4
+        if: steps.config.outputs.skip != 'true'
+        with:
+          fetch-depth: 0 # blame data for new-code detection
+      - uses: actions/setup-node@v4
+        if: steps.config.outputs.skip != 'true'
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm install -g npm@11.6.0 && npm ci
+        if: steps.config.outputs.skip != 'true'
+      - run: npm run test:coverage
+        if: steps.config.outputs.skip != 'true'
+      - run: node tools/sonar-scan.mjs
+        if: steps.config.outputs.skip != 'true'

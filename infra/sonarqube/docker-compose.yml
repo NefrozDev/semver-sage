@@ -1,0 +1,52 @@
+name: sonarqube
+
+# Shared SonarQube (Community Build) for any project on this machine or server, independent of the
+# apps it analyzes. Start: `docker compose -f infra/sonarqube/docker-compose.yml up -d`, then open
+# http://localhost:9000 (first login admin/admin). See README.md in this folder.
+#
+# Linux hosts need `sysctl -w vm.max_map_count=524288` (and `fs.file-max=131072`) for the embedded
+# Elasticsearch; Docker Desktop's VM already allows it.
+
+services:
+  sonarqube:
+    image: sonarqube:community
+    depends_on:
+      db: { condition: service_healthy }
+    environment:
+      SONAR_JDBC_URL: jdbc:postgresql://db:5432/sonar
+      SONAR_JDBC_USERNAME: sonar
+      SONAR_JDBC_PASSWORD: ${SONAR_DB_PASSWORD:-sonar}
+    ports:
+      - '${SONAR_PORT:-9000}:9000'
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_logs:/opt/sonarqube/logs
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://localhost:9000/api/system/status | grep -q "\"status\":\"UP\""']
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+    restart: unless-stopped
+
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: sonar
+      POSTGRES_PASSWORD: ${SONAR_DB_PASSWORD:-sonar}
+      POSTGRES_DB: sonar
+    volumes:
+      - sonarqube_db:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U sonar -d sonar']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  sonarqube_data:
+  sonarqube_extensions:
+  sonarqube_logs:
+  sonarqube_db:
