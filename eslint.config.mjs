@@ -37,6 +37,9 @@ export default [
       '**/*.mjs',
     ],
     // Override or add rules here
-    rules: {},
+    rules: {
+      // `const { omitted, ...rest } = obj` is the idiom for dropping a field.
+      '@typescript-eslint/no-unused-vars': ['warn', { ignoreRestSiblings: true }],
+    },
   },
 ];

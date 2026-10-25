@@ -71,22 +71,31 @@ LLM answer with citations, streamed (SSE) to the frontend.
 - `docker compose up` brings up the whole stack locally.
 
 ## Current state
-- Nx workspace created with `apps/web` (Angular), `apps/api` (NestJS), `apps/ingestion` (Node),
-  `libs/shared/types`.
-- Pushed to a private GitHub repo `semver-sage`.
-- Nothing else implemented yet.
+Steps 1–5 of the original plan are done, plus package.json upload:
+- `docker-compose.yml`: Postgres + pgvector; Ollama under the `ollama` profile.
+- `db/migrations/001_chunks.sql`: `doc_versions` + deduplicated `chunks` (versions stored as
+  integers `major*1e6 + minor*1e3 + patch` in `first_version_num` / `last_version_num`).
+- `libs/server/core`: config (`.env` via `process.loadEnvFile`), pg pool, migration runner,
+  transformers.js `Embedder` (bge-small, 384d) and `Reranker` (bge-reranker-base).
+- `apps/ingestion`: CLI (`migrate | ingest <fw> | reset <fw> | status`), sparse git checkouts
+  (needed on Windows: full clones hit path-length limits), markdown chunker, Vue adapter.
+  Chunk hash = sha256(url path + section + normalized text).
+- `apps/api`: `POST /api/ask` streams `AskStreamEvent`s over SSE (scope → citations → tokens → done);
+  scope resolution maps a requested version to the newest indexed version at or below it.
+- `apps/web`: signal store reading the SSE stream, animated SVG sage, typewriter dialog box,
+  citation cards with version badges, framework/version pickers, package.json upload.
 
-## Next steps (in order)
-1. `docker-compose.yml` at root: Postgres + pgvector (optionally Ollama).
-2. DB schema + migrations for chunks (with version ranges).
-3. First ingestion: **Vue 2 + Vue 3** (two clean repos, clearly different APIs), chunk by heading,
-   hash dedupe.
-4. API `/api/ask`: hybrid search + version filter + LLM answer with citations, streamed.
-5. Basic sage dialog UI in Angular.
-6. Add the other frameworks via source adapters, then evals, compare mode, package.json upload.
+## Next steps
+1. Source adapters for the other frameworks (Node first: `added: vX` metadata enables "since when?").
+2. Index the Vue 3 migration guide (separate repo) for "what replaced X" questions.
+3. Golden eval set + metrics (recall@k, MRR, faithfulness) in CI; ablation table in README.
+4. "What changed?" compare mode (two scopes, side-by-side retrieval).
+5. Dockerfiles for api/web so `docker compose up` runs the whole stack; scheduled re-ingest action.
 
 ## Commands
-- Run web + api: `npx nx run-many -t serve -p web api`
-- Run one app: `npx nx serve <web|api>`
+- Postgres: `npm run db:up`, then `npm run db:migrate`
+- Ingest: `npm run ingest:vue` (or `npm run ingestion -- <command>`)
+- Run web + api: `npm start` (= `npx nx run-many -t serve -p web api`)
+- Tests: `npm test`
 
-Environment: Windows. GitHub CLI (`gh`) is not installed.
+Environment: Windows (Node 22.15; Angular 22 wants >= 22.22.3, builds work but npm warns). GitHub CLI (`gh`) is not installed.

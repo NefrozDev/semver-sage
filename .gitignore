@@ -49,3 +49,7 @@ Thumbs.db
 __screenshots__/
 vitest.config.*.timestamp*
 .vitest
+
+# local data
+.env
+.cache
