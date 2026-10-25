@@ -100,5 +100,84 @@
     "question": "How do I define routes in Angular 21?",
     "framework": "angular", "version": "21",
     "expect": ["guide/routing"]
+  },
+  {
+    "id": "ng2-ngmodule",
+    "question": "What is an NgModule in Angular 2?",
+    "framework": "angular", "version": "2",
+    "expect": ["guide/ngmodule.html", "guide/appmodule.html"]
+  },
+  {
+    "id": "ng2-lifecycle",
+    "question": "What lifecycle hooks does a component have in Angular 2?",
+    "framework": "angular", "version": "2",
+    "expect": ["guide/lifecycle-hooks.html"]
+  },
+  {
+    "id": "ng2-http",
+    "question": "How do I make HTTP requests in Angular 2?",
+    "framework": "angular", "version": "2",
+    "expect": ["guide/server-communication.html"],
+    "tags": ["version-specific", "replaced-later"]
+  },
+  {
+    "id": "ng4-http-client",
+    "question": "How do I make HTTP requests with HttpClient in Angular 4?",
+    "framework": "angular", "version": "4",
+    "expect": ["guide/http"],
+    "tags": ["added"]
+  },
+  {
+    "id": "ng5-service-worker",
+    "question": "How do I add a service worker in Angular 5?",
+    "framework": "angular", "version": "5",
+    "expect": ["guide/service-worker-intro", "guide/service-worker-getting-started"],
+    "tags": ["added"]
+  },
+  {
+    "id": "ng5-lazy-loading",
+    "question": "How do I lazy load a feature module in Angular 5?",
+    "framework": "angular", "version": "5",
+    "expect": ["guide/lazy-loading-ngmodules"]
+  },
+  {
+    "id": "ng6-elements",
+    "question": "How do I turn a component into a custom element with Angular Elements in Angular 6?",
+    "framework": "angular", "version": "6",
+    "expect": ["guide/elements"],
+    "tags": ["added"]
+  },
+  {
+    "id": "ng8-ivy",
+    "question": "What is the Ivy renderer in Angular 8?",
+    "framework": "angular", "version": "8",
+    "expect": ["guide/ivy"],
+    "tags": ["added"]
+  },
+  {
+    "id": "ng8-differential-loading",
+    "question": "What is differential loading in Angular 8?",
+    "framework": "angular", "version": "8",
+    "expect": ["guide/deployment"],
+    "tags": ["added"]
+  },
+  {
+    "id": "ng9-ivy-compatibility",
+    "question": "What should I check for Ivy compatibility when upgrading to Angular 9?",
+    "framework": "angular", "version": "9",
+    "expect": ["guide/ivy-compatibility"]
+  },
+  {
+    "id": "ng10-strict-mode",
+    "question": "How do I create a project in strict mode in Angular 10?",
+    "framework": "angular", "version": "10",
+    "expect": ["guide/strict-mode"],
+    "tags": ["added"]
+  },
+  {
+    "id": "ng11-universal",
+    "question": "How do I set up server-side rendering with Angular Universal in Angular 11?",
+    "framework": "angular", "version": "11",
+    "expect": ["guide/universal"]
   }
 ]
