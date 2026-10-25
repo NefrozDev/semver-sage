@@ -14,16 +14,10 @@ export function loadEnv(): void {
 }
 
 const str = (name: string, fallback: string) => process.env[name]?.trim() || fallback;
-const bool = (name: string, fallback: boolean) => {
-  const value = process.env[name]?.trim().toLowerCase();
-  return value ? ['1', 'true', 'yes', 'on'].includes(value) : fallback;
-};
 
 export interface ServerConfig {
   databaseUrl: string;
   embeddingModel: string;
-  rerankerModel: string;
-  rerankEnabled: boolean;
   modelCacheDir: string;
   repoCacheDir: string;
   llm: {
@@ -40,8 +34,6 @@ export function getConfig(): ServerConfig {
   return {
     databaseUrl: str('DATABASE_URL', 'postgres://sage:sage@localhost:5432/semver_sage'),
     embeddingModel: str('EMBEDDING_MODEL', 'Xenova/bge-small-en-v1.5'),
-    rerankerModel: str('RERANKER_MODEL', 'Xenova/bge-reranker-base'),
-    rerankEnabled: bool('RERANK_ENABLED', true),
     modelCacheDir: resolve(str('MODEL_CACHE_DIR', '.cache/models')),
     repoCacheDir: resolve(str('REPO_CACHE_DIR', '.cache/repos')),
     llm: {

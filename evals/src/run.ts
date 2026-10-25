@@ -4,7 +4,6 @@ import {
   createPool,
   Embedder,
   getConfig,
-  Reranker,
   resolveScope,
   RetrieveOptions,
   Retriever,
@@ -19,14 +18,11 @@ import { citationStats, GoldenItem, ItemScore, scoreItem, Summary, summarize } f
 import { judgeFaithfulness } from './judge';
 
 const CONFIGS: { name: string; options: RetrieveOptions }[] = [
-  { name: 'Vector only, no version filter', options: { keyword: false, rerank: false, versionFilter: false } },
-  { name: '+ full-text (hybrid, RRF)', options: { rerank: false, versionFilter: false } },
-  { name: '+ rerank', options: { versionFilter: false } },
-  { name: 'Vector + version filter', options: { keyword: false, rerank: false } },
-  { name: 'Hybrid + version filter (no rerank)', options: { rerank: false } },
-  { name: 'Full: hybrid + rerank + version filter', options: {} },
+  { name: 'Vector search, no version filter', options: { versionFilter: false } },
+  { name: 'Vector search + version filter (production)', options: {} },
 ];
-const FULL = CONFIGS[CONFIGS.length - 1];
+/** The pipeline the API runs: always the last config. */
+const PRODUCTION = CONFIGS[CONFIGS.length - 1];
 const EVAL_TOP_K = 10;
 
 const pct = (n: number) => `${(n * 100).toFixed(1)}%`;
@@ -64,7 +60,6 @@ async function main() {
   const retriever = new Retriever(
     pool,
     new Embedder(config.embeddingModel, config.modelCacheDir),
-    new Reranker(config.rerankerModel, config.modelCacheDir),
   );
 
   try {
@@ -80,9 +75,9 @@ async function main() {
       return;
     }
 
-    const configs = values.configs === 'full' ? [FULL] : CONFIGS;
+    const configs = values.configs === 'production' ? [PRODUCTION] : CONFIGS;
     const results: ConfigResult[] = [];
-    const retrievedFull = new Map<string, Awaited<ReturnType<Retriever['search']>>>();
+    const retrievedProduction = new Map<string, Awaited<ReturnType<Retriever['search']>>>();
 
     for (const { name, options } of configs) {
       const scores: ItemScore[] = [];
@@ -90,7 +85,7 @@ async function main() {
       for (const item of golden) {
         const scope = resolveScope({ question: item.question, ...item.request }, indexed);
         const citations = await retriever.search(item.question, scope, { ...options, topK: EVAL_TOP_K });
-        if (name === FULL.name) retrievedFull.set(item.id, citations);
+        if (name === PRODUCTION.name) retrievedProduction.set(item.id, citations);
         scores.push(scoreItem(item, citations));
       }
       const byFramework = Object.fromEntries(
@@ -101,13 +96,12 @@ async function main() {
       console.log(`${name}: hit@5 ${pct(result.summary.hit5)}, MRR ${result.summary.reciprocalRank.toFixed(3)}`);
     }
 
-    // The full pipeline is always the last config run.
-    const full = results[results.length - 1];
+    const production = results[results.length - 1];
     const misses = golden
-      .map((item, i) => ({ item, score: full.scores[i] }))
+      .map((item, i) => ({ item, score: production.scores[i] }))
       .filter(({ score }) => !score.hit5)
       .map(({ item }) => {
-        const got = (retrievedFull.get(item.id) ?? []).slice(0, 3).map((c) => `${c.framework}@${c.version} ${c.url}`);
+        const got = (retrievedProduction.get(item.id) ?? []).slice(0, 3).map((c) => `${c.framework}@${c.version} ${c.url}`);
         return `- \`${item.id}\`: "${item.question}"\n${got.map((g) => `  - got ${g}`).join('\n')}`;
       });
 
@@ -130,7 +124,7 @@ async function main() {
     );
     console.log(`\nReport written to ${join(values.out, 'latest.md')}`);
 
-    if (values.assert) assertBaseline(full);
+    if (values.assert) assertBaseline(production);
   } finally {
     await pool.end();
   }
@@ -140,10 +134,10 @@ function renderReport(results: ConfigResult[], frameworks: string[], count: numb
   const row = (r: ConfigResult) =>
     `| ${r.name} | ${pct(r.summary.hit1)} | ${pct(r.summary.hit5)} | ${pct(r.summary.recall5)} | ` +
     `${r.summary.reciprocalRank.toFixed(3)} | ${pct(r.summary.versionPrecision5)} | ${Math.round(r.avgMs)} ms |`;
-  const full = results[results.length - 1];
+  const production = results[results.length - 1];
   const perFramework = frameworks
     .map((f) => {
-      const s = full.byFramework[f];
+      const s = production.byFramework[f];
       return `| ${FRAMEWORKS[f as keyof typeof FRAMEWORKS].label} | ${s.count} | ${pct(s.hit1)} | ${pct(s.hit5)} | ${s.reciprocalRank.toFixed(3)} | ${pct(s.versionPrecision5)} |`;
     })
     .join('\n');
@@ -158,13 +152,13 @@ function renderReport(results: ConfigResult[], frameworks: string[], count: numb
     `| --- | --- | --- | --- | --- | --- | --- |`,
     ...results.map(row),
     ``,
-    `## Full pipeline by framework`,
+    `## Production pipeline by framework`,
     ``,
     `| Framework | Questions | Hit@1 | Hit@5 | MRR | Version precision@5 |`,
     `| --- | --- | --- | --- | --- | --- |`,
     perFramework,
     ``,
-    `## Misses (full pipeline, nothing relevant in the top 5)`,
+    `## Misses (production pipeline, nothing relevant in the top 5)`,
     ``,
     misses.length ? misses.join('\n') : '_None._',
     extra,
@@ -233,8 +227,8 @@ async function checkGolden(pool: Pool, golden: GoldenItem[]) {
   if (problems.length) process.exitCode = 1;
 }
 
-/** Fails the run if the full pipeline drops below the committed baseline (minus a small tolerance). */
-function assertBaseline(full: ConfigResult) {
+/** Fails the run if the production pipeline drops below the committed baseline (minus a small tolerance). */
+function assertBaseline(production: ConfigResult) {
   const path = resolve('evals/baseline.json');
   if (!existsSync(path)) {
     console.warn('No evals/baseline.json: skipping assertion');
@@ -246,7 +240,7 @@ function assertBaseline(full: ConfigResult) {
   };
   const failures: string[] = [];
   for (const [framework, expected] of Object.entries(baseline.frameworks)) {
-    const actual = full.byFramework[framework];
+    const actual = production.byFramework[framework];
     if (!actual) continue;
     for (const metric of ['hit5', 'reciprocalRank'] as const) {
       if (actual[metric] < expected[metric] - baseline.tolerance) {
