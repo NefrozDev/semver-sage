@@ -4,7 +4,7 @@ import { createPool, Embedder, getConfig, runMigrations } from '@semver-sage/ser
 import { FRAMEWORK_IDS, isFramework } from '@semver-sage/types';
 import { resolve } from 'node:path';
 import { parseArgs } from 'node:util';
-import { ingestVersion, resetFramework } from './ingest';
+import { finishRebuild, ingestVersion, resetFramework, startRebuild } from './ingest';
 import { ADAPTERS, SourceAdapter } from './sources';
 
 const USAGE = `Usage: ingestion <command>
@@ -13,6 +13,8 @@ const USAGE = `Usage: ingestion <command>
   ingest <framework|all> [--version v]
                                    ingest every release the adapter lists (or one);
                                    already-ingested versions are skipped
+  rebuild <framework>              re-ingest every version in order (to add older or in-between
+                                   versions), reusing existing embeddings
   versions <framework>             list the versions an adapter would ingest
   reset <framework>                delete a framework's chunks and versions
   status                           show what is indexed
@@ -51,6 +53,18 @@ async function main() {
             await ingestVersion(pool, embedder, adapter, source, config.repoCacheDir);
           }
         }
+        break;
+      }
+      case 'rebuild': {
+        const adapter = adapterFor(target);
+        const versions = await adapter.versions({ repoCacheDir: config.repoCacheDir });
+        const parked = await startRebuild(pool, adapter.framework);
+        console.log(`${adapter.framework}: parked ${parked} embeddings, re-ingesting ${versions.length} versions in order`);
+        const embedder = new Embedder(config.embeddingModel, config.modelCacheDir);
+        for (const source of versions) {
+          await ingestVersion(pool, embedder, adapter, source, config.repoCacheDir);
+        }
+        await finishRebuild(pool, adapter.framework);
         break;
       }
       case 'versions': {
