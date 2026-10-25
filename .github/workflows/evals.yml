@@ -44,7 +44,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm install -g npm@11.6.0 && npm ci
+      - run: npm install -g --ignore-scripts npm@11.6.0 && npm ci --ignore-scripts
 
       - name: Cache models and docs checkouts
         uses: actions/cache@v4
@@ -63,7 +63,7 @@ jobs:
         run: npm run eval -- --frameworks "$FRAMEWORKS" --configs production --assert
       # The API against the same database (Nx starts it first); these tests never call the LLM.
       - name: API end-to-end tests
-        run: npx nx run api-e2e:e2e
+        run: npm run nx -- run api-e2e:e2e
       - name: Report
         if: always()
         run: cat evals/results/latest.md >> "$GITHUB_STEP_SUMMARY" || true

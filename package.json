@@ -11,8 +11,9 @@
     "test": "nx run-many -t test",
     "eval": "tsx --tsconfig evals/tsconfig.app.json evals/src/run.ts",
     "e2e": "nx run web-e2e:e2e",
-    "test:coverage": "nx run-many -t test --coverage && nx run ingestion:integration --coverage",
-    "sonar": "npm run test:coverage && node tools/sonar-scan.mjs"
+    "test:coverage": "nx run-many -t test --coverage && nx run ingestion:integration --coverage && node tools/merge-coverage.mjs",
+    "nx": "nx",
+    "playwright:install": "playwright install --with-deps chromium"
   },
   "private": true,
   "dependencies": {
