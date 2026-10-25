@@ -1,26 +1,28 @@
 import type { Framework } from '@semver-sage/types';
-import type { SourceAdapter } from './types';
 import { angularAdapter } from './angular';
-import { reactAdapter } from './react';
-import { svelteAdapter } from './svelte';
-import { typescriptAdapter } from './typescript';
+import { expressAdapter } from './express';
 import { nestjsAdapter } from './nestjs';
 import { nextjsAdapter } from './nextjs';
 import { nodeAdapter } from './node';
 import { nuxtAdapter } from './nuxt';
+import { reactAdapter } from './react';
+import { svelteAdapter } from './svelte';
+import type { SourceAdapter } from './types';
+import { typescriptAdapter } from './typescript';
 import { vueAdapter } from './vue';
 
-/** Frameworks that can be ingested. Add an adapter here to support a new framework. */
-export const ADAPTERS: Partial<Record<Framework, SourceAdapter>> = {
-  vue: vueAdapter,
-  node: nodeAdapter,
-  nextjs: nextjsAdapter,
-  nuxt: nuxtAdapter,
-  nestjs: nestjsAdapter,
+/** Every framework's docs source. Add an adapter here when adding a framework. */
+export const ADAPTERS: Record<Framework, SourceAdapter> = {
   angular: angularAdapter,
+  express: expressAdapter,
+  nestjs: nestjsAdapter,
+  nextjs: nextjsAdapter,
+  node: nodeAdapter,
+  nuxt: nuxtAdapter,
   react: reactAdapter,
   svelte: svelteAdapter,
   typescript: typescriptAdapter,
+  vue: vueAdapter,
 };
 
 export type { AdapterContext, SourceAdapter, SourcePage, VersionSource } from './types';

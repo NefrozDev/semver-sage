@@ -17,13 +17,11 @@ const USAGE = `Usage: ingestion <command>
   reset <framework>                delete a framework's chunks and versions
   status                           show what is indexed
 
-Frameworks with a source adapter: ${Object.keys(ADAPTERS).join(', ')}`;
+Frameworks: ${FRAMEWORK_IDS.join(', ')}`;
 
 function adapterFor(target: string | undefined): SourceAdapter {
   if (!isFramework(target)) throw new Error(`Unknown framework "${target}". One of: ${FRAMEWORK_IDS.join(', ')}`);
-  const adapter = ADAPTERS[target];
-  if (!adapter) throw new Error(`No source adapter for ${target} yet`);
-  return adapter;
+  return ADAPTERS[target];
 }
 
 async function main() {
