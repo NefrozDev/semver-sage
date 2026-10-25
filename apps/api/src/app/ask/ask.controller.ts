@@ -1,4 +1,5 @@
-import { BadRequestException, Body, Controller, Get, Post, Res } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Post, Res, UseGuards } from '@nestjs/common';
+import { ThrottlerGuard } from '@nestjs/throttler';
 import { AskRequest, AskStreamEvent, isFramework, parseVersion } from '@semver-sage/types';
 import type { Response } from 'express';
 import { DatabaseService } from '../database.service';
@@ -39,6 +40,7 @@ export class AskController {
 
   /** Answers a question as a Server-Sent Events stream of `AskStreamEvent`s. */
   @Post('ask')
+  @UseGuards(ThrottlerGuard)
   async ask(@Body() body: unknown, @Res() res: Response) {
     const request = validate(body);
     res.writeHead(200, {
