@@ -3,30 +3,39 @@ form {
   gap: 12px;
 }
 
-textarea,
-select,
-input:not([type='file']) {
-  width: 100%;
-  padding: 10px 12px;
-  font: inherit;
-  color: var(--text);
+.composer {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  padding: 10px 10px 10px 16px;
   background: var(--surface);
-  border: 2px solid var(--border);
-  border-radius: 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  transition: border-color 0.15s;
 
-  &:focus-visible {
-    outline: none;
-    border-color: var(--teal);
+  &:focus-within {
+    border-color: var(--accent);
   }
 
-  &:disabled {
-    opacity: 0.5;
-  }
-}
+  textarea {
+    flex: 1;
+    min-height: 48px;
+    padding: 6px 0;
+    font: inherit;
+    color: var(--text);
+    background: none;
+    border: none;
+    resize: vertical;
 
-textarea {
-  resize: vertical;
-  min-height: 64px;
+    &:focus-visible {
+      outline: none;
+    }
+
+    &::placeholder {
+      color: var(--muted);
+    }
+  }
 }
 
 .controls {
@@ -40,7 +49,29 @@ textarea {
     flex: 1 1 140px;
     gap: 4px;
     font-size: 12px;
+    font-weight: 500;
     color: var(--muted);
+  }
+
+  select,
+  input:not([type='file']) {
+    width: 100%;
+    padding: 8px 10px;
+    font: inherit;
+    font-size: 14px;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+
+    &:focus-visible {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+    }
   }
 }
 
@@ -52,31 +83,47 @@ textarea {
     opacity: 0;
   }
 
+  .button {
+    padding: 8px 14px;
+    font-size: 14px;
+  }
+
   &:focus-within .button {
-    outline: 2px solid var(--teal);
+    outline: 2px solid var(--accent);
   }
 }
 
-.chips {
+.chips,
+.examples {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 8px;
 }
 
+.label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
 .chip {
-  padding: 5px 10px;
+  padding: 5px 12px;
   font: inherit;
   font-size: 13px;
   color: var(--text);
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: var(--surface-2);
+  border: 1px solid transparent;
   border-radius: 999px;
   cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
 
   &:hover:not(:disabled),
   &.active {
-    border-color: var(--teal);
-    color: var(--teal);
+    color: var(--accent);
+    border-color: var(--accent);
   }
 
   &:disabled {
@@ -86,7 +133,6 @@ textarea {
 }
 
 .examples .chip {
-  font-size: 12px;
   color: var(--muted);
 }
 

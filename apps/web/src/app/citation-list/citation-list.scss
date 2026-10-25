@@ -3,17 +3,18 @@
 }
 
 h2 {
-  margin: 0 0 10px;
-  font-family: var(--font-pixel);
+  margin: 4px 0 10px;
   font-size: 12px;
-  letter-spacing: 1px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--gold);
+  color: var(--muted);
 }
 
 ol {
   display: grid;
-  gap: 8px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 10px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -21,30 +22,32 @@ ol {
 
 li {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   align-items: flex-start;
-  padding: 10px 12px;
+  padding: 12px 14px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 12px;
   scroll-margin-top: 16px;
+  transition: border-color 0.15s;
 
+  &:hover,
   &:target {
-    border-color: var(--teal);
+    border-color: var(--accent);
   }
 }
 
 .n {
   flex: none;
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   font-size: 12px;
   font-weight: 700;
-  line-height: 22px;
+  line-height: 24px;
   text-align: center;
-  color: var(--bg);
-  background: var(--teal);
-  border-radius: 5px;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-radius: 7px;
 }
 
 .info {
@@ -52,14 +55,13 @@ li {
 }
 
 a {
-  color: var(--text);
   font-weight: 600;
+  color: var(--text);
   text-decoration: none;
   overflow-wrap: anywhere;
 
   &:hover {
-    color: var(--teal);
-    text-decoration: underline;
+    color: var(--accent);
   }
 }
 
@@ -72,7 +74,7 @@ a {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-top: 6px;
+  margin-top: 8px;
 }
 
 .badge {
@@ -83,8 +85,8 @@ a {
 }
 
 .version {
-  color: #10241f;
-  background: #41b883;
+  color: var(--teal);
+  background: color-mix(in srgb, var(--teal) 14%, transparent);
 }
 
 .range {

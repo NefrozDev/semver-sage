@@ -24,7 +24,10 @@ describe('App', () => {
 
     const el = fixture.nativeElement as HTMLElement;
     expect(el.querySelector('h1')?.textContent).toContain('Semver Sage');
-    expect(el.querySelector('.nameplate')?.textContent).toContain('Sage');
-    expect(el.querySelector('footer')?.textContent).toContain('Indexed: Vue 2, 3');
+    expect(el.querySelector('app-answer-card .speaker')?.textContent).toContain('Sage');
+    // The greeting is being typed out, so the sage starts in his talking pose.
+    expect(el.querySelector('app-sage')?.getAttribute('aria-label')).toBe('The sage is speaking');
+    expect(el.querySelector('.indexed')?.textContent).toContain('Vue');
+    expect(el.querySelector('.indexed .range')?.textContent).toBe('2, 3');
   });
 });

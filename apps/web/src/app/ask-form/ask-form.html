@@ -1,15 +1,22 @@
 <form (ngSubmit)="submit()">
-  <label class="sr-only" for="question">Your question</label>
-  <textarea
-    id="question"
-    name="question"
-    rows="2"
-    placeholder="Ask about any version, e.g. “How did filters work in Vue 2?”"
-    [ngModel]="question()"
-    (ngModelChange)="question.set($event)"
-    (keydown)="onKeydown($event)"
-    maxlength="1000"
-  ></textarea>
+  <div class="composer">
+    <label class="sr-only" for="question">Your question</label>
+    <textarea
+      id="question"
+      name="question"
+      rows="2"
+      placeholder="Ask about any version, e.g. “How did filters work in Vue 2?”"
+      [ngModel]="question()"
+      (ngModelChange)="question.set($event)"
+      (keydown)="onKeydown($event)"
+      maxlength="1000"
+    ></textarea>
+    @if (busy()) {
+      <button type="button" class="button" (click)="stop.emit()">Stop</button>
+    } @else {
+      <button type="submit" class="button primary" [disabled]="!question().trim()">Ask</button>
+    }
+  </div>
 
   <div class="controls">
     <label>
@@ -44,7 +51,7 @@
       <input
         name="compareVersion"
         list="versions"
-        placeholder="—"
+        placeholder="None"
         [disabled]="!framework()"
         [ngModel]="compareVersion()"
         (ngModelChange)="compareVersion.set($event)"
@@ -53,14 +60,8 @@
 
     <label class="upload" title="Scope answers to the versions you actually use">
       <input type="file" accept=".json,application/json" (change)="onFile($event)" />
-      <span class="button ghost">📦 package.json</span>
+      <span class="button">Use my package.json</span>
     </label>
-
-    @if (busy()) {
-      <button type="button" class="button" (click)="stop.emit()">Stop</button>
-    } @else {
-      <button type="submit" class="button primary" [disabled]="!question().trim()">Ask the sage</button>
-    }
   </div>
 
   @if (detected().length || uploadError()) {
@@ -83,7 +84,8 @@
     </div>
   }
 
-  <div class="chips examples" aria-label="Example questions">
+  <div class="examples" aria-label="Example questions">
+    <span class="label">Try</span>
     @for (example of examples; track example) {
       <button type="button" class="chip" [disabled]="busy()" (click)="useExample(example)">{{ example }}</button>
     }
