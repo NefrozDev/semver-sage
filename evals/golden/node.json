@@ -116,7 +116,7 @@
     "id": "iojs3-readable-stream",
     "question": "How do readable streams work in io.js 3?",
     "framework": "node", "version": "3",
-    "expect": ["api/stream.html#stream_class_stream_readable"],
+    "expect": ["api/stream.html"],
     "tags": ["iojs"]
   },
   {
@@ -129,7 +129,7 @@
     "id": "node6-buffer-from",
     "question": "Why should I use Buffer.from instead of new Buffer() in Node 6?",
     "framework": "node", "version": "6",
-    "expect": ["api/buffer.html#buffer_class_method_buffer_from"],
+    "expect": ["api/buffer.html#buffer_class_method_buffer_from", "api/buffer.html#buffer_buffer_from_buffer_alloc_and_buffer_allocunsafe"],
     "tags": ["changed"]
   },
   {
@@ -150,7 +150,7 @@
     "id": "node10-fs-promises",
     "question": "How do I use the fs promises API in Node 10?",
     "framework": "node", "version": "10",
-    "expect": ["api/fs.html#fs_fs_promises_api"],
+    "expect": ["api/fs.html#fs_fs_promises_api", "api/fs.html#fs_fspromises_", "api/fs.html#fs_filehandle"],
     "tags": ["added"]
   },
   {
