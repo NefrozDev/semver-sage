@@ -32,6 +32,7 @@ test.describe('asking a question', () => {
     await expect(sources.first()).toContainText('Vue 2');
     await expect(sage).toHaveClass(/talking/);
     await expect(sage.locator('.palm')).toBeVisible();
+    await expect(sage.locator('.spark .star')).toBeVisible();
 
     // Finished: idle again, with who answered and how long it took.
     await expect(sage).toHaveClass(/idle/, { timeout: 15_000 });
