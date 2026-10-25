@@ -103,7 +103,10 @@ export async function ingestVersion(
     [framework, toInsert.map((c) => c.hash)],
   );
   const embeddings = new Map(known.map((r) => [r.hash, r.embedding]));
-  const toEmbed = toInsert.filter((c) => !embeddings.has(c.hash));
+  // Batches are padded to their longest text: grouping similar lengths avoids wasted compute.
+  const toEmbed = toInsert
+    .filter((c) => !embeddings.has(c.hash))
+    .sort((a, b) => embeddingInput(a).length - embeddingInput(b).length);
 
   for (let i = 0; i < toEmbed.length; i += EMBED_BATCH) {
     const batch = toEmbed.slice(i, i + EMBED_BATCH);
