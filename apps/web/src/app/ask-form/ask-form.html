@@ -74,7 +74,7 @@
           [title]="dep.from + (isIndexed(dep.framework) ? '' : ' (not indexed yet)')"
           (click)="useDependency(dep)"
         >
-          {{ label(dep.framework) }} {{ dep.version }}
+          {{ dependencyLabel(dep) }}
         </button>
       }
       @if (uploadError(); as message) {

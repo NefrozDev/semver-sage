@@ -7,3 +7,4 @@ export * from './lib/retrieval/scope';
 export * from './lib/retrieval/retriever';
 export * from './lib/llm/llm.provider';
 export * from './lib/llm/prompt';
+export * from './lib/llm/notices';

@@ -1,5 +1,6 @@
 import { FRAMEWORKS, FRAMEWORK_IDS, Framework } from './frameworks';
-import { minVersionFromRange, versionToNum } from './version';
+import type { AskRequest } from './types';
+import { minVersionFromRange, parseVersion, versionToNum } from './version';
 
 export interface FrameworkMention {
   framework: Framework;
@@ -110,6 +111,29 @@ export function primaryMention(mentions: FrameworkMention[]): FrameworkMention |
   );
 }
 
+const ANGULARJS_RE = /(?<![\w@/.-])angular(?:\.?js(?![\w])|\s*(?:@|v(?:ersion)?\s*)?1(?:\.(?:\d+|x))*(?![\d.\w]))/i;
+const major = (version: string | null | undefined) => (version ? (parseVersion(version)?.major ?? null) : null);
+
+/** Angular 1.x, i.e. AngularJS: a different framework, not an older Angular. */
+export const isAngularJsVersion = (version: string | null | undefined) => {
+  const m = major(version);
+  return m !== null && m < 2;
+};
+
+/**
+ * Is this question about AngularJS ("AngularJS", "angular.js", "Angular 1.5", or Angular 1.x picked
+ * from the UI or a package.json)? Not when Angular 2+ is named too: "migrate from AngularJS to
+ * Angular 17" is answered from the Angular 17 docs, which cover upgrading.
+ */
+export function isAngularJsQuestion(request: Pick<AskRequest, 'question' | 'framework' | 'version'>): boolean {
+  if (request.framework === 'angular' && request.version) return isAngularJsVersion(request.version);
+  if (!ANGULARJS_RE.test(request.question)) return false;
+  const angular2Plus = detectFrameworks(request.question).some(
+    (m) => m.framework === 'angular' && m.version && !isAngularJsVersion(m.version),
+  );
+  return !angular2Plus;
+}
+
 export interface DetectedDependency {
   framework: Framework;
   version: string;
@@ -135,6 +159,16 @@ export function detectFromPackageJson(pkg: PackageJsonLike): DetectedDependency[
       }
     }
     if (hit) found.push(hit);
+  }
+  // The "angular" npm package is AngularJS (1.x); Angular 2+ is "@angular/core".
+  if (!found.some((d) => d.framework === 'angular')) {
+    for (const section of sections) {
+      const version = pkg[section]?.['angular'] ? minVersionFromRange(pkg[section]['angular']) : null;
+      if (version) {
+        found.push({ framework: 'angular', version, from: `${section}.angular` });
+        break;
+      }
+    }
   }
   const nodeRange = pkg.engines?.['node'];
   const nodeVersion = nodeRange ? minVersionFromRange(nodeRange) : null;

@@ -8,6 +8,7 @@ import {
   FRAMEWORK_IDS,
   FRAMEWORKS,
   IndexedVersion,
+  isAngularJsVersion,
 } from '@semver-sage/types';
 
 const EXAMPLES = [
@@ -56,6 +57,12 @@ export class AskForm {
 
   protected label(framework: Framework): string {
     return FRAMEWORKS[framework].label;
+  }
+
+  /** A package.json's "angular" (1.x) dependency is AngularJS, not Angular. */
+  protected dependencyLabel(dep: DetectedDependency): string {
+    const name = dep.framework === 'angular' && isAngularJsVersion(dep.version) ? 'AngularJS' : this.label(dep.framework);
+    return `${name} ${dep.version}`;
   }
 
   protected isIndexed(framework: Framework): boolean {

@@ -1,4 +1,11 @@
-import { comparisonTopic, detectComparison, detectFrameworks, detectFromPackageJson, primaryMention } from './detect';
+import {
+  comparisonTopic,
+  detectComparison,
+  detectFrameworks,
+  detectFromPackageJson,
+  isAngularJsQuestion,
+  primaryMention,
+} from './detect';
 
 const first = (q: string) => {
   const [m] = detectFrameworks(q);
@@ -64,6 +71,38 @@ describe('detectComparison', () => {
     'Vue 3 and Vue 3.0 setup',
   ])('ignores single-version questions: %s', (question) => {
     expect(detectComparison(question)).toBeNull();
+  });
+});
+
+describe('isAngularJsQuestion', () => {
+  it.each([
+    'How do I use $scope in AngularJS?',
+    'angular.js directives with isolate scope',
+    'How did controllers work in Angular 1.5?',
+    'Angular 1.x digest cycle',
+    'angular@1.8 filters',
+  ])('recognizes AngularJS: %s', (question) => {
+    expect(isAngularJsQuestion({ question })).toBe(true);
+    expect(detectFrameworks(question).every((m) => m.framework !== 'angular' || m.version?.startsWith('1'))).toBe(true);
+  });
+
+  it.each([
+    'How do signals work in Angular 19?',
+    'Angular 12 lazy loading',
+    'How do I migrate from AngularJS to Angular 17?',
+  ])('leaves Angular 2+ alone: %s', (question) => {
+    expect(isAngularJsQuestion({ question })).toBe(false);
+  });
+
+  it('follows an explicit version from the picker or package.json', () => {
+    expect(isAngularJsQuestion({ question: 'directives', framework: 'angular', version: '1.8.2' })).toBe(true);
+    expect(isAngularJsQuestion({ question: 'AngularJS migration', framework: 'angular', version: '17' })).toBe(false);
+  });
+
+  it('reads the AngularJS npm package from package.json', () => {
+    expect(detectFromPackageJson({ dependencies: { angular: '^1.8.2' } })).toEqual([
+      { framework: 'angular', version: '1.8.2', from: 'dependencies.angular' },
+    ]);
   });
 });
 

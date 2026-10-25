@@ -36,7 +36,8 @@ export const FRAMEWORKS: Record<Framework, FrameworkInfo> = {
   angular: {
     id: 'angular',
     label: 'Angular',
-    aliases: [{ pattern: 'angular' }],
+    // Not "angular.js" / "AngularJS": that's the separate 1.x framework (see isAngularJsQuestion).
+    aliases: [{ pattern: 'angular(?!\\.?js)' }],
     packages: ['@angular/core'],
   },
   react: {

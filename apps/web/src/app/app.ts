@@ -1,6 +1,6 @@
 import { httpResource } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { FRAMEWORKS, IndexedVersion } from '@semver-sage/types';
+import { FRAMEWORKS, IndexedVersion, isAngularJsVersion } from '@semver-sage/types';
 import { AskForm } from './ask-form/ask-form';
 import { CitationList } from './citation-list/citation-list';
 import { DialogBox } from './dialog-box/dialog-box';
@@ -43,6 +43,9 @@ export class App {
     const scope = this.store.scope();
     if (!scope) return null;
     if (!scope.framework) return 'Searching the latest docs of every framework';
+    if (scope.framework === 'angular' && isAngularJsVersion(scope.requestedVersion)) {
+      return 'AngularJS is not Angular';
+    }
     const name = FRAMEWORKS[scope.framework].label;
     const compare = this.store.compare();
     if (compare) return `Comparing the ${name} ${scope.version} and ${compare.version} scrolls`;
