@@ -1,4 +1,4 @@
-import { comparisonTopic, detectComparison, detectFrameworks, detectFromPackageJson } from './detect';
+import { comparisonTopic, detectComparison, detectFrameworks, detectFromPackageJson, primaryMention } from './detect';
 
 const first = (q: string) => {
   const [m] = detectFrameworks(q);
@@ -64,6 +64,20 @@ describe('detectComparison', () => {
     'Vue 3 and Vue 3.0 setup',
   ])('ignores single-version questions: %s', (question) => {
     expect(detectComparison(question)).toBeNull();
+  });
+});
+
+describe('primaryMention', () => {
+  const primary = (q: string) => primaryMention(detectFrameworks(q))?.framework ?? null;
+
+  it.each([
+    ['How do I run a TypeScript file directly in Node 22?', 'node'],
+    ['How do I type props in Vue with TypeScript?', 'vue'],
+    ['TypeScript 5 decorators in NestJS', 'typescript'],
+    ['What are mapped types in TypeScript?', 'typescript'],
+    ['Next.js 14 on Node 18', 'nextjs'],
+  ])('%s', (question, framework) => {
+    expect(primary(question)).toBe(framework);
   });
 });
 

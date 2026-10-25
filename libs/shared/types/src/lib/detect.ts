@@ -59,7 +59,7 @@ const FOLLOWED_BY_RE = new RegExp(String.raw`^\s*(?:to|vs\.?|versus|and|->|→)\
  */
 export function detectComparison(question: string): Comparison | null {
   const mentions = detectFrameworks(question);
-  const framework = mentions[0]?.framework;
+  const framework = primaryMention(mentions)?.framework;
   if (!framework) return null;
   const versioned = mentions.filter((m) => m.framework === framework && m.version);
 
@@ -97,6 +97,17 @@ export function comparisonTopic(question: string): string {
   for (const phrase of COMPARISON_PHRASES) topic = topic.replace(phrase, ' ');
   topic = topic.replace(/[?!.,:;]+/g, ' ').replace(/\s+/g, ' ').trim();
   return topic.length >= 3 ? topic : question;
+}
+
+/**
+ * The mention a question is mainly about. A framework given with a version wins; TypeScript is
+ * often only the language ("run a TypeScript file in Node 22", "Vue 3 with TypeScript"), so any
+ * other framework wins over it.
+ */
+export function primaryMention(mentions: FrameworkMention[]): FrameworkMention | null {
+  return (
+    mentions.find((m) => m.version) ?? mentions.find((m) => m.framework !== 'typescript') ?? mentions[0] ?? null
+  );
 }
 
 export interface DetectedDependency {
