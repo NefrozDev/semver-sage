@@ -1,6 +1,5 @@
-// Runs the SonarQube scanner (in Docker, so no Java install) against SONAR_HOST_URL with SONAR_TOKEN.
-// SonarQube Cloud: SONAR_HOST_URL=https://sonarcloud.io plus SONAR_ORGANIZATION and SONAR_PROJECT_KEY
-// (as shown on the project's page there). Self-hosted: SONAR_HOST_URL of the server.
+// Runs the SonarQube scanner (in Docker, so no Java install) against SonarQube Cloud with
+// SONAR_TOKEN, SONAR_ORGANIZATION and SONAR_PROJECT_KEY (as shown on the project's page there).
 // Before scanning, merges every coverage/**/lcov.info into coverage/lcov.merged.info with paths
 // relative to the repo: Vitest writes them relative to each project, with OS-specific separators.
 import { spawnSync } from 'node:child_process';
@@ -15,10 +14,10 @@ try {
   // no .env: environment variables only
 }
 
-const hostUrl = process.env.SONAR_HOST_URL ?? 'http://localhost:9000';
+const hostUrl = process.env.SONAR_HOST_URL ?? 'https://sonarcloud.io';
 const token = process.env.SONAR_TOKEN;
 if (!token) {
-  console.error('SONAR_TOKEN is not set (create one in SonarQube: My Account > Security). See infra/sonarqube/README.md.');
+  console.error('SONAR_TOKEN is not set (create one in SonarQube Cloud: My Account > Security).');
   process.exit(1);
 }
 
@@ -40,7 +39,7 @@ for (const file of existsSync(coverageDir) ? lcovFiles(coverageDir) : []) {
       merged.push(line);
       continue;
     }
-    const path = line.slice(3).split('\\').join('/');
+    const path = line.slice(3).replaceAll('\\', '/');
     const fromProject = join(projectRoot, path);
     const repoPath = existsSync(join(repo, fromProject)) ? fromProject : path;
     merged.push(`SF:${repoPath.split(sep).join('/')}`);
@@ -49,12 +48,9 @@ for (const file of existsSync(coverageDir) ? lcovFiles(coverageDir) : []) {
 if (!merged.length) console.warn('No coverage reports found: run `npm run test:coverage` first.');
 writeFileSync(join(coverageDir, 'lcov.merged.info'), merged.join('\n'));
 
-// Inside the container, the host's localhost is host.docker.internal.
-const containerHostUrl = hostUrl.replace(/\/\/(localhost|127\.0\.0\.1)(?=[:/]|$)/, '//host.docker.internal');
 const args = [
   'run', '--rm',
-  '--add-host=host.docker.internal:host-gateway',
-  '-e', `SONAR_HOST_URL=${containerHostUrl}`,
+  '-e', `SONAR_HOST_URL=${hostUrl}`,
   '-e', 'SONAR_TOKEN',
   '-v', `${repo}:/usr/src`,
   'sonarsource/sonar-scanner-cli:latest',

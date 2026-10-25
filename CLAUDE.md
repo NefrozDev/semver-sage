@@ -40,8 +40,7 @@ dark themes following the system setting.
 - **Tests:** Vitest everywhere (unit, integration against a test database, API end-to-end in
   `apps/api-e2e`), Playwright for browser end-to-end (`apps/web-e2e`, mocked API), golden-set
   evals (`evals/`)
-- **Code quality:** SonarQube Cloud (free organization) from CI; self-hosted SonarQube Community
-  Build (`infra/sonarqube`) as a local alternative
+- **Code quality:** SonarQube Cloud (free organization), scanned from CI; no self-hosted server
 
 ## Data sources (docs are in git repos; each version = a git tag/branch)
 Approximate; verify each when implementing:
@@ -113,8 +112,9 @@ indexed: such questions get a fixed "AngularJS is a separate framework" answer (
   (`vitest.integration.config.mts`; global-setup creates + migrates `semver_sage_test` from
   `TEST_DATABASE_URL`; fakes in `src/testing/fakes.ts`). Coverage: `npm run test:coverage`
   (unit + integration) -> `coverage/**/lcov.info`, ~62% lines merged (2026-10-25).
-- SonarQube: `infra/sonarqube` (own compose stack), `sonar-project.properties`, `tools/sonar-scan.mjs`
-  (merges lcov to repo-relative paths, runs the scanner in Docker). Local token/admin password in `.env`.
+- SonarQube Cloud: `sonar-project.properties`, `tools/sonar-scan.mjs` (merges lcov to
+  repo-relative paths, runs the scanner in Docker). CI needs secret `SONAR_TOKEN` and variables
+  `SONAR_ORGANIZATION` / `SONAR_PROJECT_KEY`; Automatic Analysis must be off.
 - CI: `.github/workflows/{ci,evals,reingest}.yml` (ci: check, integration, e2e, sonarqube jobs; the last two with a pgvector service). Hosted demo
   guide: `docs/DEPLOY.md`.
 
@@ -133,7 +133,7 @@ indexed: such questions get a fixed "AngularJS is a separate framework" answer (
 - Full stack in Docker: `docker compose up -d --build`
 - Tests: `npm test`; integration: `npx nx run ingestion:integration` (needs `npm run db:up`);
   browser E2E: `npm run e2e`; API E2E: `npx nx e2e api-e2e`; evals: `npm run eval`
-- SonarQube: `npm run sonar:up` (server on :9000), `npm run sonar` (coverage + scan)
+- SonarQube Cloud scan from this machine: `npm run sonar` (coverage + scan; token etc. in `.env`)
 - Commits: no Co-Authored-By / AI attribution lines (user preference).
 
 Environment: Windows (Node 22.15; Angular 22 wants >= 22.22.3, builds work but npm warns). GitHub CLI (`gh`) is not installed.

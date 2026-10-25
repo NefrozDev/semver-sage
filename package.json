@@ -12,7 +12,6 @@
     "eval": "tsx --tsconfig evals/tsconfig.app.json evals/src/run.ts",
     "e2e": "nx run web-e2e:e2e",
     "test:coverage": "nx run-many -t test --coverage && nx run ingestion:integration --coverage",
-    "sonar:up": "docker compose -f infra/sonarqube/docker-compose.yml up -d",
     "sonar": "npm run test:coverage && node tools/sonar-scan.mjs"
   },
   "private": true,

@@ -70,17 +70,15 @@ jobs:
           path: dist/.playwright/report
           retention-days: 7
 
-  # Coverage + analysis on SonarQube. Configure once in the repo settings:
-  #   secret   SONAR_TOKEN          token from SonarQube (Cloud: My Account > Security)
-  #   variable SONAR_ORGANIZATION   SonarQube Cloud organization key
+  # Coverage + analysis on SonarQube Cloud. Configure once in the repo settings:
+  #   secret   SONAR_TOKEN          token from SonarQube Cloud (My Account > Security)
+  #   variable SONAR_ORGANIZATION   organization key
   #   variable SONAR_PROJECT_KEY    project key shown on the project's page
-  #   variable SONAR_HOST_URL       only for a self-hosted server (defaults to SonarQube Cloud)
-  # Skipped until SONAR_TOKEN exists. Fails when the quality gate fails. On SonarQube Cloud, turn
-  # off Automatic Analysis for the project (it can't read coverage and blocks CI analysis).
+  # Skipped until SONAR_TOKEN exists. Fails when the quality gate fails. Turn off Automatic
+  # Analysis for the project (it can't read coverage and blocks CI analysis).
   sonarqube:
     runs-on: ubuntu-latest
     env:
-      SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL || 'https://sonarcloud.io' }}
       SONAR_ORGANIZATION: ${{ vars.SONAR_ORGANIZATION }}
       SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
