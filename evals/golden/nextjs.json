@@ -1,0 +1,101 @@
+[
+  {
+    "id": "next12-gssp",
+    "question": "How do I fetch data on every request with getServerSideProps in Next.js 12?",
+    "framework": "nextjs", "version": "12",
+    "expect": ["data-fetching/get-server-side-props"],
+    "tags": ["version-specific"]
+  },
+  {
+    "id": "next12-middleware",
+    "question": "How do I use middleware in Next.js 12?",
+    "framework": "nextjs", "version": "12",
+    "expect": ["advanced-features/middleware"],
+    "tags": ["renamed-later"]
+  },
+  {
+    "id": "next16-middleware-proxy",
+    "question": "How do I run code before a request completes, like middleware, in Next.js 16?",
+    "framework": "nextjs", "version": "16",
+    "expect": ["file-conventions/proxy", "getting-started/proxy", "file-conventions/middleware"],
+    "tags": ["renamed"]
+  },
+  {
+    "id": "next12-image",
+    "question": "How do I optimize images with next/image in Next.js 12?",
+    "framework": "nextjs", "version": "12",
+    "expect": ["api-reference/next/image", "basic-features/image-optimization"]
+  },
+  {
+    "id": "next12-api-routes",
+    "question": "How do I create an API route in Next.js 12?",
+    "framework": "nextjs", "version": "12",
+    "expect": ["api-routes/introduction"]
+  },
+  {
+    "id": "next13-dynamic-routes",
+    "question": "How do I create a dynamic route segment with the app router in Next.js 13?",
+    "framework": "nextjs", "version": "13",
+    "expect": ["app/building-your-application/routing/dynamic-routes"],
+    "tags": ["added"]
+  },
+  {
+    "id": "next13-layouts",
+    "question": "How do layouts work in the Next.js 13 app directory?",
+    "framework": "nextjs", "version": "13",
+    "expect": ["app/building-your-application/routing/pages-and-layouts"],
+    "tags": ["added"]
+  },
+  {
+    "id": "next13-redirects",
+    "question": "How do I configure redirects in next.config.js in Next.js 13?",
+    "framework": "nextjs", "version": "13",
+    "expect": ["next-config-js/redirects"]
+  },
+  {
+    "id": "next14-fetch-server-component",
+    "question": "How do I fetch data in a Next.js 14 server component?",
+    "framework": "nextjs", "version": "14",
+    "expect": ["app/building-your-application/data-fetching/fetching-caching-and-revalidating"]
+  },
+  {
+    "id": "next14-caching",
+    "question": "How does the router cache and data cache work in Next.js 14?",
+    "framework": "nextjs", "version": "14",
+    "expect": ["app/building-your-application/caching"]
+  },
+  {
+    "id": "next14-server-actions",
+    "question": "How do I handle a form submission with Server Actions in Next.js 14?",
+    "framework": "nextjs", "version": "14",
+    "expect": ["data-fetching/server-actions-and-mutations"],
+    "tags": ["added"]
+  },
+  {
+    "id": "next14-metadata",
+    "question": "How do I set the page title and description in the Next.js 14 app router?",
+    "framework": "nextjs", "version": "14",
+    "expect": ["optimizing/metadata", "functions/generate-metadata"]
+  },
+  {
+    "id": "next15-static-params",
+    "question": "How do I pre-render dynamic routes with generateStaticParams in Next.js 15?",
+    "framework": "nextjs", "version": "15",
+    "expect": ["functions/generate-static-params"]
+  },
+  {
+    "id": "next15-after",
+    "question": "How do I run work after the response is sent with after() in Next.js 15?",
+    "framework": "nextjs", "version": "15",
+    "expect": ["functions/after"],
+    "tags": ["added"]
+  },
+  {
+    "id": "next16-use-cache",
+    "question": "What does the 'use cache' directive do?",
+    "framework": "nextjs", "version": "16",
+    "request": { "framework": "nextjs" },
+    "expect": ["directives/use-cache"],
+    "tags": ["latest-by-default", "added"]
+  }
+]

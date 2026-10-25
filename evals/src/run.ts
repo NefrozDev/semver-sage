@@ -22,6 +22,7 @@ const CONFIGS: { name: string; options: RetrieveOptions }[] = [
   { name: 'Vector only, no version filter', options: { keyword: false, rerank: false, versionFilter: false } },
   { name: '+ full-text (hybrid, RRF)', options: { rerank: false, versionFilter: false } },
   { name: '+ rerank', options: { versionFilter: false } },
+  { name: 'Vector + version filter', options: { keyword: false, rerank: false } },
   { name: 'Hybrid + version filter (no rerank)', options: { rerank: false } },
   { name: 'Full: hybrid + rerank + version filter', options: {} },
 ];
