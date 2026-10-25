@@ -143,8 +143,10 @@ own key) via `LLM_BASE_URL`, `LLM_MODEL` and `LLM_API_KEY`.
 - **Retrieval evals**: ingests Vue into a pgvector service container, fails if the production
   pipeline drops below [evals/baseline.json](evals/baseline.json), then runs the API end-to-end
   tests against that database; other frameworks on demand.
-- **SonarQube**: coverage + analysis on the shared server, failing on the quality gate; runs once the
-  `SONAR_HOST_URL` and `SONAR_TOKEN` secrets are set.
+- **SonarQube**: coverage + analysis on SonarQube Cloud (or a self-hosted server), failing on the
+  quality gate; runs once the `SONAR_TOKEN` secret and the `SONAR_ORGANIZATION` /
+  `SONAR_PROJECT_KEY` variables are set. Turn off the project's Automatic Analysis in SonarQube
+  Cloud: it can't read coverage and blocks CI analysis.
 - **Re-ingest new releases**: weekly, ingests newly released majors into the hosted database.
 
 ## Known limitations
@@ -171,7 +173,8 @@ own key) via `LLM_BASE_URL`, `LLM_MODEL` and `LLM_API_KEY`.
 | API end-to-end | Vitest + fetch, real API and database | `apps/api-e2e` | `npx nx e2e api-e2e` (starts the API) |
 | Browser end-to-end | Playwright (desktop + Pixel 7), production build, mocked API | `apps/web-e2e` | `npm run e2e` |
 | Retrieval quality | golden questions | `evals/` | `npm run eval` |
-| Coverage + static analysis | SonarQube (self-hosted, [infra/sonarqube](infra/sonarqube)) | `sonar-project.properties` | `npm run sonar:up`, then `npm run sonar` |
+| Coverage + static analysis | SonarQube Cloud, or self-hosted ([infra/sonarqube](infra/sonarqube)) | `sonar-project.properties` | `npm run sonar` |
 
 `npm run test:coverage` writes lcov reports to `coverage/`; `npm run sonar` runs it, merges the
-reports and runs the scanner in Docker against `SONAR_HOST_URL` with `SONAR_TOKEN` (from `.env`).
+reports and runs the scanner in Docker with `SONAR_TOKEN` and `SONAR_HOST_URL` from `.env`
+(for SonarQube Cloud: `https://sonarcloud.io` plus `SONAR_ORGANIZATION` and `SONAR_PROJECT_KEY`).

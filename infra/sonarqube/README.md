@@ -1,4 +1,7 @@
-# Shared SonarQube
+# Shared SonarQube (self-hosted, optional)
+
+The project is analyzed on **SonarQube Cloud** (see the `sonarqube` job in `.github/workflows/ci.yml`).
+This stack is the self-hosted alternative, for code that must not leave your servers.
 
 A self-hosted SonarQube (Community Build, free) with its own Postgres, meant to serve **every app**
 on the machine or server, not just Semver Sage: each repo is a separate project with its own key,
