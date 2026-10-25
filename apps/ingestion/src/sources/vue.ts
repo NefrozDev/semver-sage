@@ -8,7 +8,7 @@ import type { SourceAdapter } from './types';
  */
 export const vueAdapter: SourceAdapter = {
   framework: 'vue',
-  versions: [
+  versions: async () => [
     {
       version: '2',
       repo: 'vuejs/v2.vuejs.org',
@@ -28,7 +28,7 @@ export const vueAdapter: SourceAdapter = {
   loadPages(checkoutDir, source) {
     const isV2 = source.version === '2';
     return loadMarkdownPages(checkoutDir, source, {
-      slugify: isV2 ? hexoSlug : kebabSlug,
+      slugify: (heading) => (isV2 ? hexoSlug(heading) : kebabSlug(heading)),
       // v2: "src/v2/guide/computed.md" -> "v2/guide/computed.html"
       // v3: "src/guide/essentials/computed.md" -> "guide/essentials/computed.html"
       toUrlPath: (sourcePath) => htmlUrlPath(sourcePath, 'src/'),
