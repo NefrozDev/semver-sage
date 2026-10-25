@@ -4,6 +4,7 @@ import { angularAdapter } from './angular';
 import { reactAdapter } from './react';
 import { svelteAdapter } from './svelte';
 import { typescriptAdapter } from './typescript';
+import { nestjsAdapter } from './nestjs';
 import { nextjsAdapter } from './nextjs';
 import { nodeAdapter } from './node';
 import { nuxtAdapter } from './nuxt';
@@ -15,6 +16,7 @@ export const ADAPTERS: Partial<Record<Framework, SourceAdapter>> = {
   node: nodeAdapter,
   nextjs: nextjsAdapter,
   nuxt: nuxtAdapter,
+  nestjs: nestjsAdapter,
   angular: angularAdapter,
   react: reactAdapter,
   svelte: svelteAdapter,
