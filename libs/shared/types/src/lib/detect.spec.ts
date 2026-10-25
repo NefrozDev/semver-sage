@@ -19,6 +19,9 @@ describe('detectFrameworks', () => {
     ['NestJS guards', 'nestjs', null],
     ['express.js 4 router', 'express', '4'],
     ['Nuxt 3 server routes', 'nuxt', '3'],
+    ['How do runes work in Svelte 5?', 'svelte', '5'],
+    ['What are satisfies expressions in TypeScript 4.9?', 'typescript', '4.9'],
+    ['TS 5 decorators', 'typescript', '5'],
   ])('%s', (question, framework, version) => {
     expect(first(question)).toEqual({ framework, version });
   });
@@ -28,6 +31,8 @@ describe('detectFrameworks', () => {
     "What's next after mounting?",
     'How should a component react to prop changes?',
     'Please express this as a function',
+    'How do I set up SvelteKit routing?',
+    'What is the TSLint replacement?',
   ])('ignores everyday words: %s', (question) => {
     expect(detectFrameworks(question)).toEqual([]);
   });
