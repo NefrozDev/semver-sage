@@ -1,0 +1,112 @@
+[
+  {
+    "name": "Vector only, no version filter",
+    "summary": {
+      "count": 27,
+      "hit1": 0.6296296296296297,
+      "hit5": 0.9629629629629629,
+      "recall5": 0.8271604938271605,
+      "reciprocalRank": 0.7592592592592591,
+      "versionPrecision5": 0.6666666666666669
+    },
+    "byFramework": {
+      "vue": {
+        "count": 27,
+        "hit1": 0.6296296296296297,
+        "hit5": 0.9629629629629629,
+        "recall5": 0.8271604938271605,
+        "reciprocalRank": 0.7592592592592591,
+        "versionPrecision5": 0.6666666666666669
+      }
+    },
+    "avgMs": 53.81481481481482
+  },
+  {
+    "name": "+ full-text (hybrid, RRF)",
+    "summary": {
+      "count": 27,
+      "hit1": 0.7037037037037037,
+      "hit5": 0.9259259259259259,
+      "recall5": 0.7037037037037036,
+      "reciprocalRank": 0.8132716049382717,
+      "versionPrecision5": 0.674074074074074
+    },
+    "byFramework": {
+      "vue": {
+        "count": 27,
+        "hit1": 0.7037037037037037,
+        "hit5": 0.9259259259259259,
+        "recall5": 0.7037037037037036,
+        "reciprocalRank": 0.8132716049382717,
+        "versionPrecision5": 0.674074074074074
+      }
+    },
+    "avgMs": 48.25925925925926
+  },
+  {
+    "name": "+ rerank",
+    "summary": {
+      "count": 27,
+      "hit1": 0.7777777777777778,
+      "hit5": 1,
+      "recall5": 0.8395061728395061,
+      "reciprocalRank": 0.8703703703703703,
+      "versionPrecision5": 0.7481481481481482
+    },
+    "byFramework": {
+      "vue": {
+        "count": 27,
+        "hit1": 0.7777777777777778,
+        "hit5": 1,
+        "recall5": 0.8395061728395061,
+        "reciprocalRank": 0.8703703703703703,
+        "versionPrecision5": 0.7481481481481482
+      }
+    },
+    "avgMs": 4699.777777777777
+  },
+  {
+    "name": "Hybrid + version filter (no rerank)",
+    "summary": {
+      "count": 27,
+      "hit1": 0.9259259259259259,
+      "hit5": 0.9629629629629629,
+      "recall5": 0.8209876543209875,
+      "reciprocalRank": 0.943562610229277,
+      "versionPrecision5": 1
+    },
+    "byFramework": {
+      "vue": {
+        "count": 27,
+        "hit1": 0.9259259259259259,
+        "hit5": 0.9629629629629629,
+        "recall5": 0.8209876543209875,
+        "reciprocalRank": 0.943562610229277,
+        "versionPrecision5": 1
+      }
+    },
+    "avgMs": 56.55555555555556
+  },
+  {
+    "name": "Full: hybrid + rerank + version filter",
+    "summary": {
+      "count": 27,
+      "hit1": 0.9259259259259259,
+      "hit5": 1,
+      "recall5": 0.9012345679012347,
+      "reciprocalRank": 0.9629629629629629,
+      "versionPrecision5": 1
+    },
+    "byFramework": {
+      "vue": {
+        "count": 27,
+        "hit1": 0.9259259259259259,
+        "hit5": 1,
+        "recall5": 0.9012345679012347,
+        "reciprocalRank": 0.9629629629629629,
+        "versionPrecision5": 1
+      }
+    },
+    "avgMs": 4382.148148148148
+  }
+]

@@ -1,0 +1,6 @@
+{
+  "tolerance": 0.05,
+  "frameworks": {
+    "vue": { "hit5": 1.0, "reciprocalRank": 0.963 }
+  }
+}

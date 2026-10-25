@@ -1,0 +1,16 @@
+{
+  "name": "evals",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "evals/src",
+  "projectType": "application",
+  "tags": ["scope:server"],
+  "targets": {
+    "eval": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsx --tsconfig evals/tsconfig.app.json evals/src/run.ts",
+        "cwd": "{workspaceRoot}"
+      }
+    }
+  }
+}
