@@ -76,6 +76,29 @@ export function detectComparison(question: string): Comparison | null {
   return { framework, from, to };
 }
 
+const COMPARISON_PHRASES = [
+  /\bwhat(?:'s| has| is)?\s+(?:changed|different|new)\b/gi,
+  /\b(?:how|what)\s+(?:does|do|did)\b.*?\bdiffer\b/gi,
+  /\b(?:differences?|changes?|changed|migrat\w*|upgrad\w*|compared?|comparison)\b/gi,
+  /\b(?:between|from|vs\.?|versus|to|and|in|of|for)\b/gi,
+  /->|→/g,
+];
+
+/**
+ * The subject of a "what changed" question, for retrieval: "What changed in v-model between Vue 2
+ * and 3?" -> "v-model". Comparison wording otherwise pulls in generic migration pages.
+ */
+export function comparisonTopic(question: string): string {
+  let topic = question;
+  for (const mention of detectFrameworks(question).reverse()) {
+    topic = topic.slice(0, mention.index) + ' ' + topic.slice(mention.end);
+  }
+  topic = topic.replace(new RegExp(String.raw`\bv?\d+(?:\.\d+){0,2}\b`, 'g'), ' ');
+  for (const phrase of COMPARISON_PHRASES) topic = topic.replace(phrase, ' ');
+  topic = topic.replace(/[?!.,:;]+/g, ' ').replace(/\s+/g, ' ').trim();
+  return topic.length >= 3 ? topic : question;
+}
+
 export interface DetectedDependency {
   framework: Framework;
   version: string;

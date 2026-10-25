@@ -1,4 +1,4 @@
-import { detectComparison, detectFrameworks, detectFromPackageJson } from './detect';
+import { comparisonTopic, detectComparison, detectFrameworks, detectFromPackageJson } from './detect';
 
 const first = (q: string) => {
   const [m] = detectFrameworks(q);
@@ -59,6 +59,21 @@ describe('detectComparison', () => {
     'Vue 3 and Vue 3.0 setup',
   ])('ignores single-version questions: %s', (question) => {
     expect(detectComparison(question)).toBeNull();
+  });
+});
+
+describe('comparisonTopic', () => {
+  it.each([
+    ['What changed in v-model between Vue 2 and 3?', 'v-model'],
+    ['What changed in Next.js routing between 12 and 14?', 'routing'],
+    ['Vue 2 vs Vue 3 reactivity', 'reactivity'],
+    ['Migrating from Node 16 to 20: what about fetch?', 'what about fetch'],
+  ])('%s', (question, topic) => {
+    expect(comparisonTopic(question)).toBe(topic);
+  });
+
+  it('falls back to the question when nothing is left', () => {
+    expect(comparisonTopic('Vue 2 vs 3?')).toBe('Vue 2 vs 3?');
   });
 });
 

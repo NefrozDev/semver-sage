@@ -9,7 +9,14 @@ import {
   resolveScope,
   SearchScope,
 } from '@semver-sage/server-core';
-import { AskRequest, AskStreamEvent, Citation, FRAMEWORKS, ResolvedScope } from '@semver-sage/types';
+import {
+  AskRequest,
+  AskStreamEvent,
+  Citation,
+  comparisonTopic,
+  FRAMEWORKS,
+  ResolvedScope,
+} from '@semver-sage/types';
 import { RetrievalService } from '../retrieval/retrieval.service';
 
 /** Sources per version in compare mode (two versions share the usual budget of ~8). */
@@ -45,9 +52,11 @@ export class AskService {
       const [from, to] = comparison;
       scope = from;
       yield { type: 'scope', scope: toPublic(from), compare: toPublic(to) };
+      // Search for the subject ("v-model"), not the comparison wording, which drags in migration pages.
+      const topic = comparisonTopic(request.question);
       const [before, after] = await Promise.all([
-        this.retrieval.search(request.question, from, COMPARE_TOP_K),
-        this.retrieval.search(request.question, to, COMPARE_TOP_K),
+        this.retrieval.search(topic, from, COMPARE_TOP_K),
+        this.retrieval.search(topic, to, COMPARE_TOP_K),
       ]);
       citations = [...before, ...after].map((c, i) => ({ ...c, n: i + 1 }));
       messages = buildCompareMessages(request.question, from, to, citations);
