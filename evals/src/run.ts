@@ -10,6 +10,7 @@ import {
   Retriever,
 } from '@semver-sage/server-core';
 import { FRAMEWORKS, isFramework } from '@semver-sage/types';
+import type { Pool } from 'pg';
 import { existsSync, readFileSync } from 'node:fs';
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
@@ -54,6 +55,7 @@ async function main() {
       assert: { type: 'boolean', default: false },
       answers: { type: 'string' },
       judge: { type: 'boolean', default: false },
+      check: { type: 'boolean', default: false },
     },
   });
   const config = getConfig();
@@ -72,6 +74,10 @@ async function main() {
     const missing = wanted.filter((f) => !indexedFrameworks.includes(f));
     if (missing.length) throw new Error(`Not indexed: ${missing.join(', ')}. Ingest them first.`);
     console.log(`${golden.length} questions over ${wanted.join(', ')}`);
+    if (values.check) {
+      await checkGolden(pool, golden);
+      return;
+    }
 
     const configs = values.configs === 'full' ? [FULL] : CONFIGS;
     const results: ConfigResult[] = [];
@@ -202,6 +208,26 @@ async function evaluateAnswers(
     `| --- | --- | --- | --- |`,
     ...rows,
   ].join('\n');
+}
+
+/** Verifies every expected fragment exists in the indexed docs of the item's version. */
+async function checkGolden(pool: Pool, golden: GoldenItem[]) {
+  const problems: string[] = [];
+  for (const item of golden) {
+    for (const fragment of item.expect) {
+      const { rows } = await pool.query(
+        `SELECT 1 FROM chunks c
+           JOIN doc_versions v ON v.framework = c.framework AND v.version = $2
+          WHERE c.framework = $1 AND c.first_version_num <= v.version_num AND c.last_version_num >= v.version_num
+            AND (c.url_path || coalesce('#' || c.anchor, '')) LIKE '%' || $3 || '%'
+          LIMIT 1`,
+        [item.framework, item.version, fragment],
+      );
+      if (!rows.length) problems.push(`${item.id}: "${fragment}" not found in ${item.framework}@${item.version}`);
+    }
+  }
+  console.log(problems.length ? problems.join('\n') : 'All expected pages exist in the index');
+  if (problems.length) process.exitCode = 1;
 }
 
 /** Fails the run if the full pipeline drops below the committed baseline (minus a small tolerance). */
