@@ -112,6 +112,7 @@ function cleanHeading(raw: string): { text: string; customId: string | null } {
   const customId = CUSTOM_ID_RE.exec(raw)?.[1] ?? null;
   const text = stripHtml(raw.replace(CUSTOM_ID_RE, ''))
     .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+    .replace(/`/g, '')
     .replace(/\s+/g, ' ')
     .trim();
   return { text, customId };
