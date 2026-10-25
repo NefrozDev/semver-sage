@@ -66,7 +66,9 @@ export class Retriever {
   }
 
   async search(question: string, scope: SearchScope, options: RetrieveOptions = {}): Promise<Citation[]> {
-    const opts = { ...DEFAULTS, ...options };
+    // Skip undefined options: `{ topK: undefined }` must not override the default.
+    const given = Object.fromEntries(Object.entries(options).filter(([, value]) => value !== undefined));
+    const opts: Required<RetrieveOptions> = { ...DEFAULTS, ...given };
     if (opts.versionFilter && scope.framework && scope.versionNum === null) return [];
 
     // Scope rows: one (framework, version) pair, or the latest version of every framework.
