@@ -1,10 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { getConfig } from '@semver-sage/server-core';
 import { AskRequest, AskStreamEvent, FRAMEWORKS } from '@semver-sage/types';
-import { createLlmProvider } from '../llm/llm.provider';
-import { buildMessages } from '../llm/prompt';
+import { buildMessages, createLlmProvider, getConfig, resolveScope } from '@semver-sage/server-core';
 import { RetrievalService } from '../retrieval/retrieval.service';
-import { resolveScope } from '../retrieval/scope';
 
 @Injectable()
 export class AskService {

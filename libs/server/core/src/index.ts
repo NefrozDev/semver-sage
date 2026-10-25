@@ -2,3 +2,8 @@ export * from './lib/config';
 export * from './lib/db';
 export * from './lib/migrate';
 export * from './lib/models';
+export * from './lib/retrieval/rrf';
+export * from './lib/retrieval/scope';
+export * from './lib/retrieval/retriever';
+export * from './lib/llm/llm.provider';
+export * from './lib/llm/prompt';
