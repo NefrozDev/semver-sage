@@ -1,0 +1,66 @@
+name: Retrieval evals
+
+on:
+  pull_request:
+    paths:
+      - 'apps/ingestion/**'
+      - 'libs/**'
+      - 'evals/**'
+      - 'db/**'
+      - 'package-lock.json'
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      frameworks:
+        description: 'Frameworks to ingest and evaluate (comma-separated; more = slower)'
+        default: 'vue'
+
+concurrency:
+  group: evals-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  evals:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      FRAMEWORKS: ${{ inputs.frameworks || 'vue' }}
+      DATABASE_URL: postgres://sage:sage@localhost:5432/semver_sage
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_USER: sage
+          POSTGRES_PASSWORD: sage
+          POSTGRES_DB: semver_sage
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U sage -d semver_sage"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm install -g npm@11.6.0 && npm ci
+
+      - name: Cache models and docs checkouts
+        uses: actions/cache@v4
+        with:
+          path: |
+            .cache/models
+            .cache/repos
+          key: rag-cache-${{ hashFiles('apps/ingestion/src/sources/**', '.env.example') }}
+          restore-keys: rag-cache-
+
+      - run: npm run db:migrate
+      - name: Ingest
+        run: |
+          for fw in ${FRAMEWORKS//,/ }; do npm run ingestion -- ingest "$fw"; done
+      - name: Evaluate (fails below evals/baseline.json)
+        run: npm run eval -- --frameworks "$FRAMEWORKS" --configs full --assert
+      - name: Report
+        if: always()
+        run: cat evals/results/latest.md >> "$GITHUB_STEP_SUMMARY" || true
