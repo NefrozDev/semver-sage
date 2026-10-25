@@ -65,12 +65,6 @@
       }
     },
     {
-      "plugin": "@nx/jest/plugin",
-      "options": {
-        "targetName": "test"
-      }
-    },
-    {
       "plugin": "@nx/rolldown/plugin",
       "options": {
         "buildTargetName": "build"

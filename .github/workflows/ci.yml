@@ -23,7 +23,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm install -g npm@11.6.0 && npm ci
-      - run: npx nx run-many -t lint test build --exclude api-e2e
+      - run: npx nx run-many -t lint test build
 
   # Browser tests of the web app against a mocked API (no database or LLM needed).
   e2e:
