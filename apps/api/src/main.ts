@@ -1,14 +1,12 @@
-/**
- * This is not a production server yet!
- * This is only a minimal backend to get started.
- */
-
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { loadEnv } from '@semver-sage/server-core';
 import { AppModule } from './app/app.module';
 
 async function bootstrap() {
+  loadEnv();
   const app = await NestFactory.create(AppModule);
+  app.enableShutdownHooks();
   const globalPrefix = 'api';
   app.setGlobalPrefix(globalPrefix);
   const port = process.env.PORT || 3000;

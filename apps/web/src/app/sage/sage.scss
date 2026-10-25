@@ -1,0 +1,111 @@
+:host {
+  display: block;
+  width: 100%;
+  max-width: 220px;
+}
+
+svg {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.shadow {
+  fill: rgb(0 0 0 / 0.35);
+}
+
+.body {
+  transform-origin: 100px 248px;
+  animation: bob 3.2s ease-in-out infinite;
+}
+
+.eyes {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: blink 5s infinite;
+}
+
+.aura {
+  fill: #5ef2e0;
+  opacity: 0.15;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: pulse 3s ease-in-out infinite;
+}
+
+.runes,
+.sparkles {
+  fill: #9ff6ec;
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+
+.runes {
+  transform-origin: 161.5px 58px;
+  animation: spin 2.4s linear infinite;
+}
+
+.sparkles circle {
+  animation: twinkle 1.4s ease-in-out infinite;
+  &:nth-child(2) { animation-delay: 0.3s; }
+  &:nth-child(3) { animation-delay: 0.6s; }
+  &:nth-child(4) { animation-delay: 0.9s; }
+}
+
+.star {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: twinkle 4s ease-in-out infinite;
+}
+
+// Thinking: eyes closed, staff blazes, runes orbit.
+:host(.thinking) {
+  .eyes { transform: scaleY(0.15); animation: none; }
+  .aura { opacity: 0.45; animation-duration: 0.9s; }
+  .runes, .sparkles { opacity: 1; }
+  .body { animation-duration: 1.8s; }
+}
+
+// Speaking: beard and mouth move with the words.
+:host(.speaking) {
+  .mouth, .beard {
+    transform-box: fill-box;
+    transform-origin: top center;
+    animation: talk 0.28s ease-in-out infinite alternate;
+  }
+  .aura { opacity: 0.3; }
+}
+
+:host(.error) .aura {
+  fill: #ff6b6b;
+  opacity: 0.35;
+}
+
+@keyframes bob {
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes blink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.1); }
+}
+
+@keyframes pulse {
+  50% { transform: scale(1.25); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes twinkle {
+  50% { opacity: 0.2; }
+}
+
+@keyframes talk {
+  to { transform: scaleY(1.06); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; }
+}

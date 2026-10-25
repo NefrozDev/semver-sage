@@ -1,2 +1,56 @@
-<app-nx-welcome></app-nx-welcome>
-<router-outlet></router-outlet>
+<header>
+  <h1>Semver Sage</h1>
+  <p class="tagline">Version-aware answers for JavaScript frameworks, with citations.</p>
+</header>
+
+<main>
+  <section class="stage">
+    <app-sage [mood]="mood()" />
+
+    <div class="conversation">
+      @if (store.question() && store.status() !== 'idle') {
+        <p class="you"><span>You</span>{{ store.question() }}</p>
+      }
+      @if (scopeLabel(); as label) {
+        <p class="scope">
+          📜 {{ label }}
+          @if (store.scope()?.note; as note) {
+            <span class="note">{{ note }}</span>
+          }
+        </p>
+      }
+
+      <app-dialog-box
+        [text]="dialogText()"
+        [thinking]="store.status() === 'thinking'"
+        (typingChange)="typing.set($event)"
+      >
+        @if (store.error(); as error) {
+          <p class="error">⚠ {{ error }}</p>
+        }
+      </app-dialog-box>
+    </div>
+  </section>
+
+  <app-ask-form
+    [indexed]="versions.value()"
+    [busy]="busy()"
+    (ask)="store.ask($event)"
+    (stop)="store.stop()"
+  />
+
+  @if (store.citations().length) {
+    <app-citation-list [citations]="store.citations()" />
+  }
+</main>
+
+<footer>
+  @if (versions.error()) {
+    <span>⚠ API unreachable. Is it running?</span>
+  } @else if (indexedSummary()) {
+    <span>Indexed: {{ indexedSummary() }}</span>
+  }
+  @if (store.model(); as model) {
+    <span>Answered by {{ model }}</span>
+  }
+</footer>

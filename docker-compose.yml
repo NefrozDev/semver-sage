@@ -1,0 +1,32 @@
+name: semver-sage
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_USER: sage
+      POSTGRES_PASSWORD: sage
+      POSTGRES_DB: semver_sage
+    ports:
+      - '${POSTGRES_PORT:-5432}:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U sage -d semver_sage']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Optional: `docker compose --profile ollama up -d` if Ollama isn't installed natively.
+  # Then pull a model: `docker compose exec ollama ollama pull llama3.2:3b`
+  ollama:
+    image: ollama/ollama:latest
+    profiles: ['ollama']
+    ports:
+      - '${OLLAMA_PORT:-11434}:11434'
+    volumes:
+      - ollama:/root/.ollama
+
+volumes:
+  pgdata:
+  ollama:

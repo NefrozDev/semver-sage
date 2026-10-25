@@ -1,102 +1,91 @@
-# SemverSage
+# Semver Sage
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+A retrieval-augmented assistant that answers questions about JavaScript frameworks **for any
+version**, citing the exact docs page of that version. Ask "how did filters work in Vue 2?" or
+upload your `package.json`, and the sage answers for what you actually have installed.
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is ready ✨.
+Runs 100% locally and for free: Postgres + pgvector, local embedding and reranking models
+(transformers.js), and a local LLM via Ollama.
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/getting-started/tutorials/angular-monorepo-tutorial?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+## How it works
 
-## Run tasks
-
-To run the dev server for your app, use:
-
-```sh
-npx nx serve web
+```
+question ─► detect framework + version (question, picker or package.json)
+         ─► hybrid search, filtered to that version
+              ├─ Postgres full-text search
+              └─ pgvector cosine similarity (bge-small-en-v1.5)
+         ─► Reciprocal Rank Fusion ─► cross-encoder rerank (bge-reranker-base) ─► top 6
+         ─► LLM answer with [n] citations, streamed over SSE
 ```
 
-To create a production bundle:
+**Deduplicated across versions.** Most docs pages barely change between releases, so each chunk is
+stored once with a version range. Ingesting version N extends `last_version_num` on every chunk that
+is unchanged since N-1, and only embeds new text. A query for version `v` filters on
+`first_version_num <= v AND last_version_num >= v`. Citation URLs are built from the queried
+version's docs base URL, so a chunk spanning 2–5 still links to the right site for each.
+
+## Quick start
+
+Prerequisites: Node 22+, Docker, and either [Ollama](https://ollama.com) or the bundled container.
 
 ```sh
-npx nx build web
+npm install
+cp .env.example .env               # optional: every setting has a local default
+
+npm run db:up                      # Postgres + pgvector on :5432
+npm run db:migrate
+npm run ingest:vue                 # clones Vue 2 + Vue 3 docs, chunks, embeds (~2 min on CPU)
+
+# LLM: native Ollama, or the container
+ollama pull llama3.2:3b
+# or: docker compose --profile ollama up -d && docker compose exec ollama ollama pull llama3.2:3b
+
+npm start                          # web on http://localhost:4200, API on :3000/api
 ```
 
-To see all available targets to run for a project, run:
+The first run downloads the embedding (~35 MB) and reranker (~280 MB) models into `.cache/models`.
+
+## Project layout
+
+| Path                  | What                                                                     |
+| --------------------- | ------------------------------------------------------------------------ |
+| `apps/web`            | Angular UI: animated sage, RPG dialog box, citations, package.json upload |
+| `apps/api`            | NestJS: `POST /api/ask` (SSE), `GET /api/versions`, `GET /api/health`     |
+| `apps/ingestion`      | CLI: docs repo → chunks → embeddings → Postgres, one source adapter per framework |
+| `libs/shared/types`   | API types, framework metadata, version encoding, question/package.json detection |
+| `libs/server/core`    | Config, DB pool, migrations, local embedder and reranker                 |
+| `db/migrations`       | SQL migrations                                                           |
+
+## Ingestion CLI
 
 ```sh
-npx nx show project web
+npm run ingestion -- migrate
+npm run ingestion -- ingest vue [--version 3]
+npm run ingestion -- status
+npm run ingestion -- reset vue
 ```
 
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
+Versions are ingested in ascending order per framework (required for range extension). To add a
+framework, write a `SourceAdapter` in `apps/ingestion/src/sources/` and register it in `index.ts`.
 
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## LLM providers
 
-## Add new projects
+`LLM_PROVIDER=ollama` (default) talks to Ollama's `/api/chat`. `LLM_PROVIDER=openai` talks to any
+OpenAI-compatible `/chat/completions` endpoint (Groq or OpenRouter free tiers, LM Studio, or your
+own key) via `LLM_BASE_URL`, `LLM_MODEL` and `LLM_API_KEY`.
 
-While you could add new projects to your workspace manually, you might want to leverage [Nx plugins](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) and their [code generation](https://nx.dev/features/generate-code?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) feature.
+## Known limitations
 
-Use the plugin's generator to create new projects.
+- Indexed so far: Vue 2 (`vuejs/v2.vuejs.org`) and Vue 3 (`vuejs/docs`). Both repos only hold their
+  latest docs, so Vue is indexed per major.
+- The Vue 3 migration guide lives in a separate repo and isn't indexed yet, so "what replaced X in
+  Vue 3" questions are weaker than they should be.
+- On CPU, a small local model (llama3.2:3b) takes 20–30 s to the first token, and it doesn't always
+  cite inline. Retrieval itself takes about 4 s.
 
-To generate a new application, use:
+## Tests
 
 ```sh
-npx nx g @nx/angular:app demo
+npm test                     # unit tests: detection, versions, chunker, scope resolution, RRF, UI
+npx nx e2e api-e2e           # needs the API running
 ```
-
-To generate a new library, use:
-
-```sh
-npx nx g @nx/angular:lib mylib
-```
-
-You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
-
-[Learn more about Nx plugins &raquo;](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry &raquo;](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Set up CI!
-
-### Step 1
-
-To connect to Nx Cloud, run the following command:
-
-```sh
-npx nx connect
-```
-
-Connecting to Nx Cloud ensures a [fast and scalable CI](https://nx.dev/ci/intro/why-nx-cloud?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) pipeline. It includes features such as:
-
-- [Remote caching](https://nx.dev/ci/features/remote-cache?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task distribution across multiple machines](https://nx.dev/ci/features/distribute-task-execution?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Automated e2e test splitting](https://nx.dev/ci/features/split-e2e-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task flakiness detection and rerunning](https://nx.dev/ci/features/flaky-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-### Step 2
-
-Use the following command to configure a CI workflow for your workspace:
-
-```sh
-npx nx g ci-workflow
-```
-
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Install Nx Console
-
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
-
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Useful links
-
-Learn more:
-
-- [Learn more about this workspace setup](https://nx.dev/getting-started/tutorials/angular-monorepo-tutorial?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-And join the Nx community:
-
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)

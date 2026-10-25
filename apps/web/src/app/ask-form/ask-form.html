@@ -1,0 +1,79 @@
+<form (ngSubmit)="submit()">
+  <label class="sr-only" for="question">Your question</label>
+  <textarea
+    id="question"
+    name="question"
+    rows="2"
+    placeholder="Ask about any version, e.g. “How did filters work in Vue 2?”"
+    [ngModel]="question()"
+    (ngModelChange)="question.set($event)"
+    (keydown)="onKeydown($event)"
+    maxlength="1000"
+  ></textarea>
+
+  <div class="controls">
+    <label>
+      <span>Framework</span>
+      <select name="framework" [ngModel]="framework()" (ngModelChange)="setFramework($event)">
+        <option value="">Auto-detect</option>
+        @for (f of frameworks(); track f.id) {
+          <option [value]="f.id" [disabled]="!f.available">{{ f.label }}{{ f.available ? '' : ' (soon)' }}</option>
+        }
+      </select>
+    </label>
+
+    <label>
+      <span>Version</span>
+      <input
+        name="version"
+        list="versions"
+        placeholder="Latest"
+        [disabled]="!framework()"
+        [ngModel]="version()"
+        (ngModelChange)="version.set($event)"
+      />
+      <datalist id="versions">
+        @for (v of versions(); track v) {
+          <option [value]="v"></option>
+        }
+      </datalist>
+    </label>
+
+    <label class="upload" title="Scope answers to the versions you actually use">
+      <input type="file" accept=".json,application/json" (change)="onFile($event)" />
+      <span class="button ghost">📦 package.json</span>
+    </label>
+
+    @if (busy()) {
+      <button type="button" class="button" (click)="stop.emit()">Stop</button>
+    } @else {
+      <button type="submit" class="button primary" [disabled]="!question().trim()">Ask the sage</button>
+    }
+  </div>
+
+  @if (detected().length || uploadError()) {
+    <div class="chips" aria-label="Detected from package.json">
+      @for (dep of detected(); track dep.from) {
+        <button
+          type="button"
+          class="chip"
+          [class.active]="framework() === dep.framework && version() === dep.version"
+          [disabled]="!isIndexed(dep.framework)"
+          [title]="dep.from + (isIndexed(dep.framework) ? '' : ' (not indexed yet)')"
+          (click)="useDependency(dep)"
+        >
+          {{ label(dep.framework) }} {{ dep.version }}
+        </button>
+      }
+      @if (uploadError(); as message) {
+        <span class="hint">{{ message }}</span>
+      }
+    </div>
+  }
+
+  <div class="chips examples" aria-label="Example questions">
+    @for (example of examples; track example) {
+      <button type="button" class="chip" [disabled]="busy()" (click)="useExample(example)">{{ example }}</button>
+    }
+  </div>
+</form>

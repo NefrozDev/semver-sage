@@ -1,0 +1,96 @@
+form {
+  display: grid;
+  gap: 12px;
+}
+
+textarea,
+select,
+input:not([type='file']) {
+  width: 100%;
+  padding: 10px 12px;
+  font: inherit;
+  color: var(--text);
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 8px;
+
+  &:focus-visible {
+    outline: none;
+    border-color: var(--teal);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+  }
+}
+
+textarea {
+  resize: vertical;
+  min-height: 64px;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 10px;
+
+  label:not(.upload) {
+    display: grid;
+    flex: 1 1 140px;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+}
+
+.upload {
+  input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+  }
+
+  &:focus-within .button {
+    outline: 2px solid var(--teal);
+  }
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  padding: 5px 10px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  cursor: pointer;
+
+  &:hover:not(:disabled),
+  &.active {
+    border-color: var(--teal);
+    color: var(--teal);
+  }
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.5;
+  }
+}
+
+.examples .chip {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.hint {
+  font-size: 13px;
+  color: var(--muted);
+}
