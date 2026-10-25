@@ -39,6 +39,9 @@ const TICK_MS = 24;
       }
       <ng-content />
     </div>
+    @if (meta(); as meta) {
+      <footer>{{ meta }}</footer>
+    }
   `,
   styleUrl: './answer-card.scss',
 })
@@ -46,6 +49,8 @@ export class AnswerCard {
   readonly text = input('');
   readonly speaker = input('Sage');
   readonly status = input<string | null>(null);
+  /** Small print under the answer, e.g. which model answered and how long it took. */
+  readonly meta = input<string | null>(null);
   readonly thinking = input(false);
   readonly typingChange = output<boolean>();
 

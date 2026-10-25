@@ -11,15 +11,7 @@ import {
   isAngularJsVersion,
 } from '@semver-sage/types';
 
-const EXAMPLES = [
-  'How do I register a global filter in Vue 2?',
-  'What changed in v-model between Vue 2 and 3?',
-  'Since when does Node have a built-in fetch?',
-  'How do runes work in Svelte 5?',
-  'What does useActionState do in React 19?',
-  'How do I fetch data in a Next.js 14 server component?',
-];
-
+/** The question box: question, optional scope (framework, version, compare, package.json), Ask. */
 @Component({
   selector: 'app-ask-form',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -33,7 +25,6 @@ export class AskForm {
   readonly ask = output<AskRequest>();
   readonly stop = output<void>();
 
-  protected readonly examples = EXAMPLES;
   protected readonly question = signal('');
   protected readonly framework = signal<Framework | ''>('');
   protected readonly version = signal('');
@@ -80,11 +71,6 @@ export class AskForm {
     this.version.set(dep.version);
   }
 
-  protected useExample(example: string): void {
-    this.question.set(example);
-    this.submit();
-  }
-
   protected async onFile(event: Event): Promise<void> {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (!file) return;
@@ -111,6 +97,8 @@ export class AskForm {
       version: (this.framework() && this.version().trim()) || undefined,
       compareVersion: (this.framework() && this.compareVersion().trim()) || undefined,
     });
+    // The question is shown above the answer; the box is ready for a follow-up. The scope stays.
+    this.question.set('');
   }
 
   protected onKeydown(event: KeyboardEvent): void {

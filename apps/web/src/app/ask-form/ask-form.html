@@ -1,10 +1,10 @@
-<form (ngSubmit)="submit()">
-  <div class="composer">
+<form class="composer" (ngSubmit)="submit()">
+  <div class="input-row">
     <label class="sr-only" for="question">Your question</label>
     <textarea
       id="question"
       name="question"
-      rows="2"
+      rows="1"
       placeholder="Ask about any version, e.g. “How did filters work in Vue 2?”"
       [ngModel]="question()"
       (ngModelChange)="question.set($event)"
@@ -18,7 +18,7 @@
     }
   </div>
 
-  <div class="controls">
+  <div class="options" role="group" aria-label="Scope">
     <label>
       <span>Framework</span>
       <select name="framework" [ngModel]="framework()" (ngModelChange)="setFramework($event)">
@@ -60,12 +60,14 @@
 
     <label class="upload" title="Scope answers to the versions you actually use">
       <input type="file" accept=".json,application/json" (change)="onFile($event)" />
-      <span class="button">Use my package.json</span>
+      <span>package.json</span>
     </label>
+
+    <span class="hint keys">Enter to ask · Shift+Enter for a new line</span>
   </div>
 
   @if (detected().length || uploadError()) {
-    <div class="chips" aria-label="Detected from package.json">
+    <div class="detected" aria-label="Detected from package.json">
       @for (dep of detected(); track dep.from) {
         <button
           type="button"
@@ -83,11 +85,4 @@
       }
     </div>
   }
-
-  <div class="examples" aria-label="Example questions">
-    <span class="label">Try</span>
-    @for (example of examples; track example) {
-      <button type="button" class="chip" [disabled]="busy()" (click)="useExample(example)">{{ example }}</button>
-    }
-  </div>
 </form>

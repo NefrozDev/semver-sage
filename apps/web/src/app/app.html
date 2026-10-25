@@ -29,26 +29,35 @@
     }
   </aside>
 
-  <section class="conversation">
+  <section class="conversation" [class.landing]="store.status() === 'idle'">
+    <!-- 1. What was asked, and which docs answer it -->
     @if (store.question() && store.status() !== 'idle') {
-      <p class="you">{{ store.question() }}</p>
-    }
-
-    @if (scopeLabel() || store.scope()?.note) {
-      <div class="scope">
-        @if (scopeLabel(); as label) {
-          <span class="chip">{{ label }}</span>
-        }
-        @if (store.scope()?.note; as note) {
-          <span class="note">{{ note }}</span>
+      <div class="asked">
+        <h2 class="question">{{ store.question() }}</h2>
+        @if (scopeLabel() || store.scope()?.note) {
+          <div class="scope">
+            @if (scopeLabel(); as label) {
+              <span class="chip">{{ label }}</span>
+            }
+            @if (store.scope()?.note; as note) {
+              <span class="note">{{ note }}</span>
+            }
+          </div>
         }
       </div>
     }
 
+    <!-- 2. Sources arrive long before the answer: show them first -->
+    @if (store.citations().length) {
+      <app-citation-list [citations]="store.citations()" />
+    }
+
+    <!-- 3. The answer (the greeting until a question is asked) -->
     <app-answer-card
       [text]="answerText()"
       [status]="store.status() === 'idle' ? null : caption()"
       [thinking]="store.status() === 'thinking'"
+      [meta]="answerMeta()"
       (typingChange)="typing.set($event)"
     >
       @if (store.error(); as error) {
@@ -56,19 +65,23 @@
       }
     </app-answer-card>
 
-    @if (store.citations().length) {
-      <app-citation-list [citations]="store.citations()" />
+    @if (store.status() === 'idle') {
+      <div class="examples" aria-label="Example questions">
+        <span class="label">Try</span>
+        @for (example of examples; track example) {
+          <button type="button" class="chip" (click)="ask({ question: example })">{{ example }}</button>
+        }
+      </div>
     }
 
-    <app-ask-form
-      [indexed]="versions.value()"
-      [busy]="busy()"
-      (ask)="store.ask($event)"
-      (stop)="store.stop()"
-    />
-
-    @if (store.model(); as model) {
-      <p class="model">Answered by {{ model }}</p>
-    }
+    <!-- 4. The question box stays in reach at the bottom of the screen -->
+    <div class="dock">
+      <app-ask-form
+        [indexed]="versions.value()"
+        [busy]="busy()"
+        (ask)="ask($event)"
+        (stop)="store.stop()"
+      />
+    </div>
   </section>
 </main>

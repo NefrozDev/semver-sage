@@ -1,6 +1,6 @@
 import { httpResource } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { FRAMEWORKS, IndexedVersion, isAngularJsVersion, versionToNum } from '@semver-sage/types';
+import { AskRequest, FRAMEWORKS, IndexedVersion, isAngularJsVersion, versionToNum } from '@semver-sage/types';
 import { AnswerCard } from './answer-card/answer-card';
 import { AskForm } from './ask-form/ask-form';
 import { CitationList } from './citation-list/citation-list';
@@ -11,6 +11,15 @@ const GREETING =
   'Greetings, traveler. I am the **Semver Sage**. Most docs only remember the latest version; I remember ' +
   'them all. Ask how something works in *your* version, or hand me your `package.json` and I will ' +
   'answer for exactly what you have installed.';
+
+const EXAMPLES = [
+  'How do I register a global filter in Vue 2?',
+  'What changed in v-model between Vue 2 and 3?',
+  'Since when does Node have a built-in fetch?',
+  'How do runes work in Svelte 5?',
+  'What does useActionState do in React 19?',
+  'How did components work in Angular 2?',
+];
 
 const CAPTIONS: Record<SageMood, string> = {
   idle: 'Ready when you are',
@@ -47,6 +56,15 @@ export class App {
   });
 
   protected readonly caption = computed(() => CAPTIONS[this.mood()]);
+  protected readonly examples = EXAMPLES;
+
+  /** "Answered by ollama/llama3.2:3b in 31 s" once an answer is complete. */
+  protected readonly answerMeta = computed(() => {
+    const model = this.store.model();
+    const ms = this.store.elapsedMs();
+    if (!model || model === 'none' || ms === null) return null;
+    return `Answered by ${model} in ${Math.max(1, Math.round(ms / 1000))} s`;
+  });
 
   protected readonly scopeLabel = computed(() => {
     const scope = this.store.scope();
@@ -60,6 +78,12 @@ export class App {
     if (compare) return `Comparing ${name} ${scope.version} → ${compare.version}`;
     return scope.version ? `${name} ${scope.version} docs` : null;
   });
+
+  /** A new question replaces the previous answer, which starts at the top of the page. */
+  protected ask(request: AskRequest): void {
+    void this.store.ask(request);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 
   /** "Angular 2–22", "Vue 2, 3": one entry per framework, as ranges. */
   protected readonly indexed = computed(() => {
