@@ -96,11 +96,13 @@ async function main() {
       const byFramework = Object.fromEntries(
         wanted.map((f) => [f, summarize(scores.filter((_, i) => golden[i].framework === f))]),
       );
-      results.push({ name, summary: summarize(scores), byFramework, avgMs: (Date.now() - started) / golden.length, scores });
-      console.log(`${name}: hit@5 ${pct(results.at(-1)!.summary.hit5)}, MRR ${results.at(-1)!.summary.reciprocalRank.toFixed(3)}`);
+      const result = { name, summary: summarize(scores), byFramework, avgMs: (Date.now() - started) / golden.length, scores };
+      results.push(result);
+      console.log(`${name}: hit@5 ${pct(result.summary.hit5)}, MRR ${result.summary.reciprocalRank.toFixed(3)}`);
     }
 
-    const full = results.find((r) => r.name === FULL.name)!;
+    // The full pipeline is always the last config run.
+    const full = results[results.length - 1];
     const misses = golden
       .map((item, i) => ({ item, score: full.scores[i] }))
       .filter(({ score }) => !score.hit5)
@@ -138,7 +140,7 @@ function renderReport(results: ConfigResult[], frameworks: string[], count: numb
   const row = (r: ConfigResult) =>
     `| ${r.name} | ${pct(r.summary.hit1)} | ${pct(r.summary.hit5)} | ${pct(r.summary.recall5)} | ` +
     `${r.summary.reciprocalRank.toFixed(3)} | ${pct(r.summary.versionPrecision5)} | ${Math.round(r.avgMs)} ms |`;
-  const full = results.at(-1)!;
+  const full = results[results.length - 1];
   const perFramework = frameworks
     .map((f) => {
       const s = full.byFramework[f];
