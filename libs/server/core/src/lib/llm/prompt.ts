@@ -9,10 +9,17 @@ const label = (scope: ResolvedScope) =>
 
 const SHARED_RULES = [
   '- Cite the excerpts you rely on inline as [1], [2], ... right after the claim they support.',
+  '- Never write URLs or links: the sources are shown to the user next to your answer.',
   '- If the excerpts do not contain the answer, say so plainly instead of guessing.',
   '- Be concise. Prefer a short explanation plus a small code example in Markdown when helpful.',
   '- Stay in character lightly (a calm sage), but clarity always comes first.',
 ];
+
+// Small models follow instructions near the end of the prompt best, so restate the citation format.
+const userMessage = (citations: Citation[], question: string) =>
+  `Documentation excerpts:\n\n${renderContext(citations)}\n\nQuestion: ${question}\n\n` +
+  'Answer using only these excerpts. Put the source number in brackets after each claim, ' +
+  'for example: "Register it globally with Vue.filter() [1]." Do not write any URLs.';
 
 function renderContext(citations: Citation[]): string {
   return citations
@@ -35,7 +42,7 @@ export function buildMessages(question: string, scope: ResolvedScope, citations:
 
   return [
     { role: 'system', content: system },
-    { role: 'user', content: `Documentation excerpts:\n\n${renderContext(citations)}\n\nQuestion: ${question}` },
+    { role: 'user', content: userMessage(citations, question) },
   ];
 }
 
@@ -59,6 +66,6 @@ export function buildCompareMessages(
 
   return [
     { role: 'system', content: system },
-    { role: 'user', content: `Documentation excerpts:\n\n${renderContext(citations)}\n\nQuestion: ${question}` },
+    { role: 'user', content: userMessage(citations, question) },
   ];
 }
