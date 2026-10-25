@@ -14,7 +14,14 @@ describe('version encoding', () => {
 
   it('parses loose inputs', () => {
     expect(parseVersion('v18.x')).toEqual({ major: 18, minor: 0, patch: 0 });
+    expect(parseVersion(' v 2.7')).toEqual({ major: 2, minor: 7, patch: 0 });
     expect(parseVersion('nope')).toBeNull();
+  });
+
+  it('rejects long garbage in linear time', () => {
+    const started = performance.now();
+    expect(parseVersion(' '.repeat(100_000) + 'x')).toBeNull();
+    expect(performance.now() - started).toBeLessThan(100);
   });
 
   it('derives the lowest version of an npm range', () => {

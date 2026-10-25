@@ -52,6 +52,7 @@ describe('POST /api/ask', () => {
     [{ question: '' }, 'question must be'],
     [{ question: 'x', framework: 'cobol' }, 'unknown framework'],
     [{ question: 'x', framework: 'vue', version: 'banana' }, 'invalid version'],
+    [{ question: 'x', framework: 'vue', version: `${' '.repeat(5000)}2` }, 'invalid version'],
     [{ question: 'x', compareVersion: '3' }, 'compareVersion needs a framework'],
   ])('rejects %j', async (body, message) => {
     const res = await ask(body);

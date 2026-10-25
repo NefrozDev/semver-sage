@@ -4,7 +4,9 @@ export interface ParsedVersion {
   patch: number;
 }
 
-const VERSION_RE = /^\s*[v=]?\s*(\d+)(?:\.(\d+|x|\*))?(?:\.(\d+|x|\*))?/i;
+// One optional run of whitespace on each side of the prefix: adjacent `\s*[v=]?\s*` backtracks
+// quadratically on long whitespace (and this parses request input).
+const VERSION_RE = /^\s*(?:[v=]\s*)?(\d+)(?:\.(\d+|x|\*))?(?:\.(\d+|x|\*))?/i;
 
 /** Parses "3", "v18.2", "2.7.14", "14.x" into numeric parts (missing parts are 0). */
 export function parseVersion(input: string): ParsedVersion | null {

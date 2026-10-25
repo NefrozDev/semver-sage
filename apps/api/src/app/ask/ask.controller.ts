@@ -6,6 +6,9 @@ import { DatabaseService } from '../database.service';
 import { RetrievalService } from '../retrieval/retrieval.service';
 import { AskService } from './ask.service';
 
+/** "2", "18.20.8", "v5.x": anything longer isn't a version. */
+const MAX_VERSION_LENGTH = 32;
+
 function validate(body: unknown): AskRequest {
   const { question, framework, version, compareVersion } = (body ?? {}) as Record<string, unknown>;
   if (typeof question !== 'string' || !question.trim() || question.length > 1000) {
@@ -15,8 +18,9 @@ function validate(body: unknown): AskRequest {
     throw new BadRequestException(`unknown framework: ${String(framework)}`);
   }
   for (const [name, value] of [['version', version], ['compareVersion', compareVersion]] as const) {
-    if (value !== undefined && value !== null && (typeof value !== 'string' || !parseVersion(value))) {
-      throw new BadRequestException(`invalid ${name}: ${String(value)}`);
+    if (value === undefined || value === null) continue;
+    if (typeof value !== 'string' || value.length > MAX_VERSION_LENGTH || !parseVersion(value)) {
+      throw new BadRequestException(`invalid ${name}: ${String(value).slice(0, MAX_VERSION_LENGTH)}`);
     }
   }
   if (compareVersion && !framework) {
