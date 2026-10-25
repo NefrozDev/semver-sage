@@ -6,8 +6,8 @@ import type { SourcePage, VersionSource } from './types';
 export interface MarkdownRepoOptions extends Omit<ChunkOptions, 'slugify'> {
   /** Turns a heading into the anchor id the docs site generates (some sites prefix the page name). */
   slugify: (heading: string, sourcePath: string) => string;
-  /** Maps a repo-relative doc path to its published URL path, or null to skip the file. */
-  toUrlPath: (sourcePath: string, source: VersionSource) => string | null;
+  /** Maps a repo-relative doc path (and its raw content) to its published URL path, or null to skip it. */
+  toUrlPath: (sourcePath: string, source: VersionSource, markdown: string) => string | null;
   /** Rewrites site-specific markup into plain markdown before chunking; null skips the page. */
   preprocess?: (markdown: string, sourcePath: string) => string | null;
   /** File extensions to load (default: .md). */
@@ -37,9 +37,9 @@ export async function loadMarkdownPages(
   const pages: SourcePage[] = [];
   for (const file of files.sort()) {
     const sourcePath = relative(checkoutDir, file).split(sep).join(posix.sep);
-    const urlPath = toUrlPath(sourcePath, source);
-    if (urlPath === null) continue;
     const raw = await readFile(file, 'utf8');
+    const urlPath = toUrlPath(sourcePath, source, raw);
+    if (urlPath === null) continue;
     const markdown = preprocess ? preprocess(raw, sourcePath) : raw;
     if (markdown === null) continue;
     const chunks = chunkMarkdown(markdown, {
@@ -56,6 +56,23 @@ export function htmlUrlPath(sourcePath: string, stripPrefix: string): string {
   const path = sourcePath.slice(stripPrefix.length).replace(/\.md$/, '');
   if (path === 'index') return '';
   return path.endsWith('/index') ? path.slice(0, -'index'.length) : `${path}.html`;
+}
+
+/** A frontmatter field, e.g. `permalink: docs/hooks-intro.html`. */
+export function frontmatterField(markdown: string, field: string): string | null {
+  const frontmatter = /^---\r?\n([\s\S]*?)\r?\n---/.exec(markdown)?.[1];
+  const value = frontmatter && new RegExp(`^${field}:\\s*['"]?(.+?)['"]?\\s*$`, 'm').exec(frontmatter)?.[1];
+  return value || null;
+}
+
+/** "1.getting-started/02.installation.md" -> "getting-started/installation" (Nuxt, Svelte, Next.js). */
+export function stripOrderPrefixes(path: string): string {
+  return path
+    .replace(/\.mdx?$/, '')
+    .split('/')
+    .map((segment) => segment.replace(/^\d+[.-]/, ''))
+    .join('/')
+    .replace(/(^|\/)index$/, '');
 }
 
 /** Docs without a versioned site: cite the file on GitHub at the exact release tag. */
