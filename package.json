@@ -10,7 +10,8 @@
     "ingest:vue": "npm run ingestion -- ingest vue",
     "test": "nx run-many -t test",
     "eval": "tsx --tsconfig evals/tsconfig.app.json evals/src/run.ts",
-    "e2e": "nx run web-e2e:e2e"
+    "e2e": "nx run web-e2e:e2e",
+    "test:coverage": "nx run-many -t test --coverage"
   },
   "private": true,
   "dependencies": {

@@ -17,6 +17,10 @@ export default defineConfig(() => ({
     coverage: {
       reportsDirectory: '../../../coverage/libs/server/core',
       provider: 'v8' as const,
+      // lcov is what SonarQube reads (sonar-project.properties)
+      reporter: ['text-summary', 'lcov'],
+      include: ['src/**/*.ts'],
+      exclude: ['src/**/*.spec.ts', 'src/**/*.test.ts'],
     },
   },
 }));
