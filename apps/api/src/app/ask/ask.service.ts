@@ -1,11 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import {
   ANGULARJS_NOTICE,
   buildCompareMessages,
   buildMessages,
   ChatMessage,
-  createLlmProvider,
-  getConfig,
+  LlmProvider,
   resolveComparison,
   resolveScope,
   SearchScope,
@@ -19,6 +18,7 @@ import {
   isAngularJsQuestion,
   ResolvedScope,
 } from '@semver-sage/types';
+import { LLM_PROVIDER } from '../llm';
 import { RetrievalService } from '../retrieval/retrieval.service';
 
 /** Sources per version in compare mode (two versions share the usual budget of ~8). */
@@ -29,9 +29,11 @@ const toPublic = ({ versionNum, ...scope }: SearchScope): ResolvedScope => scope
 @Injectable()
 export class AskService {
   private readonly logger = new Logger(AskService.name);
-  private readonly llm = createLlmProvider(getConfig());
 
-  constructor(private readonly retrieval: RetrievalService) {}
+  constructor(
+    private readonly retrieval: RetrievalService,
+    @Inject(LLM_PROVIDER) private readonly llm: LlmProvider,
+  ) {}
 
   get llmName() {
     return this.llm.name;

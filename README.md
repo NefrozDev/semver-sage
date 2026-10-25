@@ -139,9 +139,17 @@ own key) via `LLM_BASE_URL`, `LLM_MODEL` and `LLM_API_KEY`.
 
 ## CI
 
-- **CI**: lint, unit tests and builds on every push and PR.
-- **Retrieval evals**: ingests Vue into a pgvector service container and fails if the full pipeline
-  drops below [evals/baseline.json](evals/baseline.json); other frameworks on demand.
+- **CI**: lint, unit tests and builds on every push and PR, plus the integration tests (against a
+  pgvector service container) and the Playwright browser tests.
+- **Retrieval evals**: ingests Vue into a pgvector service container, fails if the production
+  pipeline drops below [evals/baseline.json](evals/baseline.json), then runs the API end-to-end
+  tests against that database; other frameworks on demand.
+- **SonarQube**: coverage + analysis on SonarQube Cloud with the official scan action, failing on
+  the quality gate; runs once the `SONAR_TOKEN` secret is set. Turn off the project's Automatic
+  Analysis in SonarQube Cloud: it can't read coverage and blocks CI analysis.
+- **Supply chain**: dependencies install with `--ignore-scripts` (every native binary ships as a
+  prebuilt optional package), tools run from `node_modules` via npm scripts instead of `npx`, and
+  third-party actions are pinned to a commit.
 - **Re-ingest new releases**: weekly, ingests newly released majors into the hosted database.
 
 ## Known limitations
@@ -160,10 +168,22 @@ own key) via `LLM_BASE_URL`, `LLM_MODEL` and `LLM_API_KEY`.
   see "What was tried and dropped" above.
 - The LLM-judge faithfulness score needs a stronger judge model than the default 3B one to mean much.
 
-## Tests
+## Tests and quality
 
-```sh
-npm test                     # unit tests: detection, versions, chunker, adapters, scope, RRF, metrics, UI
-npm run eval                 # retrieval evals (needs an indexed database)
-npx nx e2e api-e2e           # needs the API running
-```
+| Layer | Tool | Where | Command |
+| --- | --- | --- | --- |
+| Unit | Vitest | `*.spec.ts` next to the code | `npm test` |
+| Integration | Vitest, real Postgres (`semver_sage_test`), fake docs and embedder | `apps/ingestion/src/*.int.spec.ts` | `npx nx run ingestion:integration` |
+| API end-to-end | Vitest + fetch, real API and database | `apps/api-e2e` | `npx nx e2e api-e2e` (starts the API) |
+| Browser end-to-end | Playwright (desktop + Pixel 7), production build, mocked API | `apps/web-e2e` | `npm run e2e` |
+| Retrieval quality | golden questions | `evals/` | `npm run eval` |
+| Coverage + static analysis | SonarQube Cloud (from CI) | `sonar-project.properties` | CI only; `npm run test:coverage` locally |
+
+The integration tests check what unit tests can't: cross-version dedupe (a chunk stored once and
+its version range extended), rebuilds that reuse every embedding, and that search only returns
+chunks valid for the asked version. They create and migrate a separate `semver_sage_test`
+database (`TEST_DATABASE_URL`), so `npm run db:up` is enough.
+
+`npm run test:coverage` (unit + integration) writes lcov reports to `coverage/` and merges them
+into `coverage/lcov.merged.info` with repo-relative paths, which the CI scan uploads. In the editor,
+the SonarQube for IDE extension shows the same rules as you type.

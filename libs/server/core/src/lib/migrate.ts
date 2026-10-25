@@ -11,7 +11,7 @@ export async function runMigrations(pool: Pool, dir: string, log = console.log):
     )`);
   const { rows } = await pool.query<{ name: string }>(`SELECT name FROM schema_migrations`);
   const applied = new Set(rows.map((r) => r.name));
-  const files = (await readdir(dir)).filter((f) => f.endsWith('.sql')).sort();
+  const files = (await readdir(dir)).filter((f) => f.endsWith('.sql')).sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
   const ran: string[] = [];
 
   for (const file of files.filter((f) => !applied.has(f))) {

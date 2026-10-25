@@ -35,7 +35,7 @@ export async function loadMarkdownPages(
   const { slugify, toUrlPath, preprocess, extensions = ['.md'], ...chunkOptions } = options;
   const files = (await Promise.all(source.paths.map((p) => walk(join(checkoutDir, p), extensions)))).flat();
   const pages: SourcePage[] = [];
-  for (const file of files.sort()) {
+  for (const file of files.sort((a, b) => a.localeCompare(b))) {
     const sourcePath = relative(checkoutDir, file).split(sep).join(posix.sep);
     const raw = await readFile(file, 'utf8');
     const urlPath = toUrlPath(sourcePath, source, raw);

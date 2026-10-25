@@ -36,7 +36,7 @@ export function cleanAngularMarkdown(markdown: string): string {
     .replace(/<(docs-code|code-example)(?=[\s>])([^>]*)>([\s\S]*?)<\/\1>/g, (_, _tag, attrs: string, body: string) => {
       if (!body.trim()) return '';
       const language = /language="([\w-]+)"/.exec(attrs)?.[1] ?? '';
-      return `\n\`\`\`${language}\n${decodeEntities(body.replace(/^\n+|\s+$/g, ''))}\n\`\`\`\n`;
+      return `\n\`\`\`${language}\n${decodeEntities(body.replace(/^\n+/, '').trimEnd())}\n\`\`\`\n`;
     });
 }
 

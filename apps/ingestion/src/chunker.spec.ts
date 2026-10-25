@@ -1,4 +1,4 @@
-import { chunkHash, chunkMarkdown, cleanMarkdown, githubSlug, hexoSlug, kebabSlug } from './chunker';
+import { chunkHash, chunkMarkdown, cleanMarkdown, githubSlug, hexoSlug, kebabSlug, trimChar } from './chunker';
 
 describe('cleanMarkdown', () => {
   it('reads the frontmatter title and drops scripts, hexo tags and HTML outside code', () => {
@@ -103,5 +103,45 @@ describe('slugs and hashes', () => {
     const chunk = { pageTitle: 'T', section: 'S', anchor: null, text: 'a  b\nc' };
     expect(chunkHash('x.html', chunk)).toBe(chunkHash('x.html', { ...chunk, text: 'a b c' }));
     expect(chunkHash('x.html', chunk)).not.toBe(chunkHash('y.html', chunk));
+  });
+});
+
+// Inputs that made the previous regexes backtrack (quadratic or worse); each must stay fast.
+describe('pathological input', () => {
+  const run = 50_000;
+
+  it('trimChar strips runs on both ends only', () => {
+    expect(trimChar('--a-b--', '-')).toBe('a-b');
+    expect(trimChar('----', '-')).toBe('');
+  });
+
+  it('handles long runs of separators, hashes, colons and brackets quickly', () => {
+    const started = performance.now();
+    kebabSlug(`${'-'.repeat(run)}a`);
+    hexoSlug(`a${' '.repeat(run)}!`);
+    chunkMarkdown(
+      [
+        `## Title${' '.repeat(run)}x`,
+        `## ${'#'.repeat(run)}x`,
+        `## ${'['.repeat(run)}`,
+        `## a {#${'a'.repeat(run)}`,
+        `:::${' '.repeat(run)}x`,
+        `---\ntitle: ${' '.repeat(run)}x\n---`,
+      ].join('\n'),
+      { slugify: kebabSlug },
+    );
+    expect(performance.now() - started).toBeLessThan(1000);
+  });
+
+  it('still reads headings, closing hashes, custom and MDX ids', () => {
+    const chunks = chunkMarkdown(
+      `## Usage ##\n\n${'text '.repeat(20)}\n\n## Hooks {/*hooks*/}\n\n${'text '.repeat(20)}\n\n### C# {#csharp}\n\n${'text '.repeat(20)}`,
+      { slugify: kebabSlug },
+    );
+    expect(chunks.map((c) => [c.section, c.anchor])).toEqual([
+      ['Usage', 'usage'],
+      ['Hooks', 'hooks'],
+      ['Hooks > C#', 'csharp'],
+    ]);
   });
 });

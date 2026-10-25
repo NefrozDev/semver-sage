@@ -8,7 +8,9 @@
   "targets": {
     "build": {
       "executor": "@angular/build:application",
-      "outputs": ["{options.outputPath}"],
+      "outputs": [
+        "{options.outputPath}"
+      ],
       "defaultConfiguration": "production",
       "options": {
         "outputPath": "dist/apps/web",
@@ -21,7 +23,9 @@
             "input": "apps/web/public"
           }
         ],
-        "styles": ["apps/web/src/styles.scss"]
+        "styles": [
+          "apps/web/src/styles.scss"
+        ]
       },
       "configurations": {
         "production": {
@@ -61,7 +65,9 @@
           "buildTarget": "web:build:development"
         }
       },
-      "dependsOn": ["api:serve"],
+      "dependsOn": [
+        "api:serve"
+      ],
       "options": {
         "proxyConfig": "apps/web/proxy.conf.json"
       }
@@ -69,7 +75,14 @@
     "test": {
       "executor": "@angular/build:unit-test",
       "options": {
-        "watch": false
+        "watch": false,
+        "coverageReporters": [
+          "text-summary",
+          "lcov"
+        ],
+        "coverageExclude": [
+          "src/**/*.spec.ts"
+        ]
       }
     },
     "serve-static": {
@@ -77,7 +90,9 @@
       "readyWhen": {
         "signal": true
       },
-      "dependsOn": ["build"],
+      "dependsOn": [
+        "build"
+      ],
       "executor": "@nx/web:file-server",
       "options": {
         "buildTarget": "web:build",

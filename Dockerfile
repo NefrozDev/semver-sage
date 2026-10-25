@@ -2,24 +2,24 @@
 
 # The lockfile is written by npm 11 (package.json "packageManager"); npm 10 reads it as out of sync.
 FROM node:22-bookworm-slim AS base
-RUN npm install -g npm@11.6.0
+RUN npm install -g --ignore-scripts npm@11.6.0
 WORKDIR /app
 
 # ---- all dependencies (build + ingestion tooling) ----
 FROM base AS deps
 ENV NX_DAEMON=false NX_NO_CLOUD=true
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm ci --ignore-scripts
 
 # ---- build api + web ----
 FROM deps AS build
 COPY . .
-RUN npx nx run-many -t build -p api web
+RUN npm run nx -- run-many -t build -p api web
 
 # ---- production dependencies only ----
 FROM base AS prod-deps
 COPY package.json package-lock.json ./
-RUN npm ci --omit=dev
+RUN npm ci --omit=dev --ignore-scripts
 
 # ---- ingestion: migrations + docs ingestion CLI (needs git) ----
 FROM deps AS ingestion
@@ -27,7 +27,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends git ca-certific
     && rm -rf /var/lib/apt/lists/*
 COPY . .
 ENV MODEL_CACHE_DIR=/app/.cache/models REPO_CACHE_DIR=/app/.cache/repos
-ENTRYPOINT ["npx", "tsx", "--tsconfig", "apps/ingestion/tsconfig.app.json", "apps/ingestion/src/main.ts"]
+ENTRYPOINT ["node_modules/.bin/tsx", "--tsconfig", "apps/ingestion/tsconfig.app.json", "apps/ingestion/src/main.ts"]
 CMD ["status"]
 
 # ---- app: NestJS API that also serves the Angular build ----

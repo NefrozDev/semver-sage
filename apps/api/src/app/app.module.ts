@@ -3,6 +3,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { AskController } from './ask/ask.controller';
 import { AskService } from './ask/ask.service';
 import { DatabaseService } from './database.service';
+import { llmProvider } from './llm';
 import { RetrievalService } from './retrieval/retrieval.service';
 
 @Module({
@@ -11,6 +12,6 @@ import { RetrievalService } from './retrieval/retrieval.service';
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: Number(process.env['ASK_RATE_LIMIT']) || 20 }]),
   ],
   controllers: [AskController],
-  providers: [DatabaseService, RetrievalService, AskService],
+  providers: [DatabaseService, RetrievalService, AskService, llmProvider],
 })
 export class AppModule {}

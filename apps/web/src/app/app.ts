@@ -40,6 +40,8 @@ export class App {
   protected readonly versions = httpResource<IndexedVersion[]>(() => '/api/versions', {
     defaultValue: [],
   });
+  /** Indexed versions, or none while loading or if the API is down (value() throws on error). */
+  protected readonly indexedVersions = computed(() => (this.versions.hasValue() ? this.versions.value() : []));
   protected readonly typing = signal(false);
 
   protected readonly busy = computed(() => ['thinking', 'speaking'].includes(this.store.status()));
@@ -88,7 +90,7 @@ export class App {
   /** "Angular 2–22", "Vue 2, 3": one entry per framework, as ranges. */
   protected readonly indexed = computed(() => {
     const byFramework = new Map<string, string[]>();
-    for (const v of this.versions.value()) {
+    for (const v of this.indexedVersions()) {
       byFramework.set(v.framework, [...(byFramework.get(v.framework) ?? []), v.version]);
     }
     return [...byFramework]

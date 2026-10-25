@@ -29,18 +29,27 @@ const INSERT_BATCH = 200;
 const embeddingInput = (c: NewChunk) =>
   `${c.section === c.pageTitle ? c.pageTitle : `${c.pageTitle} > ${c.section}`}\n\n${c.content}`;
 
+export interface IngestOptions {
+  repoCacheDir: string;
+  log?: (msg: string) => void;
+  /** Fetches the docs for `source` (default: sparse git checkout). Replaceable in tests. */
+  checkout?: (source: VersionSource) => Promise<{ dir: string; commit: string }>;
+}
+
 /**
  * Ingests one docs version. Versions must be ingested in ascending order per framework:
  * a chunk whose hash is live in the previous version gets its range extended instead of re-inserted.
  */
 export async function ingestVersion(
   pool: Pool,
-  embedder: Embedder,
+  embedder: Pick<Embedder, 'embedDocuments'>,
   adapter: SourceAdapter,
   source: VersionSource,
-  repoCacheDir: string,
-  log: (msg: string) => void = console.log,
+  options: IngestOptions,
 ): Promise<IngestStats | null> {
+  const log = options.log ?? console.log;
+  const checkout =
+    options.checkout ?? ((s: VersionSource) => checkoutDocs(options.repoCacheDir, s.repo, s.ref, s.paths));
   const { framework } = adapter;
   const versionNum = versionToNum(source.version);
   const label = `${framework}@${source.version}`;
@@ -63,7 +72,7 @@ export async function ingestVersion(
   }
 
   log(`${label}: checking out ${source.repo}@${source.ref}`);
-  const { dir, commit } = await checkoutDocs(repoCacheDir, source.repo, source.ref, source.paths);
+  const { dir, commit } = await checkout(source);
   const pages = await adapter.loadPages(dir, source);
 
   const chunks = new Map<string, NewChunk>();

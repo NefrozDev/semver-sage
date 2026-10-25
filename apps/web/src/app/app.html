@@ -77,7 +77,7 @@
     <!-- 4. The question box stays in reach at the bottom of the screen -->
     <div class="dock">
       <app-ask-form
-        [indexed]="versions.value()"
+        [indexed]="indexedVersions()"
         [busy]="busy()"
         (ask)="ask($event)"
         (stop)="store.stop()"

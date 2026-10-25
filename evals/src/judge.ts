@@ -28,8 +28,21 @@ export async function judgeFaithfulness(
   ];
   let reply = '';
   for await (const text of llm.stream(messages, new AbortController().signal)) reply += text;
-  const match = /\{[^{}]*"supported"\s*:\s*(\d+)[^{}]*"total"\s*:\s*(\d+)[^{}]*\}/.exec(reply);
-  if (!match) return null;
-  const [supported, total] = [Number(match[1]), Number(match[2])];
-  return total > 0 ? Math.min(1, supported / total) : null;
+  const verdict = parseVerdict(reply);
+  return verdict && verdict.total > 0 ? Math.min(1, verdict.supported / verdict.total) : null;
+}
+
+/** The first `{"supported": n, "total": n}` object in a reply that may wrap it in prose. */
+export function parseVerdict(reply: string): { supported: number; total: number } | null {
+  for (const [candidate] of reply.matchAll(/\{[^{}]*\}/g)) {
+    try {
+      const { supported, total } = JSON.parse(candidate) as Record<string, unknown>;
+      if (Number.isInteger(supported) && Number.isInteger(total)) {
+        return { supported: supported as number, total: total as number };
+      }
+    } catch {
+      // not JSON: keep looking
+    }
+  }
+  return null;
 }

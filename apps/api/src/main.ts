@@ -46,4 +46,7 @@ async function bootstrap() {
   );
 }
 
-bootstrap();
+bootstrap().catch((err: unknown) => {
+  Logger.error(`API failed to start: ${err instanceof Error ? err.stack ?? err.message : String(err)}`);
+  process.exit(1);
+});

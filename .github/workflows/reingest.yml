@@ -28,7 +28,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm install -g npm@11.6.0 && npm ci
+      - run: npm install -g --ignore-scripts npm@11.6.0 && npm ci --ignore-scripts
         if: steps.config.outputs.skip != 'true'
       - uses: actions/cache@v4
         if: steps.config.outputs.skip != 'true'

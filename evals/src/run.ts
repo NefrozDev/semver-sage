@@ -36,7 +36,7 @@ interface ConfigResult {
 }
 
 async function loadGolden(dir: string, frameworks: string[] | null): Promise<GoldenItem[]> {
-  const files = (await readdir(dir)).filter((f) => f.endsWith('.json')).sort();
+  const files = (await readdir(dir)).filter((f) => f.endsWith('.json')).sort((a, b) => a.localeCompare(b));
   const items = (
     await Promise.all(files.map(async (f) => JSON.parse(await readFile(join(dir, f), 'utf8')) as GoldenItem[]))
   ).flat();

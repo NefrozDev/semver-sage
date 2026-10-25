@@ -36,7 +36,7 @@ interface ChunkRow {
 export class Retriever {
   constructor(
     private readonly pool: Pool,
-    private readonly embedder: Embedder,
+    private readonly embedder: Pick<Embedder, 'embedQuery'>,
   ) {}
 
   async indexedVersions(): Promise<(IndexedVersionRow & IndexedVersion)[]> {
