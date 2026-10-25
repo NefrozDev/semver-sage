@@ -11,6 +11,7 @@ export default defineConfig(() => ({
     globals: true,
     environment: 'node',
     include: ['src/**/*.spec.ts'],
+    globalSetup: ['src/wait-for-api.ts'],
     testTimeout: 30_000,
     reporters: ['default'],
   },
