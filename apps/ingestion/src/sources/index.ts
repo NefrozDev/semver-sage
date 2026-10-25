@@ -3,6 +3,7 @@ import type { SourceAdapter } from './types';
 import { angularAdapter } from './angular';
 import { reactAdapter } from './react';
 import { svelteAdapter } from './svelte';
+import { typescriptAdapter } from './typescript';
 import { nextjsAdapter } from './nextjs';
 import { nodeAdapter } from './node';
 import { vueAdapter } from './vue';
@@ -15,6 +16,7 @@ export const ADAPTERS: Partial<Record<Framework, SourceAdapter>> = {
   angular: angularAdapter,
   react: reactAdapter,
   svelte: svelteAdapter,
+  typescript: typescriptAdapter,
 };
 
 export type { AdapterContext, SourceAdapter, SourcePage, VersionSource } from './types';
