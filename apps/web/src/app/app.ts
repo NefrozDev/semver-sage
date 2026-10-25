@@ -44,6 +44,8 @@ export class App {
     if (!scope) return null;
     if (!scope.framework) return 'Searching the latest docs of every framework';
     const name = FRAMEWORKS[scope.framework].label;
+    const compare = this.store.compare();
+    if (compare) return `Comparing the ${name} ${scope.version} and ${compare.version} scrolls`;
     return scope.version ? `Reading the ${name} ${scope.version} scrolls` : `No ${name} scrolls yet`;
   });
 

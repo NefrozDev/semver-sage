@@ -9,6 +9,8 @@ export class SageStore {
   readonly status = signal<SageStatus>('idle');
   readonly question = signal('');
   readonly scope = signal<ResolvedScope | null>(null);
+  /** Set in compare mode: the version `scope` is compared against. */
+  readonly compare = signal<ResolvedScope | null>(null);
   readonly citations = signal<Citation[]>([]);
   readonly answer = signal('');
   readonly error = signal<string | null>(null);
@@ -21,6 +23,7 @@ export class SageStore {
     const controller = (this.controller = new AbortController());
     this.question.set(request.question);
     this.scope.set(null);
+    this.compare.set(null);
     this.citations.set([]);
     this.answer.set('');
     this.error.set(null);
@@ -72,6 +75,7 @@ export class SageStore {
     switch (event.type) {
       case 'scope':
         this.scope.set(event.scope);
+        this.compare.set(event.compare ?? null);
         break;
       case 'citations':
         this.citations.set(event.citations);
