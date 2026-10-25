@@ -71,7 +71,7 @@ LLM answer with citations, streamed (SSE) to the frontend.
 - `docker compose up` brings up the whole stack locally.
 
 ## Current state
-Indexed: Vue 2–3, Node 14–26 (even majors), Next.js 12–16, Angular 12–22 (24 versions).
+Indexed: Vue 2–3, Node 14–26 (even majors), Next.js 12–16, Angular 12–22 (25 versions).
 - `docker-compose.yml`: full stack (Postgres, migrate, Ollama + model pull, app on :8080);
   `ingestion` service under the `tools` profile. `Dockerfile` targets: `ingestion`, `app` (last).
 - `db/migrations/001_chunks.sql`: `doc_versions` + deduplicated `chunks` (versions stored as

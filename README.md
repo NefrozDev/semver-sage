@@ -9,7 +9,7 @@ actually have installed.
 Runs 100% locally and for free: Postgres + pgvector, local embedding and reranking models
 (transformers.js), and a local LLM via Ollama. Any OpenAI-compatible API can replace the LLM.
 
-**Indexed:** Vue 2–3 · Node.js 14–26 (LTS majors) · Next.js 12–16 · Angular 12–22: 24 docs versions,
+**Indexed:** Vue 2–3 · Node.js 14–26 (LTS majors) · Next.js 12–16 · Angular 12–22: 25 docs versions,
 71,935 version-chunks stored as 34,296 rows.
 
 ## How it works
