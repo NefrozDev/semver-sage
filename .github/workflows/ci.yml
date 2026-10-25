@@ -25,6 +25,31 @@ jobs:
       - run: npm install -g npm@11.6.0 && npm ci
       - run: npx nx run-many -t lint test build
 
+  # Ingestion dedupe and version-filtered search against a real Postgres (fake docs, fake embedder).
+  integration:
+    runs-on: ubuntu-latest
+    env:
+      TEST_DATABASE_URL: postgres://sage:sage@localhost:5432/semver_sage_test
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_USER: sage
+          POSTGRES_PASSWORD: sage
+          POSTGRES_DB: semver_sage
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U sage -d semver_sage"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm install -g npm@11.6.0 && npm ci
+      - run: npx nx run ingestion:integration
+
   # Browser tests of the web app against a mocked API (no database or LLM needed).
   e2e:
     runs-on: ubuntu-latest

@@ -12,6 +12,8 @@ export default defineConfig(() => ({
     globals: true,
     environment: 'node',
     include: ['{src,tests}/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+    // *.int.spec.ts need a database: see vitest.integration.config.mts
+    exclude: ['**/node_modules/**', 'src/**/*.int.spec.ts'],
     passWithNoTests: true,
     reporters: ['default'],
     coverage: {
