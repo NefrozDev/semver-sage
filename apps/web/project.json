@@ -60,6 +60,10 @@
         "development": {
           "buildTarget": "web:build:development"
         }
+      },
+      "dependsOn": ["api:serve"],
+      "options": {
+        "proxyConfig": "apps/web/proxy.conf.json"
       }
     },
     "test": {
