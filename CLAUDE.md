@@ -37,6 +37,10 @@ dark themes following the system setting.
 - **LLM:** Ollama locally; behind a small provider adapter so a free-tier API or bring-your-own-key
   can be plugged in for a hosted demo
 - **CI:** GitHub Actions (free for public repos), including RAG evals
+- **Tests:** Vitest everywhere (unit, API end-to-end in `apps/api-e2e`), Playwright for browser
+  end-to-end (`apps/web-e2e`, mocked API), golden-set evals (`evals/`)
+- **Code quality:** self-hosted SonarQube Community Build (`infra/sonarqube`), shared across apps
+  on the server; Community Build analyzes the main branch only
 
 ## Data sources (docs are in git repos; each version = a git tag/branch)
 Approximate; verify each when implementing:
@@ -102,7 +106,13 @@ indexed: such questions get a fixed "AngularJS is a separate framework" answer (
   framework/version/compare pickers, package.json upload.
 - `evals/`: 171 golden questions; `npm run eval` (ablation), `--check` (labels exist in index),
   `--assert` (vs `baseline.json`), `--answers N --judge`. Results in `evals/results/latest.md`.
-- CI: `.github/workflows/{ci,evals,reingest}.yml`. Hosted demo guide: `docs/DEPLOY.md`.
+- Tests: `apps/web-e2e` (Playwright, 14 tests, `/api` mocked via `page.route`; served from the
+  production build by `static-server.mjs`), `apps/api-e2e` (Vitest against the running API; no LLM
+  needed), unit specs everywhere. Coverage: `npm run test:coverage` -> `coverage/**/lcov.info`.
+- SonarQube: `infra/sonarqube` (own compose stack), `sonar-project.properties`, `tools/sonar-scan.mjs`
+  (merges lcov to repo-relative paths, runs the scanner in Docker). Local token/admin password in `.env`.
+- CI: `.github/workflows/{ci,evals,reingest}.yml` (ci: check, e2e, sonarqube jobs). Hosted demo
+  guide: `docs/DEPLOY.md`.
 
 ## Next steps
 1. Vector search misses some exact-identifier questions (`req.params`, `useSeoMeta`): a cheap
@@ -117,7 +127,8 @@ indexed: such questions get a fixed "AngularJS is a separate framework" answer (
 - Ingest: `npm run ingest:vue` (or `npm run ingestion -- <command>`)
 - Run web + api: `npm start` (= `npx nx run-many -t serve -p web api`)
 - Full stack in Docker: `docker compose up -d --build`
-- Tests: `npm test`; retrieval evals: `npm run eval`
+- Tests: `npm test`; browser E2E: `npm run e2e`; API E2E: `npx nx e2e api-e2e`; evals: `npm run eval`
+- SonarQube: `npm run sonar:up` (server on :9000), `npm run sonar` (coverage + scan)
 - Commits: no Co-Authored-By / AI attribution lines (user preference).
 
 Environment: Windows (Node 22.15; Angular 22 wants >= 22.22.3, builds work but npm warns). GitHub CLI (`gh`) is not installed.

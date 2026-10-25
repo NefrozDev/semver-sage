@@ -139,9 +139,12 @@ own key) via `LLM_BASE_URL`, `LLM_MODEL` and `LLM_API_KEY`.
 
 ## CI
 
-- **CI**: lint, unit tests and builds on every push and PR.
-- **Retrieval evals**: ingests Vue into a pgvector service container and fails if the full pipeline
-  drops below [evals/baseline.json](evals/baseline.json); other frameworks on demand.
+- **CI**: lint, unit tests and builds on every push and PR, plus the Playwright browser tests.
+- **Retrieval evals**: ingests Vue into a pgvector service container, fails if the production
+  pipeline drops below [evals/baseline.json](evals/baseline.json), then runs the API end-to-end
+  tests against that database; other frameworks on demand.
+- **SonarQube**: coverage + analysis on the shared server, failing on the quality gate; runs once the
+  `SONAR_HOST_URL` and `SONAR_TOKEN` secrets are set.
 - **Re-ingest new releases**: weekly, ingests newly released majors into the hosted database.
 
 ## Known limitations
@@ -160,10 +163,15 @@ own key) via `LLM_BASE_URL`, `LLM_MODEL` and `LLM_API_KEY`.
   see "What was tried and dropped" above.
 - The LLM-judge faithfulness score needs a stronger judge model than the default 3B one to mean much.
 
-## Tests
+## Tests and quality
 
-```sh
-npm test                     # unit tests: detection, versions, chunker, adapters, scope, RRF, metrics, UI
-npm run eval                 # retrieval evals (needs an indexed database)
-npx nx e2e api-e2e           # needs the API running
-```
+| Layer | Tool | Where | Command |
+| --- | --- | --- | --- |
+| Unit | Vitest | `*.spec.ts` next to the code | `npm test` |
+| API end-to-end | Vitest + fetch, real API and database | `apps/api-e2e` | `npx nx e2e api-e2e` (starts the API) |
+| Browser end-to-end | Playwright (desktop + Pixel 7), production build, mocked API | `apps/web-e2e` | `npm run e2e` |
+| Retrieval quality | golden questions | `evals/` | `npm run eval` |
+| Coverage + static analysis | SonarQube (self-hosted, [infra/sonarqube](infra/sonarqube)) | `sonar-project.properties` | `npm run sonar:up`, then `npm run sonar` |
+
+`npm run test:coverage` writes lcov reports to `coverage/`; `npm run sonar` runs it, merges the
+reports and runs the scanner in Docker against `SONAR_HOST_URL` with `SONAR_TOKEN` (from `.env`).
