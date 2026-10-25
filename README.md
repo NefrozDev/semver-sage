@@ -139,7 +139,8 @@ own key) via `LLM_BASE_URL`, `LLM_MODEL` and `LLM_API_KEY`.
 
 ## CI
 
-- **CI**: lint, unit tests and builds on every push and PR, plus the Playwright browser tests.
+- **CI**: lint, unit tests and builds on every push and PR, plus the integration tests (against a
+  pgvector service container) and the Playwright browser tests.
 - **Retrieval evals**: ingests Vue into a pgvector service container, fails if the production
   pipeline drops below [evals/baseline.json](evals/baseline.json), then runs the API end-to-end
   tests against that database; other frameworks on demand.
@@ -170,11 +171,17 @@ own key) via `LLM_BASE_URL`, `LLM_MODEL` and `LLM_API_KEY`.
 | Layer | Tool | Where | Command |
 | --- | --- | --- | --- |
 | Unit | Vitest | `*.spec.ts` next to the code | `npm test` |
+| Integration | Vitest, real Postgres (`semver_sage_test`), fake docs and embedder | `apps/ingestion/src/*.int.spec.ts` | `npx nx run ingestion:integration` |
 | API end-to-end | Vitest + fetch, real API and database | `apps/api-e2e` | `npx nx e2e api-e2e` (starts the API) |
 | Browser end-to-end | Playwright (desktop + Pixel 7), production build, mocked API | `apps/web-e2e` | `npm run e2e` |
 | Retrieval quality | golden questions | `evals/` | `npm run eval` |
 | Coverage + static analysis | SonarQube Cloud, or self-hosted ([infra/sonarqube](infra/sonarqube)) | `sonar-project.properties` | `npm run sonar` |
 
-`npm run test:coverage` writes lcov reports to `coverage/`; `npm run sonar` runs it, merges the
+The integration tests check what unit tests can't: cross-version dedupe (a chunk stored once and
+its version range extended), rebuilds that reuse every embedding, and that search only returns
+chunks valid for the asked version. They create and migrate a separate `semver_sage_test`
+database (`TEST_DATABASE_URL`), so `npm run db:up` is enough.
+
+`npm run test:coverage` (unit + integration) writes lcov reports to `coverage/`; `npm run sonar` runs it, merges the
 reports and runs the scanner in Docker with `SONAR_TOKEN` and `SONAR_HOST_URL` from `.env`
 (for SonarQube Cloud: `https://sonarcloud.io` plus `SONAR_ORGANIZATION` and `SONAR_PROJECT_KEY`).
