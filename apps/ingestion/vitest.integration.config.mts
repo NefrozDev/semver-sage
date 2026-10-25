@@ -1,3 +1,4 @@
+import { resolve } from 'node:path';
 import { defineConfig } from 'vitest/config';
 
 // Integration tests against a real Postgres (a separate test database, created and migrated by
@@ -23,7 +24,7 @@ export default defineConfig(() => ({
       reportsDirectory: '../../coverage/apps/ingestion-integration',
       provider: 'v8' as const,
       // Also covers server-core (retriever, migrations): paths relative to the repo root.
-      reporter: ['text-summary', ['lcov', { projectRoot: '../..' }]],
+      reporter: ['text-summary', ['lcov', { projectRoot: resolve(import.meta.dirname, '../..') }]],
       allowExternal: true,
       include: ['src/**/*.ts', '../../libs/server/core/src/**/*.ts'],
       exclude: ['**/*.spec.ts', 'src/testing/**'],

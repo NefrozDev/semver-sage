@@ -85,6 +85,19 @@ jobs:
       SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       SONAR_QUALITYGATE_WAIT: 'true'
+      TEST_DATABASE_URL: postgres://sage:sage@localhost:5432/semver_sage_test
+    # For the integration tests' coverage.
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_USER: sage
+          POSTGRES_PASSWORD: sage
+          POSTGRES_DB: semver_sage
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U sage -d semver_sage"
+          --health-interval 5s --health-timeout 5s --health-retries 10
     steps:
       - name: Check configuration
         id: config
