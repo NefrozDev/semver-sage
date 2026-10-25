@@ -9,7 +9,8 @@
     "ingestion": "tsx --tsconfig apps/ingestion/tsconfig.app.json apps/ingestion/src/main.ts",
     "ingest:vue": "npm run ingestion -- ingest vue",
     "test": "nx run-many -t test",
-    "eval": "tsx --tsconfig evals/tsconfig.app.json evals/src/run.ts"
+    "eval": "tsx --tsconfig evals/tsconfig.app.json evals/src/run.ts",
+    "e2e": "nx run web-e2e:e2e"
   },
   "private": true,
   "dependencies": {
@@ -54,6 +55,7 @@
     "@nx/web": "24.0.1",
     "@nx/webpack": "24.0.1",
     "@nx/workspace": "24.0.1",
+    "@playwright/test": "^1.64.1",
     "@schematics/angular": "~22.2.0",
     "@swc/core": "~1.15.5",
     "@swc/helpers": "~0.5.18",

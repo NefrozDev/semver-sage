@@ -23,4 +23,24 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm install -g npm@11.6.0 && npm ci
-      - run: npx nx run-many -t lint test build --exclude api-e2e,ingestion-e2e
+      - run: npx nx run-many -t lint test build --exclude api-e2e
+
+  # Browser tests of the web app against a mocked API (no database or LLM needed).
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm install -g npm@11.6.0 && npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npx nx run web-e2e:e2e
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: dist/.playwright/report
+          retention-days: 7
