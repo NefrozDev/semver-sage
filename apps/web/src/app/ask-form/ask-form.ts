@@ -14,7 +14,8 @@ const EXAMPLES = [
   'How do I register a global filter in Vue 2?',
   'What changed in v-model between Vue 2 and 3?',
   'Since when does Node have a built-in fetch?',
-  'How do signals work in Angular 19?',
+  'How do runes work in Svelte 5?',
+  'What does useActionState do in React 19?',
   'How do I fetch data in a Next.js 14 server component?',
 ];
 
