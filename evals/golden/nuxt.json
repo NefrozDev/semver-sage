@@ -1,0 +1,74 @@
+[
+  {
+    "id": "nuxt2-async-data",
+    "question": "How do I fetch data with asyncData in Nuxt 2?",
+    "framework": "nuxt", "version": "2",
+    "expect": ["docs/features/data-fetching"],
+    "tags": ["version-specific", "replaced-later"]
+  },
+  {
+    "id": "nuxt2-meta",
+    "question": "How do I set meta tags for SEO in Nuxt 2?",
+    "framework": "nuxt", "version": "2",
+    "expect": ["docs/features/meta-tags-seo"],
+    "tags": ["replaced-later"]
+  },
+  {
+    "id": "nuxt2-store",
+    "question": "How does the store directory work in Nuxt 2?",
+    "framework": "nuxt", "version": "2",
+    "expect": ["docs/directory-structure/store"],
+    "tags": ["removed-later"]
+  },
+  {
+    "id": "nuxt2-plugins",
+    "question": "How do I add a plugin in Nuxt 2?",
+    "framework": "nuxt", "version": "2",
+    "expect": ["docs/directory-structure/plugins"]
+  },
+  {
+    "id": "nuxt3-use-fetch",
+    "question": "How do I fetch data with useFetch in Nuxt 3?",
+    "framework": "nuxt", "version": "3",
+    "expect": ["api/composables/use-fetch", "data-fetching"],
+    "tags": ["added"]
+  },
+  {
+    "id": "nuxt3-server-routes",
+    "question": "How do I create a server API route in Nuxt 3?",
+    "framework": "nuxt", "version": "3",
+    "expect": ["directory-structure/server"],
+    "tags": ["added"]
+  },
+  {
+    "id": "nuxt3-use-state",
+    "question": "How do I share state between components with useState in Nuxt 3?",
+    "framework": "nuxt", "version": "3",
+    "expect": ["api/composables/use-state", "getting-started/state-management"]
+  },
+  {
+    "id": "nuxt3-route-middleware",
+    "question": "How do I add route middleware in Nuxt 3?",
+    "framework": "nuxt", "version": "3",
+    "expect": ["directory-structure/middleware"]
+  },
+  {
+    "id": "nuxt4-seo-meta",
+    "question": "How do I set SEO meta tags with useSeoMeta in Nuxt 4?",
+    "framework": "nuxt", "version": "4",
+    "expect": ["api/composables/use-seo-meta"]
+  },
+  {
+    "id": "nuxt4-runtime-config",
+    "question": "How do I read runtime config in Nuxt 4?",
+    "framework": "nuxt", "version": "4",
+    "expect": ["api/composables/use-runtime-config", "runtime-config"]
+  },
+  {
+    "id": "nuxt-layers",
+    "question": "What are Nuxt layers?",
+    "framework": "nuxt", "version": "4",
+    "expect": ["directory-structure/layers", "layers"],
+    "tags": ["latest-by-default"]
+  }
+]

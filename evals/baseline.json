@@ -2,8 +2,14 @@
   "tolerance": 0.05,
   "frameworks": {
     "angular": { "hit5": 1.0, "reciprocalRank": 0.865 },
+    "express": { "hit5": 1.0, "reciprocalRank": 0.741 },
+    "nestjs": { "hit5": 0.909, "reciprocalRank": 0.879 },
     "nextjs": { "hit5": 0.933, "reciprocalRank": 0.749 },
     "node": { "hit5": 1.0, "reciprocalRank": 0.792 },
+    "nuxt": { "hit5": 0.909, "reciprocalRank": 0.816 },
+    "react": { "hit5": 1.0, "reciprocalRank": 0.833 },
+    "svelte": { "hit5": 1.0, "reciprocalRank": 0.833 },
+    "typescript": { "hit5": 0.929, "reciprocalRank": 0.937 },
     "vue": { "hit5": 1.0, "reciprocalRank": 0.963 }
   }
 }

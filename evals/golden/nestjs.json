@@ -1,0 +1,69 @@
+[
+  {
+    "id": "nest10-guards",
+    "question": "How do I protect a route with a guard in NestJS 10?",
+    "framework": "nestjs", "version": "10",
+    "expect": ["content/guards.md"]
+  },
+  {
+    "id": "nest10-validation",
+    "question": "How do I validate request bodies with ValidationPipe in NestJS 10?",
+    "framework": "nestjs", "version": "10",
+    "expect": ["content/techniques/validation.md", "content/pipes.md"]
+  },
+  {
+    "id": "nest10-caching",
+    "question": "How do I cache responses in NestJS 10?",
+    "framework": "nestjs", "version": "10",
+    "expect": ["content/techniques/caching.md"]
+  },
+  {
+    "id": "nest11-interceptors",
+    "question": "How do I write an interceptor in NestJS 11?",
+    "framework": "nestjs", "version": "11",
+    "expect": ["content/interceptors.md"]
+  },
+  {
+    "id": "nest11-microservices",
+    "question": "How do I create a microservice in NestJS 11?",
+    "framework": "nestjs", "version": "11",
+    "expect": ["content/microservices/basics.md"]
+  },
+  {
+    "id": "nest11-config",
+    "question": "How do I load environment variables with ConfigModule in NestJS 11?",
+    "framework": "nestjs", "version": "11",
+    "expect": ["content/techniques/configuration.md"]
+  },
+  {
+    "id": "nest12-controllers",
+    "question": "How do I create a controller in NestJS 12?",
+    "framework": "nestjs", "version": "12",
+    "expect": ["controllers"]
+  },
+  {
+    "id": "nest12-providers",
+    "question": "How do providers and dependency injection work in NestJS?",
+    "framework": "nestjs", "version": "12",
+    "expect": ["providers", "fundamentals/"],
+    "tags": ["latest-by-default"]
+  },
+  {
+    "id": "nest12-migration",
+    "question": "What do I need to change when upgrading to NestJS 12?",
+    "framework": "nestjs", "version": "12",
+    "expect": ["migration-guide"]
+  },
+  {
+    "id": "nest12-openapi",
+    "question": "How do I generate an OpenAPI (Swagger) spec in NestJS 12?",
+    "framework": "nestjs", "version": "12",
+    "expect": ["openapi/"]
+  },
+  {
+    "id": "nest12-middleware",
+    "question": "How do I apply middleware in NestJS 12?",
+    "framework": "nestjs", "version": "12",
+    "expect": ["middleware"]
+  }
+]
