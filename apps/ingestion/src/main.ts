@@ -50,7 +50,7 @@ async function main() {
           const versions = values.version ? all.filter((v) => v.version === values.version) : all;
           if (!versions.length) throw new Error(`${adapter.framework} has no version "${values.version}"`);
           for (const source of versions) {
-            await ingestVersion(pool, embedder, adapter, source, config.repoCacheDir);
+            await ingestVersion(pool, embedder, adapter, source, { repoCacheDir: config.repoCacheDir });
           }
         }
         break;
@@ -62,7 +62,7 @@ async function main() {
         console.log(`${adapter.framework}: parked ${parked} embeddings, re-ingesting ${versions.length} versions in order`);
         const embedder = new Embedder(config.embeddingModel, config.modelCacheDir);
         for (const source of versions) {
-          await ingestVersion(pool, embedder, adapter, source, config.repoCacheDir);
+          await ingestVersion(pool, embedder, adapter, source, { repoCacheDir: config.repoCacheDir });
         }
         await finishRebuild(pool, adapter.framework);
         break;

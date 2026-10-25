@@ -9,7 +9,7 @@ import { AskService } from './ask.service';
 /** "2", "18.20.8", "v5.x": anything longer isn't a version. */
 const MAX_VERSION_LENGTH = 32;
 
-function validate(body: unknown): AskRequest {
+export function validate(body: unknown): AskRequest {
   const { question, framework, version, compareVersion } = (body ?? {}) as Record<string, unknown>;
   if (typeof question !== 'string' || !question.trim() || question.length > 1000) {
     throw new BadRequestException('question must be a non-empty string of at most 1000 characters');
