@@ -20,8 +20,59 @@ export interface ChunkOptions {
 }
 
 const FENCE_RE = /^\s*(```|~~~)/;
-const HEADING_RE = /^(#{1,6})\s+(.+?)\s*#*\s*$/;
-const CUSTOM_ID_RE = /\s*\{#([\w-]+)\}\s*$/;
+// Regexes here stay linear (no overlapping quantifiers); trailing parts are trimmed in code.
+const HEADING_RE = /^(#{1,6})\s+(\S.*)$/;
+const ID_RE = /^[\w-]+$/;
+
+/** Strips every leading and trailing `char` (a loop: `^c+|c+$` backtracks on long runs). */
+export function trimChar(text: string, char: string): string {
+  let start = 0;
+  let end = text.length;
+  while (start < end && text[start] === char) start++;
+  while (end > start && text[end - 1] === char) end--;
+  return text.slice(start, end);
+}
+
+/** Heading text without its closing sequence ("Usage ##" -> "Usage"); keeps at least one char. */
+function headingText(raw: string): string {
+  const text = raw.trimEnd();
+  let end = text.length;
+  while (end > 1 && text[end - 1] === '#') end--;
+  return text.slice(0, end).trimEnd();
+}
+
+/** "Intro {#intro}" -> { text: "Intro", id: "intro" }; no valid trailing id -> id null. */
+function splitCustomId(raw: string): { text: string; id: string | null } {
+  const text = raw.trimEnd();
+  const open = text.lastIndexOf('{#');
+  const id = open >= 0 && text.endsWith('}') ? text.slice(open + 2, -1) : '';
+  return ID_RE.test(id) ? { text: text.slice(0, open), id } : { text: raw, id: null };
+}
+
+/** react.dev heading ids: "## Usage {/*usage*\/}" -> "## Usage {#usage}". */
+function mdxHeadingId(line: string): string {
+  if (!/^#{1,6}\s/.test(line)) return line;
+  const text = line.trimEnd();
+  const open = text.lastIndexOf('{/*');
+  const id = open >= 0 && text.endsWith('*/}') ? text.slice(open + 3, -3).trim() : '';
+  return ID_RE.test(id) ? `${text.slice(0, open).trimEnd()} {#${id}}` : line;
+}
+
+/**
+ * Applies mdxHeadingId to every line and, like the regex it replaced (`\s*$` in multiline mode),
+ * drops the blank lines right after a converted heading: blank lines decide where chunks split.
+ */
+function mdxHeadingIds(text: string): string {
+  const out: string[] = [];
+  let afterId = false;
+  for (const line of text.split('\n')) {
+    if (afterId && !line.trim()) continue;
+    const converted = mdxHeadingId(line);
+    afterId = converted !== line;
+    out.push(converted);
+  }
+  return out.join('\n');
+}
 
 /** Splits a line into alternating [prose, `code`, prose, ...] so code spans can be left alone. */
 const proseParts = (line: string) => line.split(/(`+[^`]*`+)/);
@@ -42,7 +93,11 @@ export function cleanMarkdown(markdown: string): { title: string | null; body: s
 
   const frontmatter = /^---\n([\s\S]*?)\n---\n/.exec(text);
   if (frontmatter) {
-    title = /^title:\s*['"]?(.+?)['"]?\s*$/m.exec(frontmatter[1])?.[1] ?? null;
+    const value = /^title:(.*)$/m.exec(frontmatter[1])?.[1].trim() ?? '';
+    // One optional quote on each side, as `['"]?(.+?)['"]?` did
+    const start = /^['"]/.test(value) && value.length > 1 ? 1 : 0;
+    const end = /['"]$/.test(value) && value.length - start > 1 ? value.length - 1 : value.length;
+    title = value.slice(start, end) || null;
     text = text.slice(frontmatter[0].length);
   }
 
@@ -51,11 +106,9 @@ export function cleanMarkdown(markdown: string): { title: string | null; body: s
     .replace(/\{%\s*codeblock\s+lang:(\w+)\s*%\}/g, '```$1')
     .replace(/\{%\s*endcodeblock\s*%\}/g, '```')
     .replace(/\{%\s*(end)?raw\s*%\}/g, '')
-    .replace(/<!--[\s\S]*?-->/g, '')
-    // MDX heading ids (react.dev: "## Usage {/*usage*/}") become "{#usage}" before MDX comments go
-    .replace(/^(#{1,6}\s.*?)\s*\{\/\*\s*([\w-]+)\s*\*\/\}\s*$/gm, '$1 {#$2}')
-    // MDX comments (Next.js docs)
-    .replace(/\{\/\*[\s\S]*?\*\/\}/g, '');
+    .replace(/<!--[\s\S]*?-->/g, '');
+  // MDX heading ids (react.dev) become "{#usage}" before MDX comments (Next.js docs) go
+  text = mdxHeadingIds(text).replace(/\{\/\*[\s\S]*?\*\/\}/g, '');
 
   const out: string[] = [];
   let inFence = false;
@@ -85,19 +138,20 @@ export function cleanMarkdown(markdown: string): { title: string | null; body: s
     }
 
     // VitePress API-style toggles carry meaning: keep them as labels.
-    if (/^<div class="options-api">/.test(trimmed)) {
+    if (trimmed.startsWith('<div class="options-api">')) {
       out.push('*(Options API)*');
       continue;
     }
-    if (/^<div class="composition-api">/.test(trimmed)) {
+    if (trimmed.startsWith('<div class="composition-api">')) {
       out.push('*(Composition API)*');
       continue;
     }
 
     // VitePress containers: "::: tip Note" -> "**Note**", closing ":::" dropped
-    const container = /^:::+\s*(\w[\w-]*)?\s*(.*)$/.exec(trimmed);
-    if (container) {
-      const [, kind, label] = container;
+    if (trimmed.startsWith(':::')) {
+      const rest = trimmed.replace(/^:+/, '').trim();
+      const kind = /^\w[\w-]*/.exec(rest)?.[0];
+      const label = kind ? rest.slice(kind.length).trim() : '';
       if (kind && kind !== 'code-group') {
         out.push(`**${label || kind[0].toUpperCase() + kind.slice(1)}**`);
       }
@@ -111,9 +165,9 @@ export function cleanMarkdown(markdown: string): { title: string | null; body: s
 }
 
 function cleanHeading(raw: string): { text: string; customId: string | null } {
-  const customId = CUSTOM_ID_RE.exec(raw)?.[1] ?? null;
-  const text = stripHtml(raw.replace(CUSTOM_ID_RE, ''))
-    .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+  const { text: withoutId, id: customId } = splitCustomId(raw);
+  const text = stripHtml(withoutId)
+    .replace(/\[([^[\]]+)\]\([^()]*\)/g, '$1')
     .replace(/`/g, '')
     .replace(/\s+/g, ' ')
     .trim();
@@ -177,7 +231,7 @@ export function chunkMarkdown(markdown: string, options: ChunkOptions): PageChun
       sections[sections.length - 1].lines.push(line);
       continue;
     }
-    const { text, customId } = cleanHeading(heading[2]);
+    const { text, customId } = cleanHeading(headingText(heading[2]));
     if (level === 1) {
       pageTitle ??= text;
       continue;
@@ -205,11 +259,7 @@ export function chunkHash(urlPath: string, chunk: PageChunk): string {
 }
 
 /** VitePress-style anchors: "Basic Example" -> "basic-example". */
-export const kebabSlug = (heading: string) =>
-  heading
-    .toLowerCase()
-    .replace(/[^\p{L}\p{N}]+/gu, '-')
-    .replace(/^-+|-+$/g, '');
+export const kebabSlug = (heading: string) => trimChar(heading.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '-'), '-');
 
 /** GitHub / github-slugger anchors: "req.params" -> "reqparams", "Foo Bar" -> "foo-bar". */
 export const githubSlug = (heading: string) =>
@@ -221,4 +271,4 @@ export const githubSlug = (heading: string) =>
 
 /** Hexo-style anchors (case kept): "Vue.extend( options )" -> "Vue-extend-options". */
 export const hexoSlug = (heading: string) =>
-  heading.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-+|-+$/g, '');
+  trimChar(heading.replace(/[^\p{L}\p{N}]+/gu, '-'), '-');

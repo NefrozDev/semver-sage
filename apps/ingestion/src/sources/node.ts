@@ -1,5 +1,6 @@
 import { posix } from 'node:path';
 import { parse } from 'yaml';
+import { trimChar } from '../chunker';
 import { latestPerMajor, listReleaseTags } from '../git';
 import { loadMarkdownPages } from './markdown-repo';
 import type { SourceAdapter } from './types';
@@ -29,7 +30,7 @@ interface NodeYaml {
  */
 export function renderNodeMetadata(markdown: string): string {
   return markdown
-    .replace(/<!--\s*YAML\s*\n([\s\S]*?)-->/g, (_, body: string) => {
+    .replace(/<!--[ \t]*YAML[ \t]*\n([\s\S]*?)-->/g, (_, body: string) => {
       let meta: NodeYaml;
       try {
         meta = (parse(body) ?? {}) as NodeYaml;
@@ -49,16 +50,13 @@ export function renderNodeMetadata(markdown: string): string {
     })
     .replace(/<!--\s*introduced_in=(v[\d.]+)\s*-->/g, '*Introduced in: $1*')
     // Reference-style link definitions at the end of each page are noise for retrieval.
-    .replace(/^\[[^\]\n]+\]:\s+\S+.*$/gm, '');
+    .replace(/^\[[^\]\n]+\]:[ \t]+\S.*$/gm, '');
 }
 
 /** nodejs.org's stable "legacy" anchors: "fs" + "`fs.readFile(path[, options])`" -> "fs_fs_readfile_path_options". */
 export function nodeLegacyId(heading: string, sourcePath: string): string {
   const module = pageName(sourcePath).replace(/-/g, '_');
-  const slug = heading
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '_')
-    .replace(/^_+|_+$/g, '');
+  const slug = trimChar(heading.toLowerCase().replace(/[^a-z0-9]+/g, '_'), '_');
   return `${module}_${slug}`;
 }
 
