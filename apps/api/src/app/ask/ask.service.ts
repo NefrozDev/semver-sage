@@ -1,7 +1,21 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { AskRequest, AskStreamEvent, FRAMEWORKS } from '@semver-sage/types';
-import { buildMessages, createLlmProvider, getConfig, resolveScope } from '@semver-sage/server-core';
+import {
+  buildCompareMessages,
+  buildMessages,
+  ChatMessage,
+  createLlmProvider,
+  getConfig,
+  resolveComparison,
+  resolveScope,
+  SearchScope,
+} from '@semver-sage/server-core';
+import { AskRequest, AskStreamEvent, Citation, FRAMEWORKS, ResolvedScope } from '@semver-sage/types';
 import { RetrievalService } from '../retrieval/retrieval.service';
+
+/** Sources per version in compare mode (two versions share the usual budget of ~8). */
+const COMPARE_TOP_K = 4;
+
+const toPublic = ({ versionNum, ...scope }: SearchScope): ResolvedScope => scope;
 
 @Injectable()
 export class AskService {
@@ -22,11 +36,27 @@ export class AskService {
       return;
     }
 
-    const scope = resolveScope(request, indexed);
-    const { versionNum, ...publicScope } = scope;
-    yield { type: 'scope', scope: publicScope };
+    let scope: SearchScope;
+    let citations: Citation[];
+    let messages: ChatMessage[];
+    const comparison = resolveComparison(request, indexed);
 
-    const citations = await this.retrieval.search(request.question, scope);
+    if (comparison) {
+      const [from, to] = comparison;
+      scope = from;
+      yield { type: 'scope', scope: toPublic(from), compare: toPublic(to) };
+      const [before, after] = await Promise.all([
+        this.retrieval.search(request.question, from, COMPARE_TOP_K),
+        this.retrieval.search(request.question, to, COMPARE_TOP_K),
+      ]);
+      citations = [...before, ...after].map((c, i) => ({ ...c, n: i + 1 }));
+      messages = buildCompareMessages(request.question, from, to, citations);
+    } else {
+      scope = resolveScope(request, indexed);
+      yield { type: 'scope', scope: toPublic(scope) };
+      citations = await this.retrieval.search(request.question, scope);
+      messages = buildMessages(request.question, scope, citations);
+    }
     yield { type: 'citations', citations };
 
     if (!citations.length) {
@@ -37,7 +67,7 @@ export class AskService {
     }
 
     try {
-      for await (const text of this.llm.stream(buildMessages(request.question, scope, citations), signal)) {
+      for await (const text of this.llm.stream(messages, signal)) {
         yield { type: 'token', text };
       }
       yield { type: 'done', model: this.llm.name, elapsedMs: Date.now() - started };

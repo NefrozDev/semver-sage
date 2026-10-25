@@ -6,20 +6,26 @@ import { RetrievalService } from '../retrieval/retrieval.service';
 import { AskService } from './ask.service';
 
 function validate(body: unknown): AskRequest {
-  const { question, framework, version } = (body ?? {}) as Record<string, unknown>;
+  const { question, framework, version, compareVersion } = (body ?? {}) as Record<string, unknown>;
   if (typeof question !== 'string' || !question.trim() || question.length > 1000) {
     throw new BadRequestException('question must be a non-empty string of at most 1000 characters');
   }
   if (framework !== undefined && framework !== null && !isFramework(framework)) {
     throw new BadRequestException(`unknown framework: ${String(framework)}`);
   }
-  if (version !== undefined && version !== null && (typeof version !== 'string' || !parseVersion(version))) {
-    throw new BadRequestException(`invalid version: ${String(version)}`);
+  for (const [name, value] of [['version', version], ['compareVersion', compareVersion]] as const) {
+    if (value !== undefined && value !== null && (typeof value !== 'string' || !parseVersion(value))) {
+      throw new BadRequestException(`invalid ${name}: ${String(value)}`);
+    }
+  }
+  if (compareVersion && !framework) {
+    throw new BadRequestException('compareVersion needs a framework');
   }
   return {
     question: question.trim(),
     framework: (framework as AskRequest['framework'] | null) ?? undefined,
     version: (version as string | null) ?? undefined,
+    compareVersion: (compareVersion as string | null) ?? undefined,
   };
 }
 

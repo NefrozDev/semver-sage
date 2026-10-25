@@ -1,6 +1,6 @@
 import { versionToNum, type Framework } from '@semver-sage/types';
 import { reciprocalRankFusion } from './rrf';
-import { IndexedVersionRow, resolveScope } from './scope';
+import { IndexedVersionRow, resolveComparison, resolveScope } from './scope';
 
 const row = (framework: Framework, version: string): IndexedVersionRow => ({
   framework,
@@ -53,6 +53,25 @@ describe('resolveScope', () => {
       versionNum: null,
       source: 'none',
     });
+  });
+});
+
+describe('resolveComparison', () => {
+  const versions = (pair: ReturnType<typeof resolveComparison>) => pair?.map((s) => s.version);
+
+  it('detects a comparison in the question, oldest first', () => {
+    expect(versions(resolveComparison({ question: 'Vue 3 vs Vue 2 v-model' }, indexed))).toEqual(['2', '3']);
+  });
+
+  it('takes the second version from the request', () => {
+    const pair = resolveComparison({ question: 'v-model', framework: 'vue', version: '2', compareVersion: '3' }, indexed);
+    expect(versions(pair)).toEqual(['2', '3']);
+    expect(pair?.[0].source).toBe('request');
+  });
+
+  it('is not a comparison when both versions map to the same docs', () => {
+    expect(resolveComparison({ question: 'Vue 2.6 vs 2.7 filters' }, indexed)).toBeNull();
+    expect(resolveComparison({ question: 'Vue 2 filters' }, indexed)).toBeNull();
   });
 });
 
