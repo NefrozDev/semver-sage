@@ -2,6 +2,7 @@ import type { Framework } from '@semver-sage/types';
 import type { SourceAdapter } from './types';
 import { angularAdapter } from './angular';
 import { reactAdapter } from './react';
+import { svelteAdapter } from './svelte';
 import { nextjsAdapter } from './nextjs';
 import { nodeAdapter } from './node';
 import { vueAdapter } from './vue';
@@ -13,6 +14,7 @@ export const ADAPTERS: Partial<Record<Framework, SourceAdapter>> = {
   nextjs: nextjsAdapter,
   angular: angularAdapter,
   react: reactAdapter,
+  svelte: svelteAdapter,
 };
 
 export type { AdapterContext, SourceAdapter, SourcePage, VersionSource } from './types';

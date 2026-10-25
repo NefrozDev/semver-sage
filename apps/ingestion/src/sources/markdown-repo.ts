@@ -5,7 +5,7 @@ import type { SourcePage, VersionSource } from './types';
 
 export interface MarkdownRepoOptions extends Omit<ChunkOptions, 'slugify'> {
   /** Turns a heading into the anchor id the docs site generates (some sites prefix the page name). */
-  slugify: (heading: string, sourcePath: string) => string;
+  slugify: (heading: string, sourcePath: string, parents: string[]) => string;
   /** Maps a repo-relative doc path (and its raw content) to its published URL path, or null to skip it. */
   toUrlPath: (sourcePath: string, source: VersionSource, markdown: string) => string | null;
   /** Rewrites site-specific markup into plain markdown before chunking; null skips the page. */
@@ -44,7 +44,7 @@ export async function loadMarkdownPages(
     if (markdown === null) continue;
     const chunks = chunkMarkdown(markdown, {
       ...chunkOptions,
-      slugify: (heading) => slugify(heading, sourcePath),
+      slugify: (heading, parents) => slugify(heading, sourcePath, parents),
     });
     if (chunks.length) pages.push({ sourcePath, urlPath, chunks });
   }

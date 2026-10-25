@@ -9,8 +9,8 @@ export interface PageChunk {
 }
 
 export interface ChunkOptions {
-  /** Turns a heading into the anchor id the docs site generates for it. */
-  slugify: (heading: string) => string;
+  /** Turns a heading (and the headings it sits under) into the anchor id the docs site generates. */
+  slugify: (heading: string, parents: string[]) => string;
   /** Soft cap per chunk; sections above it are split on paragraph boundaries. */
   maxChars?: number;
   /** Chunks with fewer meaningful characters are dropped. */
@@ -183,8 +183,9 @@ export function chunkMarkdown(markdown: string, options: ChunkOptions): PageChun
       continue;
     }
     stack.length = level - 2;
+    const parents = stack.filter(Boolean);
     stack[level - 2] = text;
-    sections.push({ trail: stack.filter(Boolean), anchor: customId ?? slugify(text), lines: [] });
+    sections.push({ trail: stack.filter(Boolean), anchor: customId ?? slugify(text, parents), lines: [] });
   }
 
   const title = pageTitle ?? 'Untitled';
