@@ -1,0 +1,9 @@
+{
+  "tolerance": 0.05,
+  "frameworks": {
+    "angular": { "hit5": 1.0, "reciprocalRank": 0.865 },
+    "nextjs": { "hit5": 0.933, "reciprocalRank": 0.749 },
+    "node": { "hit5": 1.0, "reciprocalRank": 0.792 },
+    "vue": { "hit5": 1.0, "reciprocalRank": 0.963 }
+  }
+}

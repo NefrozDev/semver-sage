@@ -1,5 +1,17 @@
 name: semver-sage
 
+# `docker compose up -d` runs the whole stack on http://localhost:8080.
+# Local development only needs Postgres: `npm run db:up`.
+# Ingest docs with: `docker compose run --rm ingestion ingest vue`
+
+x-server-env: &server-env
+  DATABASE_URL: postgres://sage:sage@postgres:5432/semver_sage
+  LLM_PROVIDER: ${LLM_PROVIDER:-ollama}
+  LLM_BASE_URL: ${LLM_BASE_URL:-http://ollama:11434}
+  LLM_MODEL: ${LLM_MODEL:-llama3.2:3b}
+  LLM_API_KEY: ${LLM_API_KEY:-}
+  RERANK_ENABLED: ${RERANK_ENABLED:-true}
+
 services:
   postgres:
     image: pgvector/pgvector:pg17
@@ -17,16 +29,56 @@ services:
       timeout: 5s
       retries: 10
 
-  # Optional: `docker compose --profile ollama up -d` if Ollama isn't installed natively.
-  # Then pull a model: `docker compose exec ollama ollama pull llama3.2:3b`
   ollama:
     image: ollama/ollama:latest
-    profiles: ['ollama']
     ports:
       - '${OLLAMA_PORT:-11434}:11434'
     volumes:
       - ollama:/root/.ollama
 
+  # One-shot: makes sure the LLM model is downloaded.
+  ollama-pull:
+    image: ollama/ollama:latest
+    depends_on: [ollama]
+    environment:
+      OLLAMA_HOST: ollama:11434
+    entrypoint: ['sh', '-c', 'until ollama list >/dev/null 2>&1; do sleep 1; done; ollama pull "${LLM_MODEL:-llama3.2:3b}"']
+    restart: 'no'
+
+  # One-shot: applies database migrations.
+  migrate:
+    build: { context: ., target: ingestion }
+    image: semver-sage-ingestion
+    command: ['migrate']
+    environment: *server-env
+    depends_on:
+      postgres: { condition: service_healthy }
+    restart: 'no'
+
+  app:
+    build: { context: ., target: app }
+    image: semver-sage-app
+    environment: *server-env
+    ports:
+      - '${APP_PORT:-8080}:3000'
+    volumes:
+      - models:/app/.cache/models
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+
+  # Tooling, not started by `up`: docker compose run --rm ingestion ingest <framework|all>
+  ingestion:
+    image: semver-sage-ingestion
+    profiles: ['tools']
+    environment: *server-env
+    volumes:
+      - models:/app/.cache/models
+      - repos:/app/.cache/repos
+    depends_on:
+      postgres: { condition: service_healthy }
+
 volumes:
   pgdata:
   ollama:
+  models:
+  repos:

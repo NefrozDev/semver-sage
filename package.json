@@ -8,7 +8,8 @@
     "db:migrate": "npm run ingestion -- migrate",
     "ingestion": "tsx --tsconfig apps/ingestion/tsconfig.app.json apps/ingestion/src/main.ts",
     "ingest:vue": "npm run ingestion -- ingest vue",
-    "test": "nx run-many -t test"
+    "test": "nx run-many -t test",
+    "eval": "tsx --tsconfig evals/tsconfig.app.json evals/src/run.ts"
   },
   "private": true,
   "dependencies": {
@@ -22,11 +23,14 @@
     "@nestjs/common": "^11.0.0",
     "@nestjs/core": "^11.0.0",
     "@nestjs/platform-express": "^11.0.0",
+    "@nestjs/throttler": "^6.7.1",
     "axios": "^1.6.0",
     "marked": "^18.1.1",
     "pg": "^8.23.1",
     "reflect-metadata": "^0.2.0",
-    "rxjs": "~7.8.0"
+    "rxjs": "~7.8.0",
+    "tslib": "^2.8.1",
+    "yaml": "^2.9.1"
   },
   "devDependencies": {
     "@angular-devkit/core": "~22.2.0",
@@ -71,7 +75,6 @@
     "rolldown": "^1.2.0",
     "ts-jest": "^29.4.7",
     "ts-node": "10.9.1",
-    "tslib": "^2.3.0",
     "tsx": "^4.20.5",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.58.0",

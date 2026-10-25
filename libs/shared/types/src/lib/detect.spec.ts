@@ -1,4 +1,4 @@
-import { detectFrameworks, detectFromPackageJson } from './detect';
+import { comparisonTopic, detectComparison, detectFrameworks, detectFromPackageJson } from './detect';
 
 const first = (q: string) => {
   const [m] = detectFrameworks(q);
@@ -39,6 +39,41 @@ describe('detectFrameworks', () => {
       ['vue', '3'],
       ['react', null],
     ]);
+  });
+});
+
+describe('detectComparison', () => {
+  it.each([
+    ['What changed in Vue 2 vs Vue 3 for v-model?', 'vue', '2', '3'],
+    ['What changed in Next.js routing between 12 and 14?', 'nextjs', '12', '14'],
+    ['Angular 17 → 12 control flow', 'angular', '12', '17'],
+    ['Migrating from Node 16 to 20: what about fetch?', 'node', '16', '20'],
+    ['React 17 vs 18 batching', 'react', '17', '18'],
+  ])('%s', (question, framework, from, to) => {
+    expect(detectComparison(question)).toEqual({ framework, from, to });
+  });
+
+  it.each([
+    'How do computed properties work in Vue 2?',
+    'Using Vue 3 with Node 18',
+    'Vue 3 and Vue 3.0 setup',
+  ])('ignores single-version questions: %s', (question) => {
+    expect(detectComparison(question)).toBeNull();
+  });
+});
+
+describe('comparisonTopic', () => {
+  it.each([
+    ['What changed in v-model between Vue 2 and 3?', 'v-model'],
+    ['What changed in Next.js routing between 12 and 14?', 'routing'],
+    ['Vue 2 vs Vue 3 reactivity', 'reactivity'],
+    ['Migrating from Node 16 to 20: what about fetch?', 'what about fetch'],
+  ])('%s', (question, topic) => {
+    expect(comparisonTopic(question)).toBe(topic);
+  });
+
+  it('falls back to the question when nothing is left', () => {
+    expect(comparisonTopic('Vue 2 vs 3?')).toBe('Vue 2 vs 3?');
   });
 });
 

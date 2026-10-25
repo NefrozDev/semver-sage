@@ -1,0 +1,108 @@
+[
+  {
+    "id": "node-since-fetch",
+    "question": "Since when does Node have a built-in fetch?",
+    "framework": "node", "version": "26",
+    "expect": ["api/globals.html#globals_fetch"],
+    "tags": ["since-when", "latest-by-default"]
+  },
+  {
+    "id": "node16-fetch-flag",
+    "question": "Can I use fetch in Node 16 without a flag?",
+    "framework": "node", "version": "16",
+    "expect": ["api/globals.html#globals_fetch"],
+    "tags": ["version-specific", "changed-later"]
+  },
+  {
+    "id": "node14-fs-promises",
+    "question": "How do I read a file with promises in Node 14?",
+    "framework": "node", "version": "14",
+    "expect": ["api/fs.html#fs_fspromises_readfile_path_options", "api/fs.html#fs_promises_api"]
+  },
+  {
+    "id": "node18-test-runner",
+    "question": "How do I write a test with the built-in test runner in Node 18?",
+    "framework": "node", "version": "18",
+    "expect": ["api/test.html"],
+    "tags": ["added"]
+  },
+  {
+    "id": "node16-abortcontroller",
+    "question": "How do I use AbortController in Node 16?",
+    "framework": "node", "version": "16",
+    "expect": ["api/globals.html#globals_class_abortcontroller", "api/globals.html#globals_abortcontroller"]
+  },
+  {
+    "id": "node22-typescript",
+    "question": "How do I run a TypeScript file directly in Node 22?",
+    "framework": "node", "version": "22",
+    "expect": ["api/typescript.html"],
+    "tags": ["added"]
+  },
+  {
+    "id": "node20-worker",
+    "question": "How do I start a worker thread in Node 20?",
+    "framework": "node", "version": "20",
+    "expect": ["api/worker_threads.html#worker_threads_new_worker", "api/worker_threads.html#worker_threads_class_worker"]
+  },
+  {
+    "id": "node20-watch",
+    "question": "What does the --watch flag do in Node 20?",
+    "framework": "node", "version": "20",
+    "expect": ["api/cli.html#cli_watch"],
+    "tags": ["added"]
+  },
+  {
+    "id": "node18-exec",
+    "question": "How do I run a shell command and capture its output in Node 18?",
+    "framework": "node", "version": "18",
+    "expect": ["api/child_process.html#child_process_child_process_exec"]
+  },
+  {
+    "id": "node16-sha256",
+    "question": "How do I hash a string with SHA-256 in Node 16?",
+    "framework": "node", "version": "16",
+    "expect": ["api/crypto.html#crypto_crypto_createhash", "api/crypto.html#crypto_class_hash"]
+  },
+  {
+    "id": "node22-permissions",
+    "question": "How does the permission model work in Node 22?",
+    "framework": "node", "version": "22",
+    "expect": ["api/permissions.html"],
+    "tags": ["added"]
+  },
+  {
+    "id": "node20-dirname-esm",
+    "question": "How do I get the current directory in an ES module in Node 20?",
+    "framework": "node", "version": "20",
+    "expect": ["api/esm.html#esm_import_meta_dirname", "api/esm.html#esm_no_filename_or_dirname"]
+  },
+  {
+    "id": "node18-parseargs",
+    "question": "How do I parse command line arguments with util.parseArgs in Node 18?",
+    "framework": "node", "version": "18",
+    "expect": ["api/util.html#util_util_parseargs_config"],
+    "tags": ["added"]
+  },
+  {
+    "id": "node14-http-server",
+    "question": "How do I create an HTTP server in Node 14?",
+    "framework": "node", "version": "14",
+    "expect": ["api/http.html#http_http_createserver"]
+  },
+  {
+    "id": "node22-sqlite",
+    "question": "How do I open a SQLite database with the built-in module in Node 22?",
+    "framework": "node", "version": "22",
+    "expect": ["api/sqlite.html"],
+    "tags": ["added"]
+  },
+  {
+    "id": "node-fetch-request",
+    "question": "Is fetch still experimental?",
+    "request": { "framework": "node", "version": "18.12" },
+    "framework": "node", "version": "18",
+    "expect": ["api/globals.html#globals_fetch"],
+    "tags": ["version-from-request", "changed-later"]
+  }
+]

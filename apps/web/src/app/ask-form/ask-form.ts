@@ -12,9 +12,10 @@ import {
 
 const EXAMPLES = [
   'How do I register a global filter in Vue 2?',
-  'What should I use instead of filters in Vue 3?',
-  'How does v-model work on custom components in Vue 2?',
-  'What does <script setup> do?',
+  'What changed in v-model between Vue 2 and 3?',
+  'Since when does Node have a built-in fetch?',
+  'How do signals work in Angular 19?',
+  'How do I fetch data in a Next.js 14 server component?',
 ];
 
 @Component({
@@ -34,6 +35,7 @@ export class AskForm {
   protected readonly question = signal('');
   protected readonly framework = signal<Framework | ''>('');
   protected readonly version = signal('');
+  protected readonly compareVersion = signal('');
   protected readonly detected = signal<DetectedDependency[]>([]);
   protected readonly uploadError = signal<string | null>(null);
 
@@ -62,6 +64,7 @@ export class AskForm {
   protected setFramework(framework: Framework | ''): void {
     this.framework.set(framework);
     this.version.set('');
+    this.compareVersion.set('');
   }
 
   protected useDependency(dep: DetectedDependency): void {
@@ -98,6 +101,7 @@ export class AskForm {
       question,
       framework: this.framework() || undefined,
       version: (this.framework() && this.version().trim()) || undefined,
+      compareVersion: (this.framework() && this.compareVersion().trim()) || undefined,
     });
   }
 

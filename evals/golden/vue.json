@@ -1,0 +1,183 @@
+[
+  {
+    "id": "vue2-global-filter",
+    "question": "How do I register a global filter in Vue 2?",
+    "framework": "vue", "version": "2",
+    "expect": ["v2/guide/filters.html", "v2/api/#Vue-filter"],
+    "tags": ["version-specific", "removed-later"]
+  },
+  {
+    "id": "vue2-v-model-component",
+    "question": "How do I use v-model on a custom component in Vue 2?",
+    "framework": "vue", "version": "2",
+    "expect": ["v2/guide/components-custom-events.html#Customizing-Component-v-model", "v2/guide/components.html#Using-v-model-on-Components", "v2/api/#model"],
+    "tags": ["version-specific", "changed-later"]
+  },
+  {
+    "id": "vue2-reactive-new-property",
+    "question": "How do I add a new reactive property to an existing object in Vue 2?",
+    "framework": "vue", "version": "2",
+    "expect": ["v2/guide/reactivity.html", "v2/api/#Vue-set"],
+    "tags": ["version-specific", "removed-later"]
+  },
+  {
+    "id": "vue2-listeners",
+    "question": "In Vue 2, how do I forward all event listeners to a child element using $listeners?",
+    "framework": "vue", "version": "2",
+    "expect": ["v2/guide/components-custom-events.html#Binding-Native-Events-to-Components", "v2/api/#vm-listeners"],
+    "tags": ["version-specific", "removed-later"]
+  },
+  {
+    "id": "vue2-computed-vs-methods",
+    "question": "Vue 2: what is the difference between computed properties and methods?",
+    "framework": "vue", "version": "2",
+    "expect": ["v2/guide/computed.html"]
+  },
+  {
+    "id": "vue2-plugin",
+    "question": "How do I write and install a plugin in Vue 2?",
+    "framework": "vue", "version": "2",
+    "expect": ["v2/guide/plugins.html", "v2/api/#Vue-use"]
+  },
+  {
+    "id": "vue2-mixin-merge",
+    "question": "How are options merged when a Vue 2 mixin and a component both define the same hook?",
+    "framework": "vue", "version": "2",
+    "expect": ["v2/guide/mixins.html"]
+  },
+  {
+    "id": "vue2-functional-component",
+    "question": "How do I define a functional component in Vue 2?",
+    "framework": "vue", "version": "2",
+    "expect": ["v2/guide/render-function.html#Functional-Components"],
+    "tags": ["version-specific", "changed-later"]
+  },
+  {
+    "id": "vue2-before-destroy",
+    "question": "When is the beforeDestroy hook called in Vue 2?",
+    "framework": "vue", "version": "2",
+    "expect": ["v2/api/#beforeDestroy", "v2/guide/instance.html"],
+    "tags": ["version-specific", "renamed-later"]
+  },
+  {
+    "id": "vue2-deep-watch",
+    "question": "How do I watch a nested object deeply in Vue 2?",
+    "framework": "vue", "version": "2",
+    "expect": ["v2/api/#watch", "v2/api/#vm-watch"]
+  },
+  {
+    "id": "vue2-scoped-slots",
+    "question": "How do scoped slots work with v-slot in Vue 2?",
+    "framework": "vue", "version": "2",
+    "expect": ["v2/guide/components-slots.html"]
+  },
+  {
+    "id": "vue2-array-caveats",
+    "question": "Why doesn't Vue 2 detect when I set an array item by index?",
+    "framework": "vue", "version": "2",
+    "expect": ["v2/guide/reactivity.html", "v2/guide/list.html"],
+    "tags": ["version-specific"]
+  },
+  {
+    "id": "vue2-7-migration",
+    "question": "What do I need to change to upgrade to Vue 2.7?",
+    "framework": "vue", "version": "2",
+    "expect": ["v2/guide/migration-vue-2-7.html"]
+  },
+  {
+    "id": "vue2-native-modifier-request",
+    "question": "How do I listen to a native event on the root element of a component?",
+    "request": { "framework": "vue", "version": "2.6" },
+    "framework": "vue", "version": "2",
+    "expect": ["v2/guide/components-custom-events.html"],
+    "tags": ["version-from-request", "removed-later"]
+  },
+  {
+    "id": "vue3-v-model-component",
+    "question": "How does v-model work on custom components in Vue 3?",
+    "framework": "vue", "version": "3",
+    "expect": ["guide/components/v-model.html"],
+    "tags": ["changed"]
+  },
+  {
+    "id": "vue3-script-setup",
+    "question": "What does <script setup> do?",
+    "framework": "vue", "version": "3",
+    "expect": ["api/sfc-script-setup.html"],
+    "tags": ["latest-by-default"]
+  },
+  {
+    "id": "vue3-ref-vs-reactive",
+    "question": "What is the difference between ref() and reactive() in Vue 3?",
+    "framework": "vue", "version": "3",
+    "expect": ["guide/essentials/reactivity-fundamentals.html", "api/reactivity-core.html"]
+  },
+  {
+    "id": "vue3-teleport",
+    "question": "How do I render a modal outside the component tree with Teleport in Vue 3?",
+    "framework": "vue", "version": "3",
+    "expect": ["guide/built-ins/teleport.html", "api/built-in-components.html#teleport"],
+    "tags": ["added"]
+  },
+  {
+    "id": "vue3-define-emits",
+    "question": "How do I declare emitted events with defineEmits in Vue 3?",
+    "framework": "vue", "version": "3",
+    "expect": ["guide/components/events.html", "api/sfc-script-setup.html"]
+  },
+  {
+    "id": "vue3-composable",
+    "question": "How do I extract reusable stateful logic into a composable in Vue 3?",
+    "framework": "vue", "version": "3",
+    "expect": ["guide/reusability/composables.html"],
+    "tags": ["added"]
+  },
+  {
+    "id": "vue3-provide-inject",
+    "question": "How do I keep provide/inject values reactive in Vue 3?",
+    "framework": "vue", "version": "3",
+    "expect": ["guide/components/provide-inject.html", "api/composition-api-dependency-injection.html"]
+  },
+  {
+    "id": "vue3-global-component",
+    "question": "How do I register a component globally on the app instance in Vue 3?",
+    "framework": "vue", "version": "3",
+    "expect": ["guide/components/registration.html", "api/application.html#app-component", "guide/essentials/application.html"],
+    "tags": ["changed"]
+  },
+  {
+    "id": "vue3-suspense",
+    "question": "What is <Suspense> in Vue 3 and how do async components work with it?",
+    "framework": "vue", "version": "3",
+    "expect": ["guide/built-ins/suspense.html", "guide/components/async.html"],
+    "tags": ["added"]
+  },
+  {
+    "id": "vue3-fallthrough-attrs",
+    "question": "How do fallthrough attributes and inheritAttrs work in Vue 3?",
+    "framework": "vue", "version": "3",
+    "expect": ["guide/components/attrs.html"],
+    "tags": ["changed"]
+  },
+  {
+    "id": "vue3-watch-multiple",
+    "question": "How do I watch multiple sources at once with watch() in Vue 3?",
+    "framework": "vue", "version": "3",
+    "expect": ["guide/essentials/watchers.html", "api/reactivity-core.html#watch"]
+  },
+  {
+    "id": "vue3-unmounted",
+    "question": "Which lifecycle hook runs when a component is removed in Vue 3?",
+    "framework": "vue", "version": "3",
+    "expect": ["guide/essentials/lifecycle.html", "api/composition-api-lifecycle.html#onunmounted", "api/options-lifecycle.html#unmounted"],
+    "tags": ["renamed"]
+  },
+  {
+    "id": "vue3-events-request",
+    "question": "How do I listen for events emitted by a child component?",
+    "request": { "framework": "vue", "version": "3" },
+    "framework": "vue", "version": "3",
+    "expect": ["guide/components/events.html"],
+    "tags": ["version-from-request"]
+  }
+]

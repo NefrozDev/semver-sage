@@ -1,5 +1,6 @@
 import {
   AskRequest,
+  detectComparison,
   detectFrameworks,
   FRAMEWORKS,
   parseVersion,
@@ -73,4 +74,31 @@ export function resolveScope(request: AskRequest, indexed: IndexedVersionRow[]):
     scope.note = `${label} ${requestedVersion} isn't indexed (indexed: ${indexedList}); answering from ${label} ${match.version}.`;
   }
   return scope;
+}
+
+/**
+ * Compare mode: two indexed versions of one framework, oldest first, or null when the request
+ * isn't a comparison (or both versions map to the same indexed docs).
+ */
+export function resolveComparison(request: AskRequest, indexed: IndexedVersionRow[]): [SearchScope, SearchScope] | null {
+  let framework: Framework;
+  let versions: [string, string];
+  if (request.compareVersion) {
+    const base = resolveScope(request, indexed);
+    if (!base.framework || !base.version) return null;
+    framework = base.framework;
+    versions = [base.requestedVersion ?? base.version, request.compareVersion];
+  } else {
+    const detected = detectComparison(request.question);
+    if (!detected || (request.framework && request.framework !== detected.framework)) return null;
+    framework = detected.framework;
+    versions = [detected.from, detected.to];
+  }
+
+  const source = request.compareVersion ? 'request' : 'question';
+  const [a, b] = versions
+    .map((version) => ({ ...resolveScope({ question: request.question, framework, version }, indexed), source }) as SearchScope)
+    .sort((x, y) => (x.versionNum ?? 0) - (y.versionNum ?? 0));
+  if (a.versionNum === null || b.versionNum === null || a.versionNum === b.versionNum) return null;
+  return [a, b];
 }

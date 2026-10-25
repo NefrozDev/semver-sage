@@ -31,6 +31,8 @@ export interface AskRequest {
   /** Overrides detection from the question (e.g. from a framework picker or package.json). */
   framework?: Framework;
   version?: string;
+  /** Compare mode: a second version of the same framework ("what changed between version and compareVersion?"). */
+  compareVersion?: string;
 }
 
 /** What the question was scoped to, and how that was decided. */
@@ -61,7 +63,8 @@ export interface Citation {
 }
 
 export type AskStreamEvent =
-  | { type: 'scope'; scope: ResolvedScope }
+  /** `compare` is set in compare mode: answers explain the change from `scope` to `compare`. */
+  | { type: 'scope'; scope: ResolvedScope; compare?: ResolvedScope }
   | { type: 'citations'; citations: Citation[] }
   | { type: 'token'; text: string }
   | { type: 'done'; model: string; elapsedMs: number }

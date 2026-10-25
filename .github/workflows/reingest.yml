@@ -1,0 +1,46 @@
+name: Re-ingest new releases
+
+# Weekly: adapters list release tags, so new majors are discovered and ingested; versions already
+# in the database are skipped. Targets the hosted demo database (secret DATABASE_URL).
+on:
+  schedule:
+    - cron: '0 4 * * 1'
+  workflow_dispatch:
+
+jobs:
+  reingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+    steps:
+      - name: Check configuration
+        id: config
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "::notice::DATABASE_URL secret is not set; nothing to re-ingest."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v4
+        if: steps.config.outputs.skip != 'true'
+      - uses: actions/setup-node@v4
+        if: steps.config.outputs.skip != 'true'
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm install -g npm@11.6.0 && npm ci
+        if: steps.config.outputs.skip != 'true'
+      - uses: actions/cache@v4
+        if: steps.config.outputs.skip != 'true'
+        with:
+          path: |
+            .cache/models
+            .cache/repos
+          key: rag-cache-${{ hashFiles('apps/ingestion/src/sources/**', '.env.example') }}
+          restore-keys: rag-cache-
+      - run: npm run db:migrate
+        if: steps.config.outputs.skip != 'true'
+      - run: npm run ingestion -- ingest all
+        if: steps.config.outputs.skip != 'true'
+      - run: npm run ingestion -- status
+        if: steps.config.outputs.skip != 'true'

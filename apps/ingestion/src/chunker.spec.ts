@@ -64,6 +64,15 @@ describe('chunkMarkdown', () => {
     expect(chunks[2].text).toContain('# not a heading');
   });
 
+  it('can split on deeper headings, keeping the full trail', () => {
+    const md = ['## Callback API', '### Class: Dir', '#### dir.read()', para('reads'), '##### Deep', para('more')].join(
+      '\n\n',
+    );
+    const chunks = chunkMarkdown(md, { slugify: kebabSlug, splitDepth: 4 });
+    expect(chunks.map((c) => c.section)).toEqual(['Callback API > Class: Dir > dir.read()']);
+    expect(chunks[0].text).toContain('##### Deep');
+  });
+
   it('splits long sections on paragraph boundaries without breaking code', () => {
     const code = ['```js', 'const a = 1', '', 'const b = 2', '```'].join('\n');
     const md = ['## Long', para('alpha'), code, para('beta'), para('gamma')].join('\n\n');

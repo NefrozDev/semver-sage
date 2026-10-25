@@ -15,10 +15,12 @@ export interface ChunkOptions {
   maxChars?: number;
   /** Chunks with fewer meaningful characters are dropped. */
   minChars?: number;
+  /** Deepest heading level that starts a new chunk (default 3: h2 and h3). */
+  splitDepth?: number;
 }
 
 const FENCE_RE = /^\s*(```|~~~)/;
-const HEADING_RE = /^(#{1,3})\s+(.+?)\s*#*\s*$/;
+const HEADING_RE = /^(#{1,6})\s+(.+?)\s*#*\s*$/;
 const CUSTOM_ID_RE = /\s*\{#([\w-]+)\}\s*$/;
 
 /** Splits a line into alternating [prose, `code`, prose, ...] so code spans can be left alone. */
@@ -49,7 +51,9 @@ export function cleanMarkdown(markdown: string): { title: string | null; body: s
     .replace(/\{%\s*codeblock\s+lang:(\w+)\s*%\}/g, '```$1')
     .replace(/\{%\s*endcodeblock\s*%\}/g, '```')
     .replace(/\{%\s*(end)?raw\s*%\}/g, '')
-    .replace(/<!--[\s\S]*?-->/g, '');
+    .replace(/<!--[\s\S]*?-->/g, '')
+    // MDX comments (Next.js docs)
+    .replace(/\{\/\*[\s\S]*?\*\/\}/g, '');
 
   const out: string[] = [];
   let inFence = false;
@@ -108,6 +112,7 @@ function cleanHeading(raw: string): { text: string; customId: string | null } {
   const customId = CUSTOM_ID_RE.exec(raw)?.[1] ?? null;
   const text = stripHtml(raw.replace(CUSTOM_ID_RE, ''))
     .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+    .replace(/`/g, '')
     .replace(/\s+/g, ' ')
     .trim();
   return { text, customId };
@@ -146,9 +151,9 @@ function pack(text: string, maxChars: number): string[] {
   return parts;
 }
 
-/** Splits a docs page into heading-scoped chunks (h2/h3; deeper headings stay in the text). */
+/** Splits a docs page into heading-scoped chunks (h2..h`splitDepth`; deeper headings stay in the text). */
 export function chunkMarkdown(markdown: string, options: ChunkOptions): PageChunk[] {
-  const { slugify, maxChars = 1500, minChars = 60 } = options;
+  const { slugify, maxChars = 1500, minChars = 60, splitDepth = 3 } = options;
   const { title: frontmatterTitle, body } = cleanMarkdown(markdown);
 
   interface Section {
@@ -158,25 +163,26 @@ export function chunkMarkdown(markdown: string, options: ChunkOptions): PageChun
   }
   const sections: Section[] = [{ trail: [], anchor: null, lines: [] }];
   let pageTitle = frontmatterTitle;
-  let h2: string | null = null;
+  // Open headings by level: stack[0] is the current h2, stack[1] the h3 under it, ...
+  const stack: string[] = [];
   let inFence = false;
 
   for (const line of body.split('\n')) {
     if (FENCE_RE.test(line)) inFence = !inFence;
     const heading = inFence ? null : HEADING_RE.exec(line);
-    if (!heading) {
+    const level = heading?.[1].length ?? 0;
+    if (!heading || level > splitDepth) {
       sections[sections.length - 1].lines.push(line);
       continue;
     }
-    const level = heading[1].length;
     const { text, customId } = cleanHeading(heading[2]);
     if (level === 1) {
       pageTitle ??= text;
       continue;
     }
-    if (level === 2) h2 = text;
-    const trail = level === 2 || !h2 ? [text] : [h2, text];
-    sections.push({ trail, anchor: customId ?? slugify(text), lines: [] });
+    stack.length = level - 2;
+    stack[level - 2] = text;
+    sections.push({ trail: stack.filter(Boolean), anchor: customId ?? slugify(text), lines: [] });
   }
 
   const title = pageTitle ?? 'Untitled';

@@ -1,0 +1,104 @@
+[
+  {
+    "id": "ng12-reactive-forms",
+    "question": "How do I build a reactive form with FormGroup in Angular 12?",
+    "framework": "angular", "version": "12",
+    "expect": ["guide/reactive-forms"]
+  },
+  {
+    "id": "ng12-lazy-loading",
+    "question": "How do I lazy load a feature module in Angular 12?",
+    "framework": "angular", "version": "12",
+    "expect": ["guide/lazy-loading-ngmodules"],
+    "tags": ["changed-later"]
+  },
+  {
+    "id": "ng12-di",
+    "question": "How does dependency injection work in Angular 12?",
+    "framework": "angular", "version": "12",
+    "expect": ["guide/dependency-injection"]
+  },
+  {
+    "id": "ng13-component",
+    "question": "How do I create a new component in Angular 13?",
+    "framework": "angular", "version": "13",
+    "expect": ["guide/component-overview"]
+  },
+  {
+    "id": "ng14-standalone",
+    "question": "How do I create a standalone component in Angular 14?",
+    "framework": "angular", "version": "14",
+    "expect": ["guide/standalone-components"],
+    "tags": ["added"]
+  },
+  {
+    "id": "ng15-interceptor",
+    "question": "How do I write an HTTP interceptor in Angular 15?",
+    "framework": "angular", "version": "15",
+    "expect": ["guide/http-intercept-requests-and-responses", "guide/http-interceptor-use-cases"]
+  },
+  {
+    "id": "ng16-signals",
+    "question": "What are signals in Angular 16?",
+    "framework": "angular", "version": "16",
+    "expect": ["guide/signals"],
+    "tags": ["added"]
+  },
+  {
+    "id": "ng16-custom-pipe",
+    "question": "How do I write a custom pipe in Angular 16?",
+    "framework": "angular", "version": "16",
+    "expect": ["guide/pipes-custom-data-trans", "guide/pipes"]
+  },
+  {
+    "id": "ng17-control-flow",
+    "question": "How do I use the @if and @for control flow blocks in Angular 17?",
+    "framework": "angular", "version": "17",
+    "expect": ["guide/control_flow"],
+    "tags": ["added", "moved-later"]
+  },
+  {
+    "id": "ng17-esbuild",
+    "question": "How do I use the esbuild-based application builder in Angular 17?",
+    "framework": "angular", "version": "17",
+    "expect": ["guide/esbuild"]
+  },
+  {
+    "id": "ng18-defer",
+    "question": "How do deferrable views with @defer work in Angular 18?",
+    "framework": "angular", "version": "18",
+    "expect": ["guide/defer", "guide/templates/defer"]
+  },
+  {
+    "id": "ng19-signals",
+    "question": "How do signals work in Angular 19?",
+    "framework": "angular", "version": "19",
+    "expect": ["guide/signals", "essentials/signals"]
+  },
+  {
+    "id": "ng19-signal-inputs",
+    "question": "How do I declare a component input with input() in Angular 19?",
+    "framework": "angular", "version": "19",
+    "expect": ["guide/components/inputs"],
+    "tags": ["added"]
+  },
+  {
+    "id": "ng19-resource",
+    "question": "How do I load async data into a signal with resource() in Angular 19?",
+    "framework": "angular", "version": "19",
+    "expect": ["guide/signals/resource"],
+    "tags": ["added"]
+  },
+  {
+    "id": "ng20-zoneless",
+    "question": "How do I run an Angular 20 app without zone.js?",
+    "framework": "angular", "version": "20",
+    "expect": ["guide/zoneless"]
+  },
+  {
+    "id": "ng21-routes",
+    "question": "How do I define routes in Angular 21?",
+    "framework": "angular", "version": "21",
+    "expect": ["guide/routing"]
+  }
+]

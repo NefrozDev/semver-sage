@@ -1,4 +1,4 @@
-import type { ServerConfig } from '@semver-sage/server-core';
+import type { ServerConfig } from '../config';
 
 export interface ChatMessage {
   role: 'system' | 'user' | 'assistant';

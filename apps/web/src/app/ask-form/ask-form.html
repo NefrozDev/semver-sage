@@ -39,6 +39,18 @@
       </datalist>
     </label>
 
+    <label title="Ask what changed between the two versions">
+      <span>Compare with</span>
+      <input
+        name="compareVersion"
+        list="versions"
+        placeholder="—"
+        [disabled]="!framework()"
+        [ngModel]="compareVersion()"
+        (ngModelChange)="compareVersion.set($event)"
+      />
+    </label>
+
     <label class="upload" title="Scope answers to the versions you actually use">
       <input type="file" accept=".json,application/json" (change)="onFile($event)" />
       <span class="button ghost">📦 package.json</span>

@@ -7,6 +7,36 @@ const exec = promisify(execFile);
 const git = (args: string[], cwd?: string) =>
   exec('git', ['-c', 'core.longpaths=true', ...args], { cwd, maxBuffer: 16 * 1024 * 1024 });
 
+export interface ReleaseTag {
+  tag: string;
+  major: number;
+  minor: number;
+  patch: number;
+}
+
+/** Stable release tags ("v18.20.8" or "17.3.12"; no pre-releases) of a GitHub repo. */
+export async function listReleaseTags(repo: string): Promise<ReleaseTag[]> {
+  const { stdout } = await git(['ls-remote', '--tags', '--refs', `https://github.com/${repo}.git`]);
+  return stdout
+    .split('\n')
+    .map((line) => line.split('refs/tags/')[1]?.trim())
+    .map((tag) => ({ tag, match: tag && /^v?(\d+)\.(\d+)\.(\d+)$/.exec(tag) }))
+    .filter((t): t is { tag: string; match: RegExpExecArray } => !!t.match)
+    .map(({ tag, match }) => ({ tag, major: +match[1], minor: +match[2], patch: +match[3] }));
+}
+
+/** The newest release of each major version, ascending. */
+export function latestPerMajor(tags: ReleaseTag[], filter: (t: ReleaseTag) => boolean = () => true): ReleaseTag[] {
+  const latest = new Map<number, ReleaseTag>();
+  for (const t of tags.filter(filter)) {
+    const current = latest.get(t.major);
+    if (!current || t.minor > current.minor || (t.minor === current.minor && t.patch > current.patch)) {
+      latest.set(t.major, t);
+    }
+  }
+  return [...latest.values()].sort((a, b) => a.major - b.major);
+}
+
 /**
  * Shallow, sparse checkout of `paths` at `ref`. Only the docs folders are materialized, which keeps
  * clones small and avoids Windows path-length failures on unrelated files.

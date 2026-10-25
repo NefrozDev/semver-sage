@@ -5,16 +5,26 @@ import { FRAMEWORK_IDS, isFramework } from '@semver-sage/types';
 import { resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 import { ingestVersion, resetFramework } from './ingest';
-import { ADAPTERS } from './sources';
+import { ADAPTERS, SourceAdapter } from './sources';
 
 const USAGE = `Usage: ingestion <command>
 
   migrate                          apply db/migrations
-  ingest <framework> [--version v] ingest all configured versions (or one)
+  ingest <framework|all> [--version v]
+                                   ingest every release the adapter lists (or one);
+                                   already-ingested versions are skipped
+  versions <framework>             list the versions an adapter would ingest
   reset <framework>                delete a framework's chunks and versions
   status                           show what is indexed
 
 Frameworks with a source adapter: ${Object.keys(ADAPTERS).join(', ')}`;
+
+function adapterFor(target: string | undefined): SourceAdapter {
+  if (!isFramework(target)) throw new Error(`Unknown framework "${target}". One of: ${FRAMEWORK_IDS.join(', ')}`);
+  const adapter = ADAPTERS[target];
+  if (!adapter) throw new Error(`No source adapter for ${target} yet`);
+  return adapter;
+}
 
 async function main() {
   const { positionals, values } = parseArgs({
@@ -33,17 +43,20 @@ async function main() {
         break;
       }
       case 'ingest': {
-        if (!isFramework(target)) throw new Error(`Unknown framework "${target}". One of: ${FRAMEWORK_IDS.join(', ')}`);
-        const adapter = ADAPTERS[target];
-        if (!adapter) throw new Error(`No source adapter for ${target} yet`);
-        const versions = values.version
-          ? adapter.versions.filter((v) => v.version === values.version)
-          : adapter.versions;
-        if (!versions.length) throw new Error(`${target} has no configured version "${values.version}"`);
+        const adapters = target === 'all' ? Object.values(ADAPTERS) : [adapterFor(target)];
         const embedder = new Embedder(config.embeddingModel, config.modelCacheDir);
-        for (const source of versions) {
-          await ingestVersion(pool, embedder, adapter, source, config.repoCacheDir);
+        for (const adapter of adapters) {
+          const all = await adapter.versions();
+          const versions = values.version ? all.filter((v) => v.version === values.version) : all;
+          if (!versions.length) throw new Error(`${adapter.framework} has no version "${values.version}"`);
+          for (const source of versions) {
+            await ingestVersion(pool, embedder, adapter, source, config.repoCacheDir);
+          }
         }
+        break;
+      }
+      case 'versions': {
+        console.table(await adapterFor(target).versions());
         break;
       }
       case 'reset': {

@@ -9,7 +9,7 @@ export interface VersionSource {
   repo: string;
   /** Git tag or branch holding this version's docs. */
   ref: string;
-  /** Folders to check out (sparse), relative to the repo root. */
+  /** Folders or files to check out (sparse), relative to the repo root. */
   paths: string[];
   /** Citation URL = docsBaseUrl + page urlPath. */
   docsBaseUrl: string;
@@ -26,8 +26,8 @@ export interface SourcePage {
 /** Knows the layout of one framework's docs repo(s). */
 export interface SourceAdapter {
   framework: Framework;
-  /** In ascending version order. */
-  versions: VersionSource[];
+  /** Versions to index, ascending. May look up release tags, so new releases are picked up. */
+  versions(): Promise<VersionSource[]>;
   /** Reads and chunks every docs page from a checkout of `source`. */
   loadPages(checkoutDir: string, source: VersionSource): Promise<SourcePage[]>;
 }
