@@ -13,4 +13,4 @@ export const ADAPTERS: Partial<Record<Framework, SourceAdapter>> = {
   angular: angularAdapter,
 };
 
-export type { SourceAdapter, SourcePage, VersionSource } from './types';
+export type { AdapterContext, SourceAdapter, SourcePage, VersionSource } from './types';

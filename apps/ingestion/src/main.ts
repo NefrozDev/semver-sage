@@ -46,7 +46,7 @@ async function main() {
         const adapters = target === 'all' ? Object.values(ADAPTERS) : [adapterFor(target)];
         const embedder = new Embedder(config.embeddingModel, config.modelCacheDir);
         for (const adapter of adapters) {
-          const all = await adapter.versions();
+          const all = await adapter.versions({ repoCacheDir: config.repoCacheDir });
           const versions = values.version ? all.filter((v) => v.version === values.version) : all;
           if (!versions.length) throw new Error(`${adapter.framework} has no version "${values.version}"`);
           for (const source of versions) {
@@ -56,7 +56,7 @@ async function main() {
         break;
       }
       case 'versions': {
-        console.table(await adapterFor(target).versions());
+        console.table(await adapterFor(target).versions({ repoCacheDir: config.repoCacheDir }));
         break;
       }
       case 'reset': {

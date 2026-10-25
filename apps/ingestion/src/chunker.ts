@@ -52,6 +52,8 @@ export function cleanMarkdown(markdown: string): { title: string | null; body: s
     .replace(/\{%\s*endcodeblock\s*%\}/g, '```')
     .replace(/\{%\s*(end)?raw\s*%\}/g, '')
     .replace(/<!--[\s\S]*?-->/g, '')
+    // MDX heading ids (react.dev: "## Usage {/*usage*/}") become "{#usage}" before MDX comments go
+    .replace(/^(#{1,6}\s.*?)\s*\{\/\*\s*([\w-]+)\s*\*\/\}\s*$/gm, '$1 {#$2}')
     // MDX comments (Next.js docs)
     .replace(/\{\/\*[\s\S]*?\*\/\}/g, '');
 
@@ -207,6 +209,14 @@ export const kebabSlug = (heading: string) =>
     .toLowerCase()
     .replace(/[^\p{L}\p{N}]+/gu, '-')
     .replace(/^-+|-+$/g, '');
+
+/** GitHub / github-slugger anchors: "req.params" -> "reqparams", "Foo Bar" -> "foo-bar". */
+export const githubSlug = (heading: string) =>
+  heading
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s_-]/gu, '')
+    .trim()
+    .replace(/\s/g, '-');
 
 /** Hexo-style anchors (case kept): "Vue.extend( options )" -> "Vue-extend-options". */
 export const hexoSlug = (heading: string) =>

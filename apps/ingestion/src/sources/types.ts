@@ -23,11 +23,16 @@ export interface SourcePage {
   chunks: PageChunk[];
 }
 
+export interface AdapterContext {
+  /** Where git checkouts and history clones are cached. */
+  repoCacheDir: string;
+}
+
 /** Knows the layout of one framework's docs repo(s). */
 export interface SourceAdapter {
   framework: Framework;
   /** Versions to index, ascending. May look up release tags, so new releases are picked up. */
-  versions(): Promise<VersionSource[]>;
+  versions(context: AdapterContext): Promise<VersionSource[]>;
   /** Reads and chunks every docs page from a checkout of `source`. */
   loadPages(checkoutDir: string, source: VersionSource): Promise<SourcePage[]>;
 }

@@ -1,4 +1,4 @@
-import { chunkHash, chunkMarkdown, cleanMarkdown, hexoSlug, kebabSlug } from './chunker';
+import { chunkHash, chunkMarkdown, cleanMarkdown, githubSlug, hexoSlug, kebabSlug } from './chunker';
 
 describe('cleanMarkdown', () => {
   it('reads the frontmatter title and drops scripts, hexo tags and HTML outside code', () => {
@@ -87,7 +87,14 @@ describe('chunkMarkdown', () => {
 });
 
 describe('slugs and hashes', () => {
+  it('reads react.dev MDX heading ids', () => {
+    const md = `## Usage {/*usage*/}\n\n${'Call useState at the top level. '.repeat(4)}`;
+    expect(chunkMarkdown(md, { slugify: kebabSlug })[0]).toMatchObject({ section: 'Usage', anchor: 'usage' });
+  });
+
   it('matches the anchors each docs site generates', () => {
+    expect(githubSlug('req.params')).toBe('reqparams');
+    expect(githubSlug('Using `next.config.js`')).toBe('using-nextconfigjs');
     expect(kebabSlug('Computed Caching vs. Methods')).toBe('computed-caching-vs-methods');
     expect(hexoSlug('vm.$watch( expOrFn, callback, [options] )')).toBe('vm-watch-expOrFn-callback-options');
   });
