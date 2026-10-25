@@ -81,8 +81,8 @@ cost recall on large scopes; one version is at most ~6k chunks). Record:
 `evals/results/hybrid-rerank-ablation.md`.
 
 ## Current state
-Branch `feat/more-frameworks` has unpushed commits (tests, SonarQube Cloud, docs) and isn't merged
-into `main` yet.
+Branch `feat/more-frameworks` (tests, SonarQube Cloud, Sonar fixes, docs) is open as PR #4 against
+`main`.
 
 Indexed (72 versions, ~78k chunk rows): Angular 2–22, Express 3–5, NestJS 10–12, Next.js 12–16,
 Node 1–26 (every major), Nuxt 2–4, React 17–19, Svelte 3–5, TypeScript 3–6, Vue 2–3. AngularJS
@@ -120,18 +120,24 @@ questions get a fixed "AngularJS is a separate framework" answer (`notices.ts`),
   configs have other names on purpose.
 - Coverage: `npm run test:coverage` (unit + integration) -> `coverage/**/lcov.info`, ~62% lines
   merged (2026-10-25). Weakest: `evals` 12%, `apps/api` 54%, ingestion CLI and git checkout.
-- SonarQube Cloud: `sonar-project.properties`, `tools/sonar-scan.mjs` (merges lcov to
-  repo-relative paths, runs the scanner in Docker). CI needs secret `SONAR_TOKEN` and variables
-  `SONAR_ORGANIZATION` / `SONAR_PROJECT_KEY`; Automatic Analysis must be off. Not configured on
-  GitHub yet, so the CI job is skipped.
+- SonarQube Cloud (org `nefrozdev`, project `NefrozDev_semver-sage`, public, so issues can be read
+  from `https://sonarcloud.io/api/issues/search?componentKeys=NefrozDev_semver-sage` without a
+  token; add `&pullRequest=N` for a PR): keys in `sonar-project.properties`; `test:coverage` ends
+  with `tools/merge-coverage.mjs` (lcov with repo-relative paths); CI scans with
+  `SonarSource/sonarqube-scan-action` pinned by SHA. CI analysis needs the `SONAR_TOKEN` secret
+  and Automatic Analysis off; until then only Automatic Analysis runs (no coverage, and it
+  ignores `sonar-project.properties`, so `.github/`, `Dockerfile` and e2e files get analyzed too).
+- Supply chain (Sonar rules): `npm ci --ignore-scripts` everywhere, no `npx` in CI/Docker (use
+  `npm run nx -- ...`, `npm run playwright:install`), third-party actions pinned by SHA. Regexes
+  must stay linear (S8786): trim with `trimChar` or `trimEnd()` instead of `^x+|x+$`.
 - CI: `.github/workflows/ci.yml` (check, integration, e2e, sonarqube; the last two with a pgvector
   service), `evals.yml`, `reingest.yml` (weekly; skipped until the `DATABASE_URL` secret exists).
 - Hosted demo: not deployed; guide in `docs/DEPLOY.md`.
 
 ## Next steps (in order)
-1. Push `feat/more-frameworks`, open the PR, merge once CI is green.
-2. Set up SonarQube Cloud on GitHub (secret + two variables, Automatic Analysis off), then fix
-   what the first CI analysis reports and get the quality gate green.
+1. Merge PR #4 (`feat/more-frameworks`) once CI and the SonarQube quality gate are green.
+2. Switch SonarQube Cloud to CI analysis (`SONAR_TOKEN` secret, Automatic Analysis off) so
+   coverage is reported, then handle what the first CI analysis finds.
 3. Answer latency/robustness (found by benchmark): SSE keep-alive pings while the LLM warms up, a
    longer LLM fetch timeout, a larger Ollama context (`num_ctx`; only `temperature` is set today).
 4. Exact-identifier misses (`req.params`, `useSeoMeta`): a cheap identifier match on top of
@@ -150,8 +156,7 @@ questions get a fixed "AngularJS is a separate framework" answer (`notices.ts`),
 - Full stack in Docker: `docker compose up -d --build`
 - Tests: `npm test`; integration: `npx nx run ingestion:integration` (needs `npm run db:up`);
   browser E2E: `npm run e2e`; API E2E: `npx nx e2e api-e2e`; evals: `npm run eval`
-- Coverage: `npm run test:coverage`; SonarQube Cloud scan from this machine: `npm run sonar`
-  (token, organization and project key in `.env`)
+- Coverage: `npm run test:coverage` (SonarQube Cloud scans from CI only)
 - Commits: no Co-Authored-By / AI attribution lines (user preference).
 
 Environment: Windows (Node 22.15; Angular 22 wants >= 22.22.3, builds work but npm warns). GitHub
