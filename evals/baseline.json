@@ -1,15 +1,45 @@
 {
   "tolerance": 0.05,
   "frameworks": {
-    "angular": { "hit5": 1.0, "reciprocalRank": 0.865 },
-    "express": { "hit5": 1.0, "reciprocalRank": 0.741 },
-    "nestjs": { "hit5": 0.909, "reciprocalRank": 0.879 },
-    "nextjs": { "hit5": 0.933, "reciprocalRank": 0.749 },
-    "node": { "hit5": 1.0, "reciprocalRank": 0.792 },
-    "nuxt": { "hit5": 0.909, "reciprocalRank": 0.816 },
-    "react": { "hit5": 1.0, "reciprocalRank": 0.833 },
-    "svelte": { "hit5": 1.0, "reciprocalRank": 0.833 },
-    "typescript": { "hit5": 0.929, "reciprocalRank": 0.937 },
-    "vue": { "hit5": 1.0, "reciprocalRank": 0.963 }
+    "angular": {
+      "hit5": 1,
+      "reciprocalRank": 0.958
+    },
+    "express": {
+      "hit5": 0.778,
+      "reciprocalRank": 0.675
+    },
+    "nestjs": {
+      "hit5": 1,
+      "reciprocalRank": 0.939
+    },
+    "nextjs": {
+      "hit5": 0.867,
+      "reciprocalRank": 0.64
+    },
+    "node": {
+      "hit5": 1,
+      "reciprocalRank": 0.869
+    },
+    "nuxt": {
+      "hit5": 0.909,
+      "reciprocalRank": 0.685
+    },
+    "react": {
+      "hit5": 1,
+      "reciprocalRank": 0.938
+    },
+    "svelte": {
+      "hit5": 1,
+      "reciprocalRank": 0.857
+    },
+    "typescript": {
+      "hit5": 0.857,
+      "reciprocalRank": 0.776
+    },
+    "vue": {
+      "hit5": 1,
+      "reciprocalRank": 0.883
+    }
   }
 }

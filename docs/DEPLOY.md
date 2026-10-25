@@ -5,8 +5,8 @@ the Angular build. A free deployment needs three pieces:
 
 | Piece    | Free option                                   | Why                                                      |
 | -------- | --------------------------------------------- | -------------------------------------------------------- |
-| App      | Hugging Face Spaces (Docker, CPU basic)       | 2 vCPU / 16 GB RAM: enough for the local embedder and reranker |
-| Database | Neon free Postgres (pgvector supported)       | All 10 frameworks (44 versions) take ~310 MB of the 0.5 GB limit |
+| App      | Hugging Face Spaces (Docker, CPU basic)       | 2 vCPU / 16 GB RAM: plenty for the local embedding model |
+| Database | Neon free Postgres (pgvector supported)       | All 10 frameworks (72 versions) take ~210 MB of the 0.5 GB limit |
 | LLM      | Groq free tier (OpenAI-compatible API)        | Fast hosted Llama models; no GPU needed in the Space      |
 
 Any OpenAI-compatible endpoint works for the LLM (OpenRouter free models, Google Gemini's
@@ -58,9 +58,8 @@ OpenAI-compatible endpoint, ...). Check the provider's console for current model
    | `TRUST_PROXY`    | `true` (rate limits per real client IP)    |
    | `ASK_RATE_LIMIT` | questions per IP per minute (default 20)   |
 
-The first request after a cold start downloads the embedding and reranker models (~300 MB). On
-the free CPU tier the reranker adds a few seconds per question; set `RERANK_ENABLED=false` to trade a
-little accuracy for speed (see `evals/results/latest.md` for the difference).
+The first request after a cold start downloads the embedding model (~35 MB); search itself takes
+tens of milliseconds, so answer speed is down to the LLM provider.
 
 ## Local full stack
 

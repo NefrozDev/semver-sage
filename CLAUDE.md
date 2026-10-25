@@ -21,8 +21,10 @@ tiers for a hosted demo. No AWS or other paid cloud.
 5. **Citations** on every answer (doc URL + section + version).
 
 ## UI concept
-An animated **sage** character with an RPG-style **dialog box**: typewriter text for answers, a
-"thinking" animation while it searches, version badges on citations.
+An illustrated **sage** (vector SVG, no pixel art) with three poses: **idle**, **reflecting**
+(while searching) and **talking** (while the answer streams). Answers appear in a card with a
+typewriter effect; citations carry version badges. Calm modern look: Fraunces + Inter, light and
+dark themes following the system setting.
 
 ## Tech stack
 - **Monorepo:** Nx (integrated, `angular-monorepo` preset)
@@ -30,9 +32,8 @@ An animated **sage** character with an RPG-style **dialog box**: typewriter text
 - **API:** NestJS: `apps/api` (served at `http://localhost:3000/api`, proxied from web)
 - **Ingestion:** plain Node.js app: `apps/ingestion` (fetch docs → chunk → embed → store)
 - **Shared types:** `libs/shared/types` (e.g. `Framework`, `DocChunk`, `AskRequest`, `AskResponse`)
-- **Database:** Postgres + pgvector (via Docker Compose), Postgres full-text search for keyword search
+- **Database:** Postgres + pgvector (via Docker Compose); exact vector search, no ANN index
 - **Embeddings:** local open model (e.g. bge-small / nomic-embed-text) via transformers.js or Ollama
-- **Reranker:** local cross-encoder (e.g. bge-reranker-base)
 - **LLM:** Ollama locally; behind a small provider adapter so a free-tier API or bring-your-own-key
   can be plugged in for a hosted demo
 - **CI:** GitHub Actions (free for public repos), including RAG evals
@@ -59,28 +60,36 @@ Most pages barely change between versions, so don't embed each version separatel
 - Use a per-framework "source adapter" interface to handle each repo's layout.
 
 ## Retrieval pipeline
-query → detect framework + version (from question or package.json) → hybrid search
-(Postgres full-text/BM25 + pgvector) → Reciprocal Rank Fusion → rerank → top-k →
-LLM answer with citations, streamed (SSE) to the frontend.
+query → detect framework + version (from question or package.json) → exact vector search restricted
+to that version → top-k → LLM answer with citations, streamed (SSE) to the frontend.
+
+Decided 2026-10-25 from the evals: full-text search (RRF) and a cross-encoder reranker were dropped
+(97.7% vs 95.9% hit@5 for ~5.4 s per question on CPU), and the HNSW index too (approximate results
+cost recall on large scopes; one version is at most ~6k chunks). Record:
+`evals/results/hybrid-rerank-ablation.md`.
 
 ## Quality / production signals
 - Golden eval set (~100 Q&A pairs, incl. tricky version-specific ones); metrics: recall@k, MRR,
   faithfulness. Evals run in CI.
-- Ablation table in README (naive vector → hybrid → reranked → version filtering).
+- Ablation table in README (with vs without the version filter, plus the dropped hybrid/rerank run).
 - Scheduled GitHub Action that detects new framework releases and re-ingests.
 - `docker compose up` brings up the whole stack locally.
 
 ## Current state
-Indexed (44 versions): Angular 12–22, Express 3–5, NestJS 10–12, Next.js 12–16, Node 14–26 (even
-majors), Nuxt 2–4, React 17–19, Svelte 3–5, TypeScript 3–6 (website snapshots), Vue 2–3.
+Indexed (72 versions): Angular 2–22 (2 from the old angular.io Jade repo; there is no 3), Express
+3–5, NestJS 10–12, Next.js 12–16, Node 1–26 (every major; 1–3 are io.js), Nuxt 2–4, React 17–19,
+Svelte 3–5, TypeScript 3–6 (website snapshots), Vue 2–3. AngularJS (1.x) is deliberately not
+indexed: such questions get a fixed "AngularJS is a separate framework" answer (`notices.ts`).
 - `docker-compose.yml`: full stack (Postgres, migrate, Ollama + model pull, app on :8080);
   `ingestion` service under the `tools` profile. `Dockerfile` targets: `ingestion`, `app` (last).
 - `db/migrations/001_chunks.sql`: `doc_versions` + deduplicated `chunks` (versions stored as
   integers `major*1e6 + minor*1e3 + patch` in `first_version_num` / `last_version_num`).
 - `libs/server/core`: config (`.env` via `process.loadEnvFile`), pg pool, migrations, `Embedder`
-  (bge-small, 384d), `Reranker` (bge-reranker-base), `Retriever` (hybrid + RRF + rerank, with
-  ablation switches), scope/comparison resolution, LLM providers, prompts.
-- `apps/ingestion`: CLI (`migrate | versions <fw> | ingest <fw|all> | reset <fw> | status`).
+  (bge-small, 384d), `Retriever` (exact vector search + version filter; `versionFilter: false` is
+  the eval baseline), scope/comparison resolution, LLM providers, prompts, fixed notices.
+- `apps/ingestion`: CLI (`migrate | versions <fw> | ingest <fw|all> | rebuild <fw> | reset <fw> |
+  status`). `rebuild` re-ingests in version order (needed to add older/in-between versions) and
+  reuses embeddings parked in `embedding_reuse`.
   One adapter per framework in `sources/`; versions come from git tags, branches (React, NestJS)
   or history (TypeScript: website snapshot before each next major's release notes). Checkouts are
   sparse and accept any ref incl. SHAs (needed on Windows: path-length limits).
@@ -88,19 +97,20 @@ majors), Nuxt 2–4, React 17–19, Svelte 3–5, TypeScript 3–6 (website snap
   versions to dedupe, which is why TypeScript cites GitHub for every version.
 - `apps/api`: `POST /api/ask` (SSE: scope → citations → tokens → done; compare mode adds
   `compare` scope), throttled per IP; serves the web build when `STATIC_DIR` is set.
-- `apps/web`: signal store reading the SSE stream, animated SVG sage, typewriter dialog box,
-  citation cards with version badges, framework/version/compare pickers, package.json upload.
-- `evals/`: 149 golden questions; `npm run eval` (ablation), `--check` (labels exist in index),
+- `apps/web`: signal store reading the SSE stream, SVG sage with idle/reflecting/talking poses
+  (`sage/`), typewriter answer card (`answer-card/`), citation cards with version badges,
+  framework/version/compare pickers, package.json upload.
+- `evals/`: 171 golden questions; `npm run eval` (ablation), `--check` (labels exist in index),
   `--assert` (vs `baseline.json`), `--answers N --judge`. Results in `evals/results/latest.md`.
 - CI: `.github/workflows/{ci,evals,reingest}.yml`. Hosted demo guide: `docs/DEPLOY.md`.
 
 ## Next steps
-1. Tune keyword search: on the golden set, hybrid without rerank is below vector-only.
-2. Faster reranking on CPU (smaller cross-encoder or fewer candidates), measured with the evals.
-3. SSE keep-alive pings, longer LLM fetch timeout and larger Ollama context (found by benchmark).
-4. Index migration guides kept in separate repos (Vue 3) for "what replaced X" questions.
-5. Deploy the hosted demo (HF Spaces + Neon + Groq) and set the `DATABASE_URL` secret.
-6. Candidates beyond the list: SvelteKit, React Router/Remix, Astro, Fastify.
+1. Vector search misses some exact-identifier questions (`req.params`, `useSeoMeta`): a cheap
+   identifier match could help without bringing back the reranker; measure with the evals.
+2. SSE keep-alive pings, longer LLM fetch timeout and larger Ollama context (found by benchmark).
+3. Index migration guides kept in separate repos (Vue 3) for "what replaced X" questions.
+4. Deploy the hosted demo (HF Spaces + Neon + Groq) and set the `DATABASE_URL` secret.
+5. Candidates beyond the list: SvelteKit, React Router/Remix, Astro, Fastify.
 
 ## Commands
 - Postgres: `npm run db:up`, then `npm run db:migrate`
