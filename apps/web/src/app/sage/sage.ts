@@ -10,9 +10,10 @@ const LABELS: Record<SageMood, string> = {
 };
 
 /**
- * The sage, in three poses: idle (staff in hand, breathing, blinking), reflecting (eyes closed,
- * stroking his beard, thoughts orbiting) and talking (open-palm gesture, moving mouth, the crystal
- * rippling). "error" is the idle pose with a worried brow and a dimmed crystal.
+ * The sage, in three poses: idle (staff in hand, breathing, blinking, arms swaying), reflecting
+ * (eyes closed, stroking his beard, thoughts orbiting) and talking (open-palm gesture, moving mouth,
+ * staff raised, a spark on the crystal, the crystal rippling). "error" is the idle pose with a
+ * worried brow and a dimmed crystal. Arms rotate at the shoulder and elbow so sleeves follow hands.
  */
 @Component({
   selector: 'app-sage',
@@ -97,51 +98,60 @@ const LABELS: Record<SageMood, string> = {
           <path d="M105 117 C109 111 116 112 120 116 C124 112 131 111 135 117 C130 120 125 120 120 118 C115 120 110 120 105 117 Z" fill="#e8edf4" />
         </g>
 
-        <!-- staff -->
-        <g class="staff">
-          <rect x="176" y="66" width="8" height="198" rx="4" fill="url(#sage-wood)" />
-          <circle class="glow" cx="180" cy="48" r="24" />
-          @if (pose() === 'talking') {
-            <circle class="ripple" cx="180" cy="48" r="16" />
-            <circle class="ripple late" cx="180" cy="48" r="16" />
+        <!-- staff arm: staff, sleeve and hand pivot together at the shoulder -->
+        <g class="staff-arm">
+          <g class="staff">
+            <rect x="176" y="66" width="8" height="198" rx="4" fill="url(#sage-wood)" />
+            <circle class="glow" cx="180" cy="48" r="24" />
+            @if (pose() === 'talking') {
+              <circle class="ripple" cx="180" cy="48" r="16" />
+              <circle class="ripple late" cx="180" cy="48" r="16" />
+            }
+            <path class="crystal" d="M180 26 L191 46 L180 68 L169 46 Z" fill="url(#sage-crystal)" />
+            <path d="M180 26 L180 68 M169 46 L191 46" stroke="#ffffff" stroke-width="0.8" opacity="0.5" />
+            <!-- created when the answer starts, so the flash plays once and the star keeps twinkling -->
+            @if (pose() === 'talking') {
+              <g class="spark">
+                <circle class="flash" cx="180" cy="40" r="14" />
+                <circle class="mote" cx="180" cy="24" r="1.6" style="--dx: -9px" />
+                <circle class="mote" cx="180" cy="24" r="1.2" style="--dx: 8px" />
+                <circle class="mote" cx="180" cy="24" r="1.4" style="--dx: 2px" />
+                <path class="star" d="M180 14 Q181.6 24.4 192 26 Q181.6 27.6 180 38 Q178.4 27.6 168 26 Q178.4 24.4 180 14 Z" />
+              </g>
+            }
+          </g>
+          @if (pose() === 'reflecting') {
+            <path class="sleeve" d="M150 150 Q164 168 177 186" />
+            <circle class="hand" cx="180" cy="188" r="7" />
+          } @else {
+            <path class="sleeve" d="M150 150 Q166 160 177 172" />
+            <circle class="hand" cx="180" cy="174" r="7" />
           }
-          <path class="crystal" d="M180 26 L191 46 L180 68 L169 46 Z" fill="url(#sage-crystal)" />
-          <path d="M180 26 L180 68 M169 46 L191 46" stroke="#ffffff" stroke-width="0.8" opacity="0.5" />
         </g>
 
-        <!-- arms -->
-        <g class="arms" fill="none" stroke="url(#sage-sleeve)" stroke-width="15" stroke-linecap="round">
+        <!-- free arm: upper arm pivots at the shoulder, forearm and hand at the elbow -->
+        <g class="free-arm">
           @switch (pose()) {
             @case ('reflecting') {
-              <path d="M150 150 Q164 168 177 186" />
-              <path d="M90 150 Q72 184 92 190 Q104 182 109 160" />
+              <path class="sleeve" d="M90 150 Q76 170 84 188" />
+              <g class="forearm">
+                <path class="sleeve" d="M84 188 Q102 186 109 161" />
+                <circle class="hand" cx="110" cy="156" r="7.5" />
+              </g>
             }
             @case ('talking') {
-              <path d="M150 150 Q166 160 177 172" />
-              <path class="gesture-arm" d="M90 150 Q70 162 54 158" />
-            }
-            @default {
-              <path d="M150 150 Q166 160 177 172" />
-              <path d="M90 150 Q82 182 88 210" />
-            }
-          }
-        </g>
-        <g class="hands" fill="#f3d5bd">
-          @switch (pose()) {
-            @case ('reflecting') {
-              <circle cx="180" cy="188" r="7" />
-              <circle class="stroking-hand" cx="110" cy="156" r="7.5" />
-            }
-            @case ('talking') {
-              <circle cx="180" cy="174" r="7" />
-              <g class="palm">
-                <ellipse cx="45" cy="152" rx="10" ry="6.5" transform="rotate(-24 45 152)" />
-                <circle cx="51" cy="145" r="3" />
+              <path class="sleeve" d="M90 150 Q76 162 66 168" />
+              <g class="forearm">
+                <path class="sleeve" d="M66 168 Q54 164 49 153" />
+                <g class="hand palm">
+                  <ellipse cx="41" cy="146" rx="10" ry="6.5" transform="rotate(-40 41 146)" />
+                  <circle cx="49" cy="140" r="3" />
+                </g>
               </g>
             }
             @default {
-              <circle cx="180" cy="174" r="7" />
-              <circle cx="89" cy="214" r="7" />
+              <path class="sleeve" d="M90 150 Q82 182 88 210" />
+              <circle class="hand" cx="89" cy="214" r="7" />
             }
           }
         </g>

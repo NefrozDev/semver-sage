@@ -5,19 +5,22 @@
   padding: 28px 16px 0;
 }
 
-.topbar {
+// Title above the sage, pinned while the conversation scrolls. It must fit the viewport to stay
+// pinned, so on short screens the list of indexed docs scrolls on its own.
+.side {
+  position: sticky;
+  top: 28px;
   display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 4px 24px;
-  margin-bottom: 28px;
+  flex-direction: column;
+  gap: 20px;
+  max-height: calc(100vh - 44px);
 }
 
 .brand {
   display: flex;
   align-items: center;
   gap: 10px;
+  height: 42px;
 
   h1 {
     margin: 0;
@@ -34,8 +37,12 @@
   fill: var(--accent);
 }
 
+// Same height as the title, so the two read as one line.
 .tagline {
-  margin: 0;
+  display: flex;
+  align-items: center;
+  min-height: 42px;
+  margin: 0 0 2px;
   color: var(--muted);
 }
 
@@ -47,9 +54,9 @@ main {
 }
 
 .sage-panel {
-  position: sticky;
-  top: 24px;
+  min-height: 0;
   display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
   justify-items: center;
   gap: 12px;
   padding: 20px 20px 24px;
@@ -79,6 +86,9 @@ main {
 }
 
 .indexed {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
   width: 100%;
   padding-top: 14px;
   border-top: 1px solid var(--border);
@@ -95,6 +105,8 @@ main {
   ul {
     display: grid;
     gap: 4px;
+    min-height: 0;
+    overflow-y: auto;
     margin: 0;
     padding: 0;
     list-style: none;
@@ -113,6 +125,23 @@ main {
   }
 }
 
+// Sets expectations: a demo on a free CPU model, slow and without conversation memory.
+.disclaimer {
+  flex-shrink: 0;
+  margin: 0;
+  padding: 10px 14px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 9%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--danger) 25%, transparent);
+  border-radius: 14px;
+
+  strong {
+    font-weight: 600;
+  }
+}
+
 .offline {
   margin: 0;
   font-size: 14px;
@@ -126,7 +155,7 @@ main {
   flex-direction: column;
   gap: 18px;
   min-width: 0;
-  min-height: calc(100vh - 110px);
+  min-height: calc(100vh - 28px);
 
   // Before the first question: greeting, examples and the question box stay together.
   &.landing {
@@ -233,8 +262,16 @@ main {
     gap: 20px;
   }
 
-  .sage-panel {
+  .side {
     position: static;
+    max-height: none;
+  }
+
+  .tagline {
+    min-height: 0;
+  }
+
+  .sage-panel {
     grid-template-columns: 110px 1fr;
     justify-items: start;
     align-items: center;

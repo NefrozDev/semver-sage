@@ -1,35 +1,43 @@
-<header class="topbar">
-  <div class="brand">
-    <svg class="mark" viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M12 2 L19 12 L12 22 L5 12 Z" />
-    </svg>
-    <h1>Semver Sage</h1>
-  </div>
-  <p class="tagline">Version-aware answers for JavaScript frameworks, with citations.</p>
-</header>
-
 <main>
-  <aside class="sage-panel">
-    <app-sage [mood]="mood()" />
-    <p class="caption" [class]="mood()">
-      <span class="dot"></span>{{ caption() }}
-    </p>
+  <!-- The title and the sage stay put; only the conversation scrolls -->
+  <div class="side">
+    <header class="brand">
+      <svg class="mark" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 2 L19 12 L12 22 L5 12 Z" />
+      </svg>
+      <h1>Semver Sage</h1>
+    </header>
 
-    @if (indexed().length) {
-      <div class="indexed">
-        <h2>Knows the docs of</h2>
-        <ul>
-          @for (f of indexed(); track f.label) {
-            <li><span>{{ f.label }}</span><span class="range">{{ f.range }}</span></li>
-          }
-        </ul>
-      </div>
-    } @else if (versions.error()) {
-      <p class="offline">API unreachable. Is it running?</p>
-    }
-  </aside>
+    <aside class="sage-panel">
+      <app-sage [mood]="mood()" />
+      <p class="caption" [class]="mood()">
+        <span class="dot"></span>{{ caption() }}
+      </p>
+
+      @if (indexed().length) {
+        <div class="indexed">
+          <h2>Knows the docs of</h2>
+          <ul>
+            @for (f of indexed(); track f.label) {
+              <li><span>{{ f.label }}</span><span class="range">{{ f.range }}</span></li>
+            }
+          </ul>
+        </div>
+      } @else if (versions.error()) {
+        <p class="offline">API unreachable. Is it running?</p>
+      }
+    </aside>
+
+    <p class="disclaimer" role="note">
+      <strong>Showcase app.</strong> Answers come from a small free model running in a container on
+      a CPU, not a GPU, so expect slow replies. Each question is answered on its own: the sage
+      doesn't remember earlier ones.
+    </p>
+  </div>
 
   <section class="conversation" [class.landing]="store.status() === 'idle'">
+    <p class="tagline">Version-aware answers for JavaScript frameworks, with citations.</p>
+
     <!-- 1. What was asked, and which docs answer it -->
     @if (store.question() && store.status() !== 'idle') {
       <div class="asked">

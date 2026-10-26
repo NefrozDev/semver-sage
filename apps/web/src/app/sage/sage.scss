@@ -71,6 +71,58 @@ svg {
   }
 }
 
+.sleeve {
+  fill: none;
+  stroke: url(#sage-sleeve);
+  stroke-width: 15;
+  stroke-linecap: round;
+}
+
+.hand {
+  fill: #f3d5bd;
+}
+
+// Joints, in SVG user units: the shoulders, and each pose's elbow.
+.staff-arm {
+  transform-origin: 150px 150px;
+  animation: sway 5s ease-in-out infinite;
+}
+
+.free-arm {
+  transform-origin: 90px 150px;
+  animation: swing 5s ease-in-out -1.5s infinite;
+}
+
+// The spark on the crystal's tip: one flash as the answer starts, then a twinkling star
+// shedding motes for as long as the sage speaks. Hidden by default so reduced motion shows
+// only the star.
+.flash {
+  fill: #fff;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: flash 0.9s ease-out;
+}
+
+.star {
+  fill: #fff;
+  filter: drop-shadow(0 0 2px #a5f3fc) drop-shadow(0 0 6px #22d3ee);
+  transform-box: fill-box;
+  transform-origin: center;
+  animation:
+    star-in 0.6s ease-out both,
+    star-twinkle 1.4s ease-in-out 0.6s infinite;
+}
+
+.mote {
+  fill: #e0fbff;
+  opacity: 0;
+  animation: mote 1.8s ease-out 0.3s infinite;
+
+  &:nth-of-type(3) { animation-delay: 0.9s; }
+  &:nth-of-type(4) { animation-delay: 1.5s; }
+}
+
 .thoughts {
   fill: #a5b4fc;
   transform-origin: 120px 40px;
@@ -91,17 +143,35 @@ svg {
   .brows { transform: translateY(1.5px); }
   .glow { opacity: 0.35; animation-duration: 1.8s; }
   .figure { animation-duration: 6s; }
+  .free-arm { animation: none; }
 
-  .stroking-hand {
+  .forearm {
+    transform-origin: 84px 188px;
     animation: stroke-beard 2.6s ease-in-out infinite;
   }
 }
 
-// Talking: brows up, mouth moving, palm gesturing, crystal rippling.
+// Idle: a slow look around.
+:host(.idle) .head {
+  animation: look 7s ease-in-out infinite;
+}
+
+// Talking: brows up, mouth moving, palm gesturing, staff raised, crystal sparking and rippling.
 :host(.talking) {
   .brows { transform: translateY(-2px); }
   .glow { opacity: 0.32; }
   .head { animation: nod 2.2s ease-in-out infinite; }
+  .staff-arm { animation: staff-lift 2.2s ease-in-out infinite; }
+  .crystal { animation: flare 1.4s ease-in-out infinite; }
+
+  .free-arm {
+    animation: gesture 2.2s ease-in-out infinite;
+  }
+
+  .forearm {
+    transform-origin: 66px 168px;
+    animation: gesture-forearm 2.2s ease-in-out infinite;
+  }
 
   .mouth {
     transform-box: fill-box;
@@ -109,10 +179,6 @@ svg {
     animation: talk 0.26s ease-in-out infinite alternate;
   }
 
-  .palm,
-  .gesture-arm {
-    animation: gesture 2.2s ease-in-out infinite;
-  }
 }
 
 :host(.error) {
@@ -148,8 +214,52 @@ svg {
   50% { opacity: 0.25; }
 }
 
+// The forearm turns at the elbow, so the hand slides down the beard with the sleeve attached.
 @keyframes stroke-beard {
-  50% { transform: translate(3px, 12px); }
+  50% { transform: rotate(16deg); }
+}
+
+@keyframes sway {
+  50% { transform: rotate(-1.5deg); }
+}
+
+@keyframes swing {
+  50% { transform: rotate(2.5deg); }
+}
+
+@keyframes look {
+  0%, 100% { transform: rotate(0); }
+  30% { transform: rotate(-2deg); }
+  65% { transform: rotate(1.5deg) translateY(0.5px); }
+}
+
+@keyframes staff-lift {
+  50% { transform: rotate(-3.5deg) translateY(-2px); }
+}
+
+@keyframes flare {
+  50% { filter: brightness(1.35) saturate(1.2); }
+}
+
+@keyframes flash {
+  from { opacity: 0.95; transform: scale(0.3); }
+  to { opacity: 0; transform: scale(3.2); }
+}
+
+@keyframes star-in {
+  from { transform: scale(0) rotate(-90deg); }
+  60% { transform: scale(1.5) rotate(15deg); }
+  to { transform: scale(1) rotate(0); }
+}
+
+@keyframes star-twinkle {
+  50% { transform: scale(0.6) rotate(45deg); opacity: 0.75; }
+}
+
+@keyframes mote {
+  0% { opacity: 0; transform: translate(0, 0); }
+  15% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--dx), -26px); }
 }
 
 @keyframes nod {
@@ -161,8 +271,14 @@ svg {
   to { transform: scaleY(1.1); }
 }
 
+// The whole arm lifts at the shoulder while the forearm opens at the elbow.
 @keyframes gesture {
-  50% { transform: translateY(-4px); }
+  50% { transform: rotate(9deg); }
+}
+
+@keyframes gesture-forearm {
+  0%, 100% { transform: rotate(0); }
+  45% { transform: rotate(16deg); }
 }
 
 @media (prefers-reduced-motion: reduce) {
