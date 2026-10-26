@@ -27,6 +27,12 @@
         <p class="offline">API unreachable. Is it running?</p>
       }
     </aside>
+
+    <p class="disclaimer" role="note">
+      <strong>Showcase app.</strong> Answers come from a small free model running in a container on
+      a CPU, not a GPU, so expect slow replies. Each question is answered on its own: the sage
+      doesn't remember earlier ones.
+    </p>
   </div>
 
   <section class="conversation" [class.landing]="store.status() === 'idle'">

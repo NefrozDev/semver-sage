@@ -125,6 +125,23 @@ main {
   }
 }
 
+// Sets expectations: a demo on a free CPU model, slow and without conversation memory.
+.disclaimer {
+  flex-shrink: 0;
+  margin: 0;
+  padding: 10px 14px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 9%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--danger) 25%, transparent);
+  border-radius: 14px;
+
+  strong {
+    font-weight: 600;
+  }
+}
+
 .offline {
   margin: 0;
   font-size: 14px;
