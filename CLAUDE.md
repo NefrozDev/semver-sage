@@ -81,10 +81,10 @@ cost recall on large scopes; one version is at most ~6k chunks). Record:
 `evals/results/hybrid-rerank-ablation.md`.
 
 ## Current state
-Branch `feat/more-frameworks` (tests, SonarQube Cloud, Sonar fixes, docs) is open as PR #4 against
-`main`.
+PRs #1–#5 are merged into `main` (last: #5 `feat/sage-polish`: pinned title, livelier sage,
+showcase disclaimer under the sage).
 
-Indexed (72 versions, ~78k chunk rows): Angular 2–22, Express 3–5, NestJS 10–12, Next.js 12–16,
+Indexed locally and in production (72 versions, 76,926 chunk rows, ~210 MB; 2026-10-27): Angular 2–22, Express 3–5, NestJS 10–12, Next.js 12–16,
 Node 1–26 (every major), Nuxt 2–4, React 17–19, Svelte 3–5, TypeScript 3–6, Vue 2–3. AngularJS
 questions get a fixed "AngularJS is a separate framework" answer (`notices.ts`), no search or LLM.
 - `docker-compose.yml`: full stack (Postgres, migrate, Ollama + model pull, app on :8080);
@@ -132,21 +132,25 @@ questions get a fixed "AngularJS is a separate framework" answer (`notices.ts`),
   must stay linear (S8786): trim with `trimChar` or `trimEnd()` instead of `^x+|x+$`.
 - CI: `.github/workflows/ci.yml` (check, integration, e2e, sonarqube; the last two with a pgvector
   service), `evals.yml`, `reingest.yml` (weekly; skipped until the `DATABASE_URL` secret exists).
-- Hosted demo: not deployed; guide in `docs/DEPLOY.md`.
+- Production: the `docker compose` stack on an OVH VPS (ssh alias `ovh-vps`, checkout in
+  `~/semver-sage`, ports bound to 127.0.0.1 via `.env`, plus an untracked
+  `docker-compose.mailcow.yml` override on the server). Small shared box (2 vCPU, 3.7 GB RAM, disk
+  ~85% full): never ingest there; ingest locally and restore a data dump (see Commands). The
+  HF Spaces + Neon + Groq guide in `docs/DEPLOY.md` is an unused alternative.
 
 ## Next steps (in order)
-1. Merge PR #4 (`feat/more-frameworks`) once CI and the SonarQube quality gate are green.
-2. Switch SonarQube Cloud to CI analysis (`SONAR_TOKEN` secret, Automatic Analysis off) so
+1. Switch SonarQube Cloud to CI analysis (`SONAR_TOKEN` secret, Automatic Analysis off) so
    coverage is reported, then handle what the first CI analysis finds.
-3. Answer latency/robustness (found by benchmark): SSE keep-alive pings while the LLM warms up, a
+2. Answer latency/robustness (found by benchmark): SSE keep-alive pings while the LLM warms up, a
    longer LLM fetch timeout, a larger Ollama context (`num_ctx`; only `temperature` is set today).
-4. Exact-identifier misses (`req.params`, `useSeoMeta`): a cheap identifier match on top of
+3. Exact-identifier misses (`req.params`, `useSeoMeta`): a cheap identifier match on top of
    vector search, without bringing back the reranker; measure with the evals.
-5. Raise coverage where it's thin: API controller/module wiring, eval runner, ingestion CLI.
-6. Index migration guides kept in separate repos (Vue 3) for "what replaced X" questions.
-7. Deploy the hosted demo (HF Spaces + Neon + Groq) and set the `DATABASE_URL` secret so the
-   weekly re-ingest runs.
-8. Candidates beyond the list: SvelteKit, React Router/Remix, Astro, Fastify.
+4. Raise coverage where it's thin: API controller/module wiring, eval runner, ingestion CLI.
+5. Index migration guides kept in separate repos (Vue 3) for "what replaced X" questions.
+6. Keep the production index fresh: `reingest.yml` can't reach the prod Postgres (bound to the
+   VPS's localhost), so new releases need the local ingest + dump/restore below; decide whether
+   to automate it.
+7. Candidates beyond the list: SvelteKit, React Router/Remix, Astro, Fastify.
 
 ## Commands
 - Postgres: `npm run db:up`, then `npm run db:migrate`
@@ -157,6 +161,13 @@ questions get a fixed "AngularJS is a separate framework" answer (`notices.ts`),
 - Tests: `npm test`; integration: `npx nx run ingestion:integration` (needs `npm run db:up`);
   browser E2E: `npm run e2e`; API E2E: `npx nx e2e api-e2e`; evals: `npm run eval`
 - Coverage: `npm run test:coverage` (SonarQube Cloud scans from CI only)
+- Refresh the production index (prod tables must be empty for a plain data restore, schemas must
+  match): ingest locally, then
+  `docker exec semver-sage-postgres-1 pg_dump -U sage -d semver_sage -Fc --data-only -t doc_versions -t chunks -t chunks_id_seq -f /tmp/data.dump`,
+  `docker cp` it out, `scp` it to `ovh-vps`, and there
+  `docker exec -i semver-sage-postgres-1 pg_restore -U sage -d semver_sage --data-only --single-transaction --exit-on-error < data.dump`.
+  Run remote scripts as uploaded files, not piped into `ssh ... bash -s` (a `docker exec -i`
+  inside swallows the rest of the script). No API restart needed: versions are read live.
 - Commits: no Co-Authored-By / AI attribution lines (user preference).
 
 Environment: Windows (Node 22.15; Angular 22 wants >= 22.22.3, builds work but npm warns). GitHub
