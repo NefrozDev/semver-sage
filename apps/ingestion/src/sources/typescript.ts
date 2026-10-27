@@ -1,9 +1,11 @@
 import { posix } from 'node:path';
 import { githubSlug } from '../chunker';
-import { gitIn, historyClone } from '../git';
+import { commitBefore, gitIn, historyClone } from '../git';
 import { frontmatterField, githubBlobBase, loadMarkdownPages } from './markdown-repo';
+import { snapshotSources } from './snapshots';
 import type { SourceAdapter, VersionSource } from './types';
 
+const HANDBOOK = 'microsoft/TypeScript-Handbook';
 const REPO = 'microsoft/TypeScript-Website';
 const BRANCH = 'v2';
 const DOCS = 'packages/documentation/copy/en';
@@ -23,6 +25,21 @@ export function tsconfigOptionPage(markdown: string, sourcePath: string): string
 }
 
 /**
+ * TypeScript 1 and 2 predate the website repo: the archived TypeScript-Handbook as it stood when
+ * 2.0 and 3.0 shipped (npm 2.0.3 and 3.0.1), cited on GitHub at the snapshot commit.
+ */
+export function handbookVersions(commitAt: (before: string) => Promise<string>): Promise<VersionSource[]> {
+  return snapshotSources(
+    [
+      { version: '1', before: '2016-09-22' },
+      { version: '2', before: '2018-07-30' },
+    ],
+    commitAt,
+    (version, ref) => ({ version, repo: HANDBOOK, ref, paths: ['pages'], docsBaseUrl: githubBlobBase(HANDBOOK, ref) }),
+  );
+}
+
+/**
  * typescriptlang.org only serves the latest docs, so each major is a snapshot of the website repo
  * taken just before the next major's release notes landed (the docs as they stood for 4.9, 5.9,
  * ...); the newest major is the branch head. Every version cites GitHub at its snapshot commit:
@@ -39,7 +56,8 @@ export const typescriptAdapter: SourceAdapter = {
       .sort((a, b) => a - b);
     const latest = majors[majors.length - 1];
 
-    const versions: VersionSource[] = [];
+    const handbook = await historyClone(repoCacheDir, HANDBOOK, 'master');
+    const versions = await handbookVersions((before) => commitBefore(handbook, 'master', before));
     for (const major of majors) {
       let ref = await gitIn(history, ['rev-parse', BRANCH]);
       if (major !== latest) {

@@ -1,4 +1,34 @@
-import { nodeLegacyId, renderNodeMetadata } from './node';
+import type { ReleaseTag } from '../git';
+import { nodeLegacyId, nodeVersions, renderNodeMetadata } from './node';
+
+describe('nodeVersions', () => {
+  const tag = (version: string): ReleaseTag => {
+    const [major, minor, patch] = version.split('.').map(Number);
+    return { tag: `v${version}`, major, minor, patch };
+  };
+  const tags = ['0.6.21', '0.8.28', '0.9.12', '0.10.47', '0.10.48', '0.11.16', '0.12.18', '1.8.4', '3.3.1', '4.9.1', '22.11.0']
+    .map(tag);
+
+  it('indexes the 0.8/0.10/0.12 stable lines, then one release per major, oldest first', () => {
+    expect(nodeVersions(tags).map((v) => `${v.version}@${v.ref}`)).toEqual([
+      '0.8@v0.8.28',
+      '0.10@v0.10.48',
+      '0.12@v0.12.18',
+      '1@v1.8.4',
+      '3@v3.3.1',
+      '4@v4.9.1',
+      '22@v22.11.0',
+    ]);
+  });
+
+  it('cites io.js majors on iojs.org and everything else, 0.x included, on nodejs.org', () => {
+    const base = Object.fromEntries(nodeVersions(tags).map((v) => [v.version, v.docsBaseUrl]));
+    expect(base['0.12']).toBe('https://nodejs.org/docs/v0.12.18/');
+    expect(base['1']).toBe('https://iojs.org/dist/v1.8.4/doc/');
+    expect(base['3']).toBe('https://iojs.org/dist/v3.3.1/doc/');
+    expect(base['4']).toBe('https://nodejs.org/docs/v4.9.1/');
+  });
+});
 
 describe('renderNodeMetadata', () => {
   it('renders YAML history like nodejs.org', () => {

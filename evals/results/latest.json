@@ -1,21 +1,115 @@
 [
   {
+    "name": "Vector search, no version filter",
+    "summary": {
+      "count": 171,
+      "hit1": 0.30409356725146197,
+      "hit5": 0.631578947368421,
+      "recall5": 0.5516569200779727,
+      "reciprocalRank": 0.44104706209969374,
+      "versionPrecision5": 0.3134502923976607
+    },
+    "byFramework": {
+      "angular": {
+        "count": 28,
+        "hit1": 0.2857142857142857,
+        "hit5": 0.5714285714285714,
+        "recall5": 0.5357142857142857,
+        "reciprocalRank": 0.3951814058956916,
+        "versionPrecision5": 0.1642857142857143
+      },
+      "express": {
+        "count": 9,
+        "hit1": 0.1111111111111111,
+        "hit5": 0.6666666666666666,
+        "recall5": 0.5555555555555556,
+        "reciprocalRank": 0.350925925925926,
+        "versionPrecision5": 0.37777777777777777
+      },
+      "nestjs": {
+        "count": 11,
+        "hit1": 0.36363636363636365,
+        "hit5": 0.8181818181818182,
+        "recall5": 0.7727272727272727,
+        "reciprocalRank": 0.5477272727272727,
+        "versionPrecision5": 0.32727272727272727
+      },
+      "nextjs": {
+        "count": 15,
+        "hit1": 0.2,
+        "hit5": 0.5333333333333333,
+        "recall5": 0.5333333333333333,
+        "reciprocalRank": 0.3347089947089947,
+        "versionPrecision5": 0.2533333333333333
+      },
+      "node": {
+        "count": 26,
+        "hit1": 0.038461538461538464,
+        "hit5": 0.15384615384615385,
+        "recall5": 0.1346153846153846,
+        "reciprocalRank": 0.10341880341880341,
+        "versionPrecision5": 0.038461538461538464
+      },
+      "nuxt": {
+        "count": 11,
+        "hit1": 0.45454545454545453,
+        "hit5": 0.7272727272727273,
+        "recall5": 0.5909090909090909,
+        "reciprocalRank": 0.5484848484848485,
+        "versionPrecision5": 0.47272727272727266
+      },
+      "react": {
+        "count": 16,
+        "hit1": 0.25,
+        "hit5": 0.875,
+        "recall5": 0.84375,
+        "reciprocalRank": 0.5177083333333333,
+        "versionPrecision5": 0.32499999999999996
+      },
+      "svelte": {
+        "count": 14,
+        "hit1": 0.5,
+        "hit5": 0.7857142857142857,
+        "recall5": 0.6428571428571429,
+        "reciprocalRank": 0.6428571428571429,
+        "versionPrecision5": 0.5285714285714285
+      },
+      "typescript": {
+        "count": 14,
+        "hit1": 0.2857142857142857,
+        "hit5": 0.42857142857142855,
+        "recall5": 0.39285714285714285,
+        "reciprocalRank": 0.34523809523809523,
+        "versionPrecision5": 0.2857142857142857
+      },
+      "vue": {
+        "count": 27,
+        "hit1": 0.5555555555555556,
+        "hit5": 0.9629629629629629,
+        "recall5": 0.7345679012345678,
+        "reciprocalRank": 0.7152263374485598,
+        "versionPrecision5": 0.5703703703703704
+      }
+    },
+    "avgMs": 298.7426900584795
+  },
+  {
     "name": "Vector search + version filter (production)",
     "summary": {
       "count": 171,
-      "hit1": 0.7543859649122807,
+      "hit1": 0.7485380116959064,
       "hit5": 0.9590643274853801,
-      "recall5": 0.8986354775828459,
-      "reciprocalRank": 0.8459621275410751,
+      "recall5": 0.8927875243664717,
+      "reciprocalRank": 0.8433862433862436,
       "versionPrecision5": 1
     },
     "byFramework": {
       "angular": {
         "count": 28,
-        "hit1": 0.9285714285714286,
+        "hit1": 0.8928571428571429,
         "hit5": 1,
         "recall5": 0.9642857142857143,
-        "reciprocalRank": 0.9583333333333334,
+        "reciprocalRank": 0.9404761904761906,
         "versionPrecision5": 1
       },
       "express": {
@@ -44,10 +138,10 @@
       },
       "node": {
         "count": 26,
-        "hit1": 0.7692307692307693,
+        "hit1": 0.7307692307692307,
         "hit5": 1,
-        "recall5": 0.9230769230769231,
-        "reciprocalRank": 0.8685897435897437,
+        "recall5": 0.9038461538461539,
+        "reciprocalRank": 0.8525641025641026,
         "versionPrecision5": 1
       },
       "nuxt": {
@@ -55,7 +149,7 @@
         "hit1": 0.5454545454545454,
         "hit5": 0.9090909090909091,
         "recall5": 0.8181818181818182,
-        "reciprocalRank": 0.6848484848484849,
+        "reciprocalRank": 0.6826839826839828,
         "versionPrecision5": 1
       },
       "react": {
@@ -84,13 +178,13 @@
       },
       "vue": {
         "count": 27,
-        "hit1": 0.7777777777777778,
+        "hit1": 0.8148148148148148,
         "hit5": 1,
-        "recall5": 0.9012345679012347,
-        "reciprocalRank": 0.8827160493827161,
+        "recall5": 0.8827160493827161,
+        "reciprocalRank": 0.9012345679012347,
         "versionPrecision5": 1
       }
     },
-    "avgMs": 27.538011695906434
+    "avgMs": 22.426900584795323
   }
 ]

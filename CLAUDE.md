@@ -46,17 +46,28 @@ dark themes following the system setting.
 - **Code quality:** SonarQube Cloud (free organization), scanned from CI; no self-hosted server
 
 ## Data sources (one adapter per framework in `apps/ingestion/src/sources/`)
-- Node.js: `nodejs/node` → `doc/api/`, latest tag of each major (1–3 are io.js)
-- React: `reactjs/react.dev`, ref `v17.0.2` (Gatsby-era `content/docs`), branch `v18`, `main` (19)
-- Vue: `vuejs/v2.vuejs.org` (2) + `vuejs/docs` (3); both only hold their latest docs
+Docs repos without release tags are indexed from **dated snapshots**: the repo as it stood just
+before the next release (`commitBefore` in `git.ts`, `snapshotSources` in `sources/snapshots.ts`;
+dates are hardcoded npm publish dates).
+- Node.js: `nodejs/node` → `doc/api/`: last tag of the 0.8/0.10/0.12 lines, then of each major (1–3
+  are io.js, cited on iojs.org)
+- React: 0.3–15.6 from `facebook/react` `docs/` (Jekyll) at each minor's last tag, cited on GitHub
+  (0.14.10 and 15.7.0 are 2020 security releases without docs); 16.0–16.14 from `reactjs/react.dev`
+  history snapshots, cited on `16.reactjs.org`; ref `v17.0.2` (Gatsby-era `content/docs`), branch
+  `v18`, `main` (19)
+- Vue: `vuejs/vuejs.org` branch `1.0` (1) + `vuejs/v2.vuejs.org` (2) + `vuejs/docs` (3); each only
+  holds its latest docs. Vue 0.x branches have another layout and aren't indexed
 - Angular: `angular/angular` at major tags (`aio/content/guide`, later `adev/...`); Angular 2 from
   the old `angular/angular.io` repo at a fixed commit; there is no Angular 3
-- Next.js: `vercel/next.js` → `docs/` at tags (12+)
+- Next.js: `vercel/next.js` → `docs/` at tags (9+; 9–12 cited on GitHub)
 - Nuxt: `nuxt/website-v2` (2) + `nuxt/nuxt` → `docs/` (3+)
-- Express: `expressjs/expressjs.com` `main`, per-major folders (`/en/3x`, `/4x`, `/5x`)
-- NestJS: `nestjs/docs.nestjs.com`, one branch per past major + master
-- Svelte: `sveltejs/svelte` at tags (`v3.x`, `svelte@5.x`)
-- TypeScript: `microsoft/TypeScript-Website` history snapshots (one per major)
+- Express: `expressjs/expressjs.com` `main`, per-major folders (`/en/3x`, `/4x`, `/5x`); no 2.x docs
+- NestJS: `nestjs/docs.nestjs.com`: master snapshots for 6–9 (markdown docs start in 2019), one
+  branch per past major from 10, master for the latest
+- Svelte: `sveltejs/v2.svelte.dev` (archived old site: snapshot for 1, head for 2, on GitHub) +
+  `sveltejs/svelte` at tags (`v3.x`, `svelte@5.x`)
+- TypeScript: 1–2 from `microsoft/TypeScript-Handbook` snapshots; 3+ from
+  `microsoft/TypeScript-Website` history snapshots (one per major)
 
 ## Core design: dedupe across versions
 Most pages barely change between versions, so each chunk is stored and embedded once with a range.
@@ -67,7 +78,9 @@ Most pages barely change between versions, so each chunk is stored and embedded 
   `last_version_num`.
 - Ingest versions in order; if the hash exists, extend the range, else insert.
 - Query filter: `first_version_num <= v AND last_version_num >= v`.
-- Each **major** is indexed at its newest release.
+- Each **major** is indexed at its newest release, except React 0.x/15.x/16.x (one version per
+  minor). A bare major in a request ("React 16", "16.x") maps to the newest indexed version of that
+  major (`requestedVersionNum` in `scope.ts`), an exact one to the closest indexed version below.
 - Adding an older or in-between version needs `rebuild <fw>` (re-ingests in order, reusing
   embeddings parked in `embedding_reuse`).
 
@@ -81,11 +94,14 @@ cost recall on large scopes; one version is at most ~6k chunks). Record:
 `evals/results/hybrid-rerank-ablation.md`.
 
 ## Current state
-Branch `feat/more-frameworks` (tests, SonarQube Cloud, Sonar fixes, docs) is open as PR #4 against
-`main`.
+PRs #1–#5 are merged into `main` (last: #5 `feat/sage-polish`: pinned title, livelier sage,
+showcase disclaimer under the sage). Branch `feat/older-versions` (older versions, bare-major
+resolution, checkout fix, prod docs) is pushed, PR not opened yet, and **production runs it**.
 
-Indexed (72 versions, ~78k chunk rows): Angular 2–22, Express 3–5, NestJS 10–12, Next.js 12–16,
-Node 1–26 (every major), Nuxt 2–4, React 17–19, Svelte 3–5, TypeScript 3–6, Vue 2–3. AngularJS
+Indexed locally and in production (119 versions, 83,388 chunk rows, 185,100 version-chunks,
+229 MB; 2026-10-27): Angular 2–22, Express 3–5, NestJS 6–12, Next.js 9–16, Node 0.8/0.10/0.12 +
+1–26, Nuxt 2–4, React 0.3–19 (35 versions: every 0.x, 15.x and 16.x minor, then 17–19), Svelte 1–5,
+TypeScript 1–6, Vue 1–3. Evals after this round: hit@5 95.9%, MRR 0.843 (at baseline). AngularJS
 questions get a fixed "AngularJS is a separate framework" answer (`notices.ts`), no search or LLM.
 - `docker-compose.yml`: full stack (Postgres, migrate, Ollama + model pull, app on :8080);
   `ingestion` service under the `tools` profile. `Dockerfile` targets: `ingestion`, `app` (last).
@@ -96,7 +112,9 @@ questions get a fixed "AngularJS is a separate framework" answer (`notices.ts`),
   scope/comparison resolution, LLM providers (Ollama, OpenAI-compatible), prompts, fixed notices.
 - `apps/ingestion`: CLI (`migrate | versions <fw> | ingest <fw|all> | rebuild <fw> | reset <fw> |
   status`). Checkouts are sparse and accept any ref incl. SHAs (needed on Windows: path-length
-  limits). `ingest.ts` takes the checkout as an option so tests can swap it.
+  limits); a cached checkout already at the remote commit (`git ls-remote`) is not re-fetched
+  (on Windows git can't overwrite an identical read-only pack). `ingest.ts` takes the checkout as an
+  option so tests can swap it.
 - `apps/api`: `POST /api/ask` (SSE: scope → citations → tokens → done; compare mode adds a
   `compare` scope), request validation, throttled per IP; the LLM is injected (`LLM_PROVIDER`);
   serves the web build when `STATIC_DIR` is set.
@@ -132,21 +150,31 @@ questions get a fixed "AngularJS is a separate framework" answer (`notices.ts`),
   must stay linear (S8786): trim with `trimChar` or `trimEnd()` instead of `^x+|x+$`.
 - CI: `.github/workflows/ci.yml` (check, integration, e2e, sonarqube; the last two with a pgvector
   service), `evals.yml`, `reingest.yml` (weekly; skipped until the `DATABASE_URL` secret exists).
-- Hosted demo: not deployed; guide in `docs/DEPLOY.md`.
+- Production: the `docker compose` stack on an OVH VPS (ssh alias `ovh-vps`, checkout in
+  `~/semver-sage`, ports bound to 127.0.0.1 via `.env`, plus an untracked
+  `docker-compose.mailcow.yml` override on the server). Small shared box (2 vCPU, 3.7 GB RAM, disk
+  ~85% full): never ingest there; ingest locally and restore a data dump (see Commands). The
+  HF Spaces + Neon + Groq guide in `docs/DEPLOY.md` is an unused alternative.
 
 ## Next steps (in order)
-1. Merge PR #4 (`feat/more-frameworks`) once CI and the SonarQube quality gate are green.
-2. Switch SonarQube Cloud to CI analysis (`SONAR_TOKEN` secret, Automatic Analysis off) so
+1. Open and merge the `feat/older-versions` PR once CI and Sonar are green, then put the VPS
+   checkout back on `main` (`git checkout main && git pull`; same image, no rebuild needed).
+   Delete `/tmp/semver_sage_backup_before_v2.dump` on the VPS (pre-round-2 data) once satisfied.
+2. `ingestion:typecheck` fails, already on `main`: `import.meta` in `src/testing/global-setup.ts`
+   isn't allowed by the tsconfig `module` setting.
+3. Switch SonarQube Cloud to CI analysis (`SONAR_TOKEN` secret, Automatic Analysis off) so
    coverage is reported, then handle what the first CI analysis finds.
-3. Answer latency/robustness (found by benchmark): SSE keep-alive pings while the LLM warms up, a
+4. Answer latency/robustness (found by benchmark): SSE keep-alive pings while the LLM warms up, a
    longer LLM fetch timeout, a larger Ollama context (`num_ctx`; only `temperature` is set today).
-4. Exact-identifier misses (`req.params`, `useSeoMeta`): a cheap identifier match on top of
+5. Exact-identifier misses (`req.params`, `useSeoMeta`): a cheap identifier match on top of
    vector search, without bringing back the reranker; measure with the evals.
-5. Raise coverage where it's thin: API controller/module wiring, eval runner, ingestion CLI.
-6. Index migration guides kept in separate repos (Vue 3) for "what replaced X" questions.
-7. Deploy the hosted demo (HF Spaces + Neon + Groq) and set the `DATABASE_URL` secret so the
-   weekly re-ingest runs.
-8. Candidates beyond the list: SvelteKit, React Router/Remix, Astro, Fastify.
+6. Raise coverage where it's thin: API controller/module wiring, eval runner, ingestion CLI.
+7. Index migration guides kept in separate repos (Vue 3) for "what replaced X" questions.
+8. Keep the production index fresh: `reingest.yml` can't reach the prod Postgres (bound to the
+   VPS's localhost), so new releases need the local ingest + dump/restore below; decide whether
+   to automate it.
+9. More versions/frameworks: golden eval questions for the new old versions (React 0.x–16.x,
+   Node 0.x...); Vue 0.x (other layout); SvelteKit, React Router/Remix, Astro, Fastify.
 
 ## Commands
 - Postgres: `npm run db:up`, then `npm run db:migrate`
@@ -157,6 +185,20 @@ questions get a fixed "AngularJS is a separate framework" answer (`notices.ts`),
 - Tests: `npm test`; integration: `npx nx run ingestion:integration` (needs `npm run db:up`);
   browser E2E: `npm run e2e`; API E2E: `npx nx e2e api-e2e`; evals: `npm run eval`
 - Coverage: `npm run test:coverage` (SonarQube Cloud scans from CI only)
+- Refresh the production index (schemas must match): ingest locally (`rebuild <fw>` for older
+  versions), check `npm run eval -- --assert`, then
+  `docker exec semver-sage-postgres-1 pg_dump -U sage -d semver_sage -Fc --data-only -t doc_versions -t chunks -t chunks_id_seq -f /tmp/data.dump`,
+  `docker cp` it out, `scp` it to `ovh-vps`, back up prod the same way, and replace in one
+  transaction (~20 s, queries wait on the lock meanwhile; a failure rolls back):
+  `{ echo 'BEGIN;'; echo 'TRUNCATE chunks, doc_versions;'; docker exec -i semver-sage-postgres-1 pg_restore --data-only -f - < data.dump; echo 'COMMIT;'; } | docker exec -i semver-sage-postgres-1 psql -U sage -d semver_sage -q -v ON_ERROR_STOP=1`.
+  No API restart needed: versions are read live.
+- Deploy code to prod: on `ovh-vps` in `~/semver-sage`, check out the branch, then
+  `docker compose -f docker-compose.yml -f docker-compose.mailcow.yml build app` and
+  `... up -d --no-deps app` (both files, or the app loses its mailcow-network alias used by nginx).
+- Remote work from this Windows/PowerShell machine: upload scripts with `scp` and run them as files
+  (`bash file < /dev/null`); don't pipe into `ssh ... bash -s` (a `docker exec -i` inside swallows
+  the rest of the script) and don't inline nested quotes (PowerShell 5.1 mangles `\"`). Run long
+  jobs under `nohup` with a log.
 - Commits: no Co-Authored-By / AI attribution lines (user preference).
 
 Environment: Windows (Node 22.15; Angular 22 wants >= 22.22.3, builds work but npm warns). GitHub

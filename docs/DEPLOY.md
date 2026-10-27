@@ -6,7 +6,7 @@ the Angular build. A free deployment needs three pieces:
 | Piece    | Free option                                   | Why                                                      |
 | -------- | --------------------------------------------- | -------------------------------------------------------- |
 | App      | Hugging Face Spaces (Docker, CPU basic)       | 2 vCPU / 16 GB RAM: plenty for the local embedding model |
-| Database | Neon free Postgres (pgvector supported)       | All 10 frameworks (72 versions) take ~210 MB of the 0.5 GB limit |
+| Database | Neon free Postgres (pgvector supported)       | All 10 frameworks (119 versions) take ~230 MB of the 0.5 GB limit |
 | LLM      | Groq free tier (OpenAI-compatible API)        | Fast hosted Llama models; no GPU needed in the Space      |
 
 Any OpenAI-compatible endpoint works for the LLM (OpenRouter free models, Google Gemini's

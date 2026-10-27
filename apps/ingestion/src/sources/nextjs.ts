@@ -4,7 +4,8 @@ import { githubBlobBase, loadMarkdownPages } from './markdown-repo';
 import type { SourceAdapter } from './types';
 
 const REPO = 'vercel/next.js';
-const MIN_MAJOR = 12;
+// The docs moved into the repo (`docs/`) during 9.x.
+const MIN_MAJOR = 9;
 
 /** "docs/02-app/01-building-your-application/01-routing/index.mdx" -> "app/building-your-application/routing" */
 export function nextUrlPath(sourcePath: string): string {
@@ -31,7 +32,7 @@ export function cleanNextMdx(markdown: string, sourcePath: string): string | nul
     .replace(/^```(?:jsx?|js)\b[^\n]*\bswitcher\b[^\n]*\n[\s\S]*?^```\s*$/gm, '');
 }
 
-/** Next.js docs from vercel/next.js `docs/`, newest release of each major since 12. */
+/** Next.js docs from vercel/next.js `docs/`, newest release of each major since 9. */
 export const nextjsAdapter: SourceAdapter = {
   framework: 'nextjs',
 

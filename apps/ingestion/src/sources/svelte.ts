@@ -1,11 +1,29 @@
 import { posix } from 'node:path';
 import { githubSlug } from '../chunker';
-import { latestPerMajor, listReleaseTags } from '../git';
+import { commitBefore, historyClone, latestPerMajor, listReleaseTags } from '../git';
 import { githubBlobBase, loadMarkdownPages, stripOrderPrefixes } from './markdown-repo';
+import { snapshotSources } from './snapshots';
 import type { SourceAdapter, VersionSource } from './types';
 
 const REPO = 'sveltejs/svelte';
+const SITE_REPO = 'sveltejs/v2.svelte.dev';
 const MIN_MAJOR = 3;
+
+/**
+ * Svelte 1 and 2: the guide of the old svelte.technology site (sveltejs/v2.svelte.dev, archived),
+ * cited on GitHub since v2.svelte.dev is down. 2 is the repo's head; 1 is the site as it stood
+ * when 2.0.0 shipped (npm, 2018-04-19).
+ */
+export async function svelteSiteVersions(commitAt: (before: string) => Promise<string>): Promise<VersionSource[]> {
+  const site = (version: string, ref: string): VersionSource => ({
+    version,
+    repo: SITE_REPO,
+    ref,
+    paths: ['content/guide'],
+    docsBaseUrl: githubBlobBase(SITE_REPO, ref),
+  });
+  return [...(await snapshotSources([{ version: '1', before: '2018-04-19' }], commitAt, site)), site('2', 'master')];
+}
 
 /** svelte.dev (5+): case kept, "$" and "." kept: "Deep state" -> "Deep-state", "$state.raw". */
 export const svelte5Slug = (heading: string) =>
@@ -32,14 +50,16 @@ export const svelte4Slug = (heading: string, parents: string[]) => {
 export const svelteAdapter: SourceAdapter = {
   framework: 'svelte',
 
-  async versions() {
+  async versions({ repoCacheDir }) {
+    const history = await historyClone(repoCacheDir, SITE_REPO, 'master');
+    const siteVersions = await svelteSiteVersions((before) => commitBefore(history, 'master', before));
     // Releases are tagged "v3.59.2" up to 3.x and "svelte@5.57.2" since.
     const tags = latestPerMajor(
       [...(await listReleaseTags(REPO)), ...(await listReleaseTags(REPO, 'svelte@'))],
       (t) => t.major >= MIN_MAJOR,
     );
     const latest = Math.max(...tags.map((t) => t.major));
-    return tags.map((t): VersionSource => ({
+    return [...siteVersions, ...tags.map((t): VersionSource => ({
       version: String(t.major),
       repo: REPO,
       ref: t.tag,
@@ -52,16 +72,17 @@ export const svelteAdapter: SourceAdapter = {
             : t.major === latest
               ? 'https://svelte.dev/docs/svelte/'
               : `https://v${t.major}.svelte.dev/docs/svelte/`,
-    }));
+    }))];
   },
 
   loadPages(checkoutDir, source) {
     const major = Number(source.version);
+    // 1–3 are cited on GitHub: file paths and GitHub anchors.
     return loadMarkdownPages(checkoutDir, source, {
       slugify: (heading, _path, parents) =>
-        major === 3 ? githubSlug(heading) : major === 4 ? svelte4Slug(heading, parents) : svelte5Slug(heading),
+        major <= 3 ? githubSlug(heading) : major === 4 ? svelte4Slug(heading, parents) : svelte5Slug(heading),
       toUrlPath: (sourcePath) => {
-        if (major === 3) return sourcePath;
+        if (major <= 3) return sourcePath;
         // "documentation/docs/02-runes/02-$state.md" -> "$state"; section index pages have no content of their own
         if (posix.basename(sourcePath) === 'index.md') return null;
         return posix.basename(stripOrderPrefixes(sourcePath));

@@ -9,9 +9,10 @@ actually have installed.
 Runs 100% locally and for free: Postgres + pgvector, a local embedding model (transformers.js) and a
 local LLM via Ollama. Any OpenAI-compatible API can replace the LLM.
 
-**Indexed (72 docs versions, 10 frameworks):** Angular 2–22 · Express 3–5 · NestJS 10–12 ·
-Next.js 12–16 · Node.js 1–26 (every major; 1–3 are io.js) · Nuxt 2–4 · React 17–19 · Svelte 3–5 ·
-TypeScript 3–6 · Vue 2–3. 160,594 version-chunks are stored as 77,868 rows (212 MB).
+**Indexed (119 docs versions, 10 frameworks):** Angular 2–22 · Express 3–5 · NestJS 6–12 ·
+Next.js 9–16 · Node.js 0.8–26 (0.8, 0.10, 0.12, then every major; 1–3 are io.js) · Nuxt 2–4 ·
+React 0.3–19 (every minor of 0.x, 15.x and 16.x: 35 versions) · Svelte 1–5 · TypeScript 1–6 ·
+Vue 1–3. 185,100 version-chunks are stored as 83,388 rows (229 MB).
 
 ## How it works
 
@@ -30,21 +31,30 @@ version's docs base URL, so one chunk spanning Node 18–24 still links to each 
 
 **Version-exact citations.** Each source adapter knows where a version's docs are published:
 `nodejs.org/docs/v18.20.8/api/…`, `nextjs.org/docs/14/…`, `v12.angular.io/…`, `v19.angular.dev/…`,
-`17.reactjs.org/…`, `18.react.dev/…`, `v4.svelte.dev/…`, `nuxt.com/docs/3.x/…`,
-`expressjs.com/en/4x/…`, `v2.vuejs.org/…`, `v2.angular.io/docs/ts/latest/…` (Angular 2, extracted
-from the old site's Jade templates), `iojs.org/dist/v1.8.4/doc/api/…` (io.js, Node 1–3). Versions
-without a hosted site (Next.js 12, Svelte 3, NestJS 10–11) link to the file on GitHub at the release
-tag or branch.
+`16.reactjs.org/…`, `17.reactjs.org/…`, `18.react.dev/…`, `v4.svelte.dev/…`, `nuxt.com/docs/3.x/…`,
+`expressjs.com/en/4x/…`, `v1.vuejs.org/…`, `v2.vuejs.org/…`, `v2.angular.io/docs/ts/latest/…`
+(Angular 2, extracted from the old site's Jade templates), `iojs.org/dist/v1.8.4/doc/api/…` (io.js,
+Node 1–3), `nodejs.org/docs/v0.12.18/api/…`. Versions without a hosted site (React 0.x–15.x,
+Next.js 9–12, Svelte 1–3, NestJS 6–11, TypeScript 1–2) link to the file on GitHub at the release
+tag, branch or snapshot commit.
 
 **AngularJS is not Angular.** Questions about AngularJS ("AngularJS", "angular.js", "Angular 1.x", or
 the `angular` npm package in a package.json) get a direct answer that it is a separate framework,
 with links to its docs and the upgrade guide, instead of misleading Angular 2+ sources. "Migrate
 from AngularJS to Angular 17" is answered from the Angular 17 upgrade guide.
 
-**TypeScript snapshots.** typescriptlang.org only serves the latest docs, so each TypeScript major is
-a snapshot of the website repo taken just before the next major's release notes landed (the docs as
-they stood for 3.9, 4.9, 5.9), plus the current head. They are cited on GitHub at the snapshot
-commit, so links stay version-exact and unchanged pages dedupe across snapshots.
+**Snapshots for docs without release tags.** typescriptlang.org only serves the latest docs, so
+each TypeScript major is a snapshot of the website repo taken just before the next major's release
+notes landed (the docs as they stood for 3.9, 4.9, 5.9), plus the current head; TypeScript 1–2 come
+from the archived Handbook as it stood when 2.0 and 3.0 shipped. The same idea covers every React
+16.x minor (reactjs.org just before the next minor shipped: 16.6 already presents Hooks as an
+upcoming feature in "v16.7.0-alpha", 16.8 as stable), NestJS 6–9 and Svelte 1. Unchanged pages
+dedupe across snapshots.
+
+**Majors and minors.** Most frameworks are indexed once per major, at its newest release; React
+0.x, 15.x and 16.x are indexed per minor. A version asked as a bare major ("React 16") maps to the
+newest indexed release of that major (16.14), an exact one ("React 16.8.6") to the closest indexed
+version at or below it.
 
 **"Since when?"** Node's API history (`added: v17.5.0`, change logs) is rendered into the indexed
 text, TypeScript's release notes are indexed per version, and every citation shows the range of
