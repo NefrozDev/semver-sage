@@ -129,7 +129,8 @@ questions get a fixed "AngularJS is a separate framework" answer (`notices.ts`),
   - unit specs next to the code;
   - integration `apps/ingestion/src/*.int.spec.ts` (`vitest.integration.config.mts`;
     global-setup creates + migrates `semver_sage_test` from `TEST_DATABASE_URL`; fakes in
-    `src/testing/fakes.ts`);
+    `src/testing/fakes.ts`). `src/testing/` belongs to `tsconfig.spec.json`, not the app config:
+    Vite's `tsconfigPaths` resolves `@semver-sage/*` through the tsconfig that includes a file;
   - `apps/api-e2e` (Vitest against the running API; no LLM needed);
   - `apps/web-e2e` (Playwright, 14 tests, `/api` mocked via `page.route`; served from the
     production build by `static-server.mjs`).
@@ -156,20 +157,18 @@ questions get a fixed "AngularJS is a separate framework" answer (`notices.ts`),
   HF Spaces + Neon + Groq guide in `docs/DEPLOY.md` is an unused alternative.
 
 ## Next steps (in order)
-1. `ingestion:typecheck` fails on `main`: `import.meta` in `src/testing/global-setup.ts` isn't
-   allowed by the tsconfig `module` setting.
-2. Switch SonarQube Cloud to CI analysis (`SONAR_TOKEN` secret, Automatic Analysis off) so
+1. Switch SonarQube Cloud to CI analysis (`SONAR_TOKEN` secret, Automatic Analysis off) so
    coverage is reported, then handle what the first CI analysis finds.
-3. Answer latency/robustness (found by benchmark): SSE keep-alive pings while the LLM warms up, a
+2. Answer latency/robustness (found by benchmark): SSE keep-alive pings while the LLM warms up, a
    longer LLM fetch timeout, a larger Ollama context (`num_ctx`; only `temperature` is set today).
-4. Exact-identifier misses (`req.params`, `useSeoMeta`): a cheap identifier match on top of
+3. Exact-identifier misses (`req.params`, `useSeoMeta`): a cheap identifier match on top of
    vector search, without bringing back the reranker; measure with the evals.
-5. Raise coverage where it's thin: API controller/module wiring, eval runner, ingestion CLI.
-6. Index migration guides kept in separate repos (Vue 3) for "what replaced X" questions.
-7. Keep the production index fresh: `reingest.yml` can't reach the prod Postgres (bound to the
+4. Raise coverage where it's thin: API controller/module wiring, eval runner, ingestion CLI.
+5. Index migration guides kept in separate repos (Vue 3) for "what replaced X" questions.
+6. Keep the production index fresh: `reingest.yml` can't reach the prod Postgres (bound to the
    VPS's localhost), so new releases need the local ingest + dump/restore below; decide whether
    to automate it.
-8. More versions/frameworks: golden eval questions for the new old versions (React 0.x–16.x,
+7. More versions/frameworks: golden eval questions for the new old versions (React 0.x–16.x,
    Node 0.x...); Vue 0.x (other layout); SvelteKit, React Router/Remix, Astro, Fastify.
 
 ## Commands
