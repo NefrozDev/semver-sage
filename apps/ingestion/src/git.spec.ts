@@ -1,4 +1,30 @@
-import { latestPerMajor, latestPerMinor, ReleaseTag } from './git';
+import { latestPerMajor, latestPerMinor, ReleaseTag, remoteCommitFromLsRemote } from './git';
+
+describe('remoteCommitFromLsRemote', () => {
+  const A = 'a'.repeat(40);
+  const B = 'b'.repeat(40);
+  const C = 'c'.repeat(40);
+
+  it('peels an annotated tag to its commit', () => {
+    const out = `${A}\trefs/tags/v16.14.0\n${B}\trefs/tags/v16.14.0^{}\n`;
+    expect(remoteCommitFromLsRemote(out, 'v16.14.0')).toBe(B);
+  });
+
+  it('takes a lightweight tag or a branch head as is', () => {
+    expect(remoteCommitFromLsRemote(`${A}\trefs/tags/0.14.10\n`, '0.14.10')).toBe(A);
+    expect(remoteCommitFromLsRemote(`${C}\trefs/heads/main\n`, 'main')).toBe(C);
+  });
+
+  it('ignores refs that only end with the same name', () => {
+    const out = `${A}\trefs/heads/dependabot/main\n${C}\trefs/heads/main\n`;
+    expect(remoteCommitFromLsRemote(out, 'main')).toBe(C);
+    expect(remoteCommitFromLsRemote(`${A}\trefs/heads/dependabot/main\n`, 'main')).toBeNull();
+  });
+
+  it('returns null for an unknown ref or empty output', () => {
+    expect(remoteCommitFromLsRemote('', 'v99.0.0')).toBeNull();
+  });
+});
 
 const tag = (version: string): ReleaseTag => {
   const [major, minor, patch] = version.split('.').map(Number);

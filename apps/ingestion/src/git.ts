@@ -92,6 +92,25 @@ export async function historyClone(cacheDir: string, repo: string, branch: strin
   return dir;
 }
 
+const SHA_RE = /^[0-9a-f]{40}$/;
+
+/**
+ * The commit `ref` names in `git ls-remote origin <ref> <ref>^{}` output: an annotated tag's peeled
+ * commit, else the tag or branch head. Null when the remote has no such ref.
+ */
+export function remoteCommitFromLsRemote(output: string, ref: string): string | null {
+  const byName = new Map(
+    output
+      .split('\n')
+      .map((line) => line.trim().split(/\s+/))
+      .filter(([sha, name]) => sha && name)
+      .map(([sha, name]) => [name, sha]),
+  );
+  return (
+    byName.get(`refs/tags/${ref}^{}`) ?? byName.get(`refs/tags/${ref}`) ?? byName.get(`refs/heads/${ref}`) ?? null
+  );
+}
+
 /**
  * Shallow, sparse checkout of `paths` at `ref` (branch, tag or commit SHA). Only the docs folders
  * are materialized, which keeps checkouts small and avoids Windows path-length failures on
@@ -103,15 +122,27 @@ export async function checkoutDocs(
   ref: string,
   paths: string[],
 ): Promise<{ dir: string; commit: string }> {
-  const label = /^[0-9a-f]{40}$/.test(ref) ? ref.slice(0, 12) : ref;
+  const label = SHA_RE.test(ref) ? ref.slice(0, 12) : ref;
   const dir = join(cacheDir, `${repo.replace('/', '__')}@${label}`);
-  if (!existsSync(join(dir, '.git'))) {
+  const cached = existsSync(join(dir, '.git'));
+  if (!cached) {
     await git(['init', '-q', dir]);
     await git(['remote', 'add', 'origin', remote(repo)], dir);
   }
   // Narrow the checkout before fetching, so nothing outside `paths` is ever written to disk.
   await git(['sparse-checkout', 'set', ...paths], dir);
-  await git(['fetch', '--depth', '1', '--filter=blob:none', 'origin', ref], dir);
-  await git(['checkout', '--force', 'FETCH_HEAD'], dir);
+
+  // Fetching a commit the cache already holds can resend an identical pack, and git can't replace
+  // its read-only twin on Windows ("unable to write file ... Permission denied"): skip the fetch.
+  const wanted = SHA_RE.test(ref)
+    ? ref
+    : remoteCommitFromLsRemote(await gitIn(dir, ['ls-remote', 'origin', ref, `${ref}^{}`]), ref);
+  const head = cached ? await gitIn(dir, ['rev-parse', '--verify', '--quiet', 'HEAD']).catch(() => '') : '';
+  if (wanted && head === wanted) {
+    await git(['checkout', '--force', 'HEAD'], dir);
+  } else {
+    await git(['fetch', '--depth', '1', '--filter=blob:none', 'origin', ref], dir);
+    await git(['checkout', '--force', 'FETCH_HEAD'], dir);
+  }
   return { dir, commit: await gitIn(dir, ['rev-parse', 'HEAD']) };
 }
