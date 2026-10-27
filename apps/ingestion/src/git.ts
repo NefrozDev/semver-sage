@@ -57,6 +57,27 @@ export function latestPerMajor(tags: ReleaseTag[], filter: (t: ReleaseTag) => bo
   return [...latest.values()].sort((a, b) => a.major - b.major);
 }
 
+/** The newest release of each major.minor line, ascending (for docs indexed per minor). */
+export function latestPerMinor(tags: ReleaseTag[], filter: (t: ReleaseTag) => boolean = () => true): ReleaseTag[] {
+  const latest = new Map<string, ReleaseTag>();
+  for (const t of tags.filter(filter)) {
+    const key = `${t.major}.${t.minor}`;
+    const current = latest.get(key);
+    if (!current || t.patch > current.patch) latest.set(key, t);
+  }
+  return [...latest.values()].sort((a, b) => a.major - b.major || a.minor - b.minor);
+}
+
+/**
+ * The last mainline commit of `branch` before `date` ("2019-02-06", UTC) in a history clone:
+ * docs repos without release tags are indexed as they stood just before the next release.
+ */
+export async function commitBefore(historyDir: string, branch: string, date: string): Promise<string> {
+  const sha = await gitIn(historyDir, ['rev-list', '-1', '--first-parent', `--before=${date}T00:00:00Z`, branch]);
+  if (!sha) throw new Error(`No commit on ${branch} before ${date}`);
+  return sha;
+}
+
 /**
  * Commit history without file contents (a few MB even for big repos), for questions like
  * "which commit added this file?". Updated on every call.
