@@ -20,8 +20,11 @@ async function readEvents(res: Response, until: (e: AskStreamEvent) => boolean =
     buffer += value;
     let end: number;
     while ((end = buffer.indexOf('\n\n')) >= 0) {
-      const event = JSON.parse(buffer.slice(0, end).replace(/^data: /, '')) as AskStreamEvent;
+      const frame = buffer.slice(0, end);
       buffer = buffer.slice(end + 2);
+      // Comment frames (": ping") only keep the connection alive.
+      if (!frame.startsWith('data: ')) continue;
+      const event = JSON.parse(frame.slice('data: '.length)) as AskStreamEvent;
       events.push(event);
       if (until(event)) {
         await reader.cancel();
