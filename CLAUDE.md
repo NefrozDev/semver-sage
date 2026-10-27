@@ -95,7 +95,9 @@ cost recall on large scopes; one version is at most ~6k chunks). Record:
 
 ## Current state
 PRs #1–#6 are merged into `main` (last: #6 `feat/older-versions`: older versions, bare-major
-resolution, checkout fix, prod docs). Production runs `main` (`a5a89de`, 2026-10-27).
+resolution, checkout fix, prod docs). Branch `feat/answer-robustness` (SSE keep-alive, ingestion
+typecheck fix) is pushed, PR to open, and **production runs it** (`1a9c939`); after the merge, put
+the VPS back on `main` (`git checkout main && git pull`, no rebuild).
 
 Indexed locally and in production (119 versions, 83,388 chunk rows, 185,100 version-chunks,
 229 MB; 2026-10-27): Angular 2–22, Express 3–5, NestJS 6–12, Next.js 9–16, Node 0.8/0.10/0.12 +
@@ -116,11 +118,11 @@ questions get a fixed "AngularJS is a separate framework" answer (`notices.ts`),
   option so tests can swap it.
 - `apps/api`: `POST /api/ask` (SSE: scope → citations → tokens → done; compare mode adds a
   `compare` scope), request validation, throttled per IP; the LLM is injected (`LLM_PROVIDER`);
-  serves the web build when `STATIC_DIR` is set. Sends `: ping` SSE comments every 15 s: on the VPS
-  a cold llama3.2:3b takes over 60 s to its first token and nginx (60 s `proxy_read_timeout`) was
-  cutting the stream at 62 s (measured 2026-10-27). Clients must skip non-`data:` frames.
-  Not changed, from prod evidence: Ollama `num_ctx` (4096 by default; prompts use 1.4–1.7k tokens,
-  never truncated) and the fetch timeout (answers take 1m40–2m30, undici waits 5 min for headers).
+  serves the web build when `STATIC_DIR` is set. Sends `: ping` SSE comments every 15 s: nginx
+  (60 s `proxy_read_timeout`) was cutting streams at 62 s while a cold model warmed up. Measured
+  in prod through nginx after the fix (2026-10-27, cold llama3.2:3b): first token at 182 s, answer
+  done at 239 s. Clients must skip non-`data:` frames. Ollama `num_ctx` left at its 4096 default:
+  prompts use 1.4–1.7k tokens, never truncated.
 - `apps/web`: signal store reading the SSE stream (`sage.store.ts`), SVG sage with
   idle/reflecting/talking poses (`sage/`), typewriter answer card (`answer-card/`), citation cards
   with version badges (`citation-list/`), framework/version/compare pickers and package.json
@@ -163,14 +165,19 @@ questions get a fixed "AngularJS is a separate framework" answer (`notices.ts`),
 ## Next steps (in order)
 1. Switch SonarQube Cloud to CI analysis (`SONAR_TOKEN` secret, Automatic Analysis off) so
    coverage is reported, then handle what the first CI analysis finds.
-2. Exact-identifier misses (`req.params`, `useSeoMeta`): a cheap identifier match on top of
+2. Cold-start latency on the VPS: 182 s to the first token. Ollama sends response headers with
+   the first token and Node's fetch (undici) gives up after 300 s without headers, so compare mode
+   (longer prompts) or a busy box could fail with a headers timeout. Options: an undici `Agent`
+   with a longer `headersTimeout` for the LLM call; keeping the model loaded (`keep_alive`, ~2 GB
+   of RAM on a box shared with the mail server: the user's call); a smaller/faster model.
+3. Exact-identifier misses (`req.params`, `useSeoMeta`): a cheap identifier match on top of
    vector search, without bringing back the reranker; measure with the evals.
-3. Raise coverage where it's thin: API module wiring, eval runner, ingestion CLI.
-4. Index migration guides kept in separate repos (Vue 3) for "what replaced X" questions.
-5. Keep the production index fresh: `reingest.yml` can't reach the prod Postgres (bound to the
+4. Raise coverage where it's thin: API module wiring, eval runner, ingestion CLI.
+5. Index migration guides kept in separate repos (Vue 3) for "what replaced X" questions.
+6. Keep the production index fresh: `reingest.yml` can't reach the prod Postgres (bound to the
    VPS's localhost), so new releases need the local ingest + dump/restore below; decide whether
    to automate it.
-6. More versions/frameworks: golden eval questions for the new old versions (React 0.x–16.x,
+7. More versions/frameworks: golden eval questions for the new old versions (React 0.x–16.x,
    Node 0.x...); Vue 0.x (other layout); SvelteKit, React Router/Remix, Astro, Fastify.
 
 ## Commands
