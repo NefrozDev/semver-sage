@@ -94,9 +94,8 @@ cost recall on large scopes; one version is at most ~6k chunks). Record:
 `evals/results/hybrid-rerank-ablation.md`.
 
 ## Current state
-PRs #1–#5 are merged into `main` (last: #5 `feat/sage-polish`: pinned title, livelier sage,
-showcase disclaimer under the sage). Branch `feat/older-versions` (older versions, bare-major
-resolution, checkout fix, prod docs) is pushed, PR not opened yet, and **production runs it**.
+PRs #1–#6 are merged into `main` (last: #6 `feat/older-versions`: older versions, bare-major
+resolution, checkout fix, prod docs). Production runs `main` (`a5a89de`, 2026-10-27).
 
 Indexed locally and in production (119 versions, 83,388 chunk rows, 185,100 version-chunks,
 229 MB; 2026-10-27): Angular 2–22, Express 3–5, NestJS 6–12, Next.js 9–16, Node 0.8/0.10/0.12 +
@@ -157,23 +156,20 @@ questions get a fixed "AngularJS is a separate framework" answer (`notices.ts`),
   HF Spaces + Neon + Groq guide in `docs/DEPLOY.md` is an unused alternative.
 
 ## Next steps (in order)
-1. Open and merge the `feat/older-versions` PR once CI and Sonar are green, then put the VPS
-   checkout back on `main` (`git checkout main && git pull`; same image, no rebuild needed).
-   Delete `/tmp/semver_sage_backup_before_v2.dump` on the VPS (pre-round-2 data) once satisfied.
-2. `ingestion:typecheck` fails, already on `main`: `import.meta` in `src/testing/global-setup.ts`
-   isn't allowed by the tsconfig `module` setting.
-3. Switch SonarQube Cloud to CI analysis (`SONAR_TOKEN` secret, Automatic Analysis off) so
+1. `ingestion:typecheck` fails on `main`: `import.meta` in `src/testing/global-setup.ts` isn't
+   allowed by the tsconfig `module` setting.
+2. Switch SonarQube Cloud to CI analysis (`SONAR_TOKEN` secret, Automatic Analysis off) so
    coverage is reported, then handle what the first CI analysis finds.
-4. Answer latency/robustness (found by benchmark): SSE keep-alive pings while the LLM warms up, a
+3. Answer latency/robustness (found by benchmark): SSE keep-alive pings while the LLM warms up, a
    longer LLM fetch timeout, a larger Ollama context (`num_ctx`; only `temperature` is set today).
-5. Exact-identifier misses (`req.params`, `useSeoMeta`): a cheap identifier match on top of
+4. Exact-identifier misses (`req.params`, `useSeoMeta`): a cheap identifier match on top of
    vector search, without bringing back the reranker; measure with the evals.
-6. Raise coverage where it's thin: API controller/module wiring, eval runner, ingestion CLI.
-7. Index migration guides kept in separate repos (Vue 3) for "what replaced X" questions.
-8. Keep the production index fresh: `reingest.yml` can't reach the prod Postgres (bound to the
+5. Raise coverage where it's thin: API controller/module wiring, eval runner, ingestion CLI.
+6. Index migration guides kept in separate repos (Vue 3) for "what replaced X" questions.
+7. Keep the production index fresh: `reingest.yml` can't reach the prod Postgres (bound to the
    VPS's localhost), so new releases need the local ingest + dump/restore below; decide whether
    to automate it.
-9. More versions/frameworks: golden eval questions for the new old versions (React 0.x–16.x,
+8. More versions/frameworks: golden eval questions for the new old versions (React 0.x–16.x,
    Node 0.x...); Vue 0.x (other layout); SvelteKit, React Router/Remix, Astro, Fastify.
 
 ## Commands
