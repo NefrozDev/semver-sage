@@ -22,6 +22,16 @@ export interface SearchScope extends ResolvedScope {
 }
 
 /**
+ * A bare major ("16", "v16", "16.x") means its newest release: with minors indexed, "React 16"
+ * must map to 16.14, not 16.0.
+ */
+function requestedVersionNum(requested: string): number {
+  if (!/^\s*(?:v\s*)?\d+(?:\.[x*]){0,2}\s*$/i.test(requested)) return versionToNum(requested);
+  const major = parseVersion(requested)?.major ?? 0;
+  return versionToNum({ major, minor: 999, patch: 999 });
+}
+
+/**
  * Decides which framework + indexed docs version a question is about.
  * Explicit request fields win over what's detected in the question; a requested version maps to
  * the newest indexed version at or below it (e.g. "2.6" -> "2" when majors are indexed).
@@ -60,7 +70,7 @@ export function resolveScope(request: AskRequest, indexed: IndexedVersionRow[]):
     return { framework, requestedVersion: null, version: latest.version, versionNum: latest.versionNum, source: requestedVersion ? source : 'latest' };
   }
 
-  const wanted = versionToNum(requestedVersion);
+  const wanted = requestedVersionNum(requestedVersion);
   const match = [...available].reverse().find((v) => v.versionNum <= wanted) ?? available[0];
   const scope: SearchScope = {
     framework,

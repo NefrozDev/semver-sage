@@ -32,6 +32,24 @@ describe('resolveScope', () => {
     expect(resolveScope({ question: 'next 14.0 caching' }, indexed).version).toBe('13.5');
   });
 
+  it('maps a bare major to its newest indexed minor', () => {
+    const minors = [row('react', '15.6'), row('react', '16.0'), row('react', '16.8'), row('react', '16.14'), row('react', '17')];
+    for (const question of ['React 16 context', 'React v16 context', 'React 16.x context']) {
+      const scope = resolveScope({ question }, minors);
+      expect(scope).toMatchObject({ version: '16.14', source: 'question' });
+      expect(scope.note).toBeUndefined();
+    }
+    expect(resolveScope({ question: 'context', framework: 'react', version: '16' }, minors).version).toBe('16.14');
+  });
+
+  it('keeps an explicit minor, and maps an unindexed one to the closest older minor', () => {
+    const minors = [row('react', '0.14'), row('react', '16.0'), row('react', '16.8'), row('react', '16.14')];
+    expect(resolveScope({ question: 'hooks in React 16.8' }, minors).version).toBe('16.8');
+    expect(resolveScope({ question: 'hooks in React 16.9.0' }, minors).version).toBe('16.8');
+    expect(resolveScope({ question: 'mixins in React 0.14' }, minors).version).toBe('0.14');
+    expect(resolveScope({ question: 'mixins in React 0' }, minors).version).toBe('0.14');
+  });
+
   it('explains when the requested major is not indexed', () => {
     const scope = resolveScope({ question: 'Vue 1 directives' }, indexed);
     expect(scope.version).toBe('2');
