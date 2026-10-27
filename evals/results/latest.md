@@ -5,22 +5,23 @@ asked framework **and version** and matches an expected docs page or anchor.
 
 | Pipeline | Hit@1 | Hit@5 | Recall@5 | MRR | Version precision@5 | Latency |
 | --- | --- | --- | --- | --- | --- | --- |
-| Vector search + version filter (production) | 75.4% | 95.9% | 89.9% | 0.846 | 100.0% | 28 ms |
+| Vector search, no version filter | 30.4% | 63.2% | 55.2% | 0.441 | 31.3% | 299 ms |
+| Vector search + version filter (production) | 74.9% | 95.9% | 89.3% | 0.843 | 100.0% | 22 ms |
 
 ## Production pipeline by framework
 
 | Framework | Questions | Hit@1 | Hit@5 | MRR | Version precision@5 |
 | --- | --- | --- | --- | --- | --- |
-| Angular | 28 | 92.9% | 100.0% | 0.958 | 100.0% |
+| Angular | 28 | 89.3% | 100.0% | 0.940 | 100.0% |
 | Express | 9 | 55.6% | 77.8% | 0.675 | 100.0% |
 | NestJS | 11 | 90.9% | 100.0% | 0.939 | 100.0% |
 | Next.js | 15 | 46.7% | 86.7% | 0.640 | 100.0% |
-| Node.js | 26 | 76.9% | 100.0% | 0.869 | 100.0% |
-| Nuxt | 11 | 54.5% | 90.9% | 0.685 | 100.0% |
+| Node.js | 26 | 73.1% | 100.0% | 0.853 | 100.0% |
+| Nuxt | 11 | 54.5% | 90.9% | 0.683 | 100.0% |
 | React | 16 | 87.5% | 100.0% | 0.938 | 100.0% |
 | Svelte | 14 | 71.4% | 100.0% | 0.857 | 100.0% |
 | TypeScript | 14 | 71.4% | 85.7% | 0.776 | 100.0% |
-| Vue | 27 | 77.8% | 100.0% | 0.883 | 100.0% |
+| Vue | 27 | 81.5% | 100.0% | 0.901 | 100.0% |
 
 ## Misses (production pipeline, nothing relevant in the top 5)
 
