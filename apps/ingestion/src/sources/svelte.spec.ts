@@ -1,4 +1,29 @@
-import { svelte4Slug, svelte5Slug } from './svelte';
+import { svelte4Slug, svelte5Slug, svelteSiteVersions } from './svelte';
+
+describe('svelteSiteVersions', () => {
+  it('takes Svelte 1 from the site history before 2.0.0 and Svelte 2 from the archived head, both on GitHub', async () => {
+    const commitAt = vi.fn(async () => 'abc123');
+
+    expect(await svelteSiteVersions(commitAt)).toEqual([
+      {
+        version: '1',
+        repo: 'sveltejs/v2.svelte.dev',
+        ref: 'abc123',
+        paths: ['content/guide'],
+        docsBaseUrl: 'https://github.com/sveltejs/v2.svelte.dev/blob/abc123/',
+      },
+      {
+        version: '2',
+        repo: 'sveltejs/v2.svelte.dev',
+        ref: 'master',
+        paths: ['content/guide'],
+        docsBaseUrl: 'https://github.com/sveltejs/v2.svelte.dev/blob/master/',
+      },
+    ]);
+    expect(commitAt).toHaveBeenCalledOnce();
+    expect(commitAt).toHaveBeenCalledWith('2018-04-19');
+  });
+});
 
 describe('Svelte anchors', () => {
   it('matches svelte.dev (5)', () => {
