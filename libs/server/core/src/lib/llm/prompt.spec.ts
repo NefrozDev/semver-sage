@@ -1,5 +1,5 @@
 import type { Citation, ResolvedScope } from '@semver-sage/types';
-import { buildCompareMessages, buildMessages, buildSinceMessages } from './prompt';
+import { buildCompareMessages, buildMessages, buildSinceMessages, sinceAnswerStart } from './prompt';
 
 const scope = (version: string): ResolvedScope => ({
   framework: 'vue',
@@ -49,31 +49,51 @@ describe('buildCompareMessages', () => {
   });
 });
 
+describe('sinceAnswerStart', () => {
+  it('states the earliest version found, in bold', () => {
+    expect(sinceAnswerStart(scope('3'), { earliest: '2', oldest: '1' })).toBe('**Since Vue 2.**\n\n');
+  });
+
+  it('says "at least since" when that is the oldest indexed version', () => {
+    expect(sinceAnswerStart(scope('3'), { earliest: '1', oldest: '1' })).toBe(
+      '**At least since Vue 1**, the oldest docs indexed.\n\n',
+    );
+  });
+
+  it('leaves the answer to the LLM when nothing was found or no framework is known', () => {
+    expect(sinceAnswerStart(scope('3'), { earliest: null, oldest: '1' })).toBeNull();
+    const noFramework: ResolvedScope = { framework: null, requestedVersion: null, version: null, source: 'none' };
+    expect(sinceAnswerStart(noFramework, { earliest: '2', oldest: '1' })).toBeNull();
+  });
+});
+
 describe('buildSinceMessages', () => {
   const sources = [citation(1, '1'), citation(2, '3', '2', '3')];
 
-  it('states the earliest version found and asks for it first, in bold', () => {
+  it('makes the LLM continue the written first line by describing the oldest excerpt', () => {
     const [system, user] = buildSinceMessages('When was Teleport added?', scope('3'), { earliest: '2', oldest: '1' }, sources);
     expect(system.content).toContain('since which version something exists in Vue');
     expect(system.content).toContain('from version 1 to 3');
-    expect(system.content).toContain('found it in the docs of Vue 2 at the earliest');
-    expect(system.content).toContain("Older indexed versions (back to 1) don't mention it.");
-    expect(system.content).toContain('"**Since Vue 2.**"');
-    expect(system.content).toContain('Added in: v17.5.0');
+    expect(system.content).toContain(
+      'The first line of your answer is already written: **Since Vue 2.** Continue after it without repeating it',
+    );
+    expect(system.content).toContain('never say it appeared in another version');
+    expect(system.content).toContain('Added in: v17.5.0, v16.15.0');
     expect(user.content).toContain('[2] Vue 3 docs, "Filters › Usage" (this text appears in versions: 2–3)');
+    // Restated right before the answer, where a small model follows it best.
+    const instruction = user.content.indexOf('as the oldest excerpt describes it');
+    expect(instruction).toBeGreaterThan(user.content.indexOf('Question: When was Teleport added?'));
+    expect(user.content).toContain('Do not describe later versions');
   });
 
-  it('says "at least since" when the earliest is the oldest indexed version', () => {
-    const [system] = buildSinceMessages('q', scope('3'), { earliest: '1', oldest: '1' }, sources);
-    expect(system.content).toContain('exists at least since Vue 1');
-    expect(system.content).toContain("older docs aren't indexed");
-    expect(system.content).not.toContain("Older indexed versions");
+  it('leaves the usual prompt without the "since when?" instruction', () => {
+    const [, user] = buildMessages('q', scope('2'), [citation(1, '2')]);
+    expect(user.content).not.toContain('oldest excerpt');
   });
 
-  it('admits when nothing was found', () => {
+  it('asks the LLM to admit it when nothing was found', () => {
     const [system] = buildSinceMessages('q', scope('3'), { earliest: null, oldest: '1' }, []);
     expect(system.content).toContain('found no clear mention of it');
-    expect(system.content).not.toContain('at least since');
-    expect(system.content).toContain('"**Since Vue X.**"');
+    expect(system.content).not.toContain('already written');
   });
 });

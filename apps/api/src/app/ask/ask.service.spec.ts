@@ -110,10 +110,13 @@ describe('AskService', () => {
   it('answers "since when?" questions from every version: history scope, oldest-first sources', async () => {
     const history: HistoryResult = { citations: [citation('2', 1), citation('3', 2)], earliest: '2', oldest: '2' };
     const { retrieval, searches, historySearches } = fakeRetrieval(() => [citation('3')], undefined, history);
-    const { llm, calls } = fakeLlm(['**Since Vue 2.**']);
+    const { llm, calls } = fakeLlm(['It was a directive.']);
     const events = await collect(new AskService(retrieval, llm), 'When was v-model added to Vue?');
 
-    expect(events.map((e) => e.type)).toEqual(['scope', 'citations', 'token', 'done']);
+    expect(events.map((e) => e.type)).toEqual(['scope', 'citations', 'token', 'token', 'done']);
+    // The verdict is written by the API, so it always matches the search; the LLM adds the details.
+    expect(events[2]).toEqual({ type: 'token', text: '**At least since Vue 2**, the oldest docs indexed.\n\n' });
+    expect(events[3]).toEqual({ type: 'token', text: 'It was a directive.' });
     expect(events[0]).toEqual({
       type: 'scope',
       scope: { framework: 'vue', requestedVersion: null, version: '3', source: 'latest' },
@@ -131,7 +134,16 @@ describe('AskService', () => {
     expect(searches).toEqual([]);
     expect(calls).toHaveLength(1);
     expect(calls[0][0].content).toContain('since which version something exists in Vue');
-    expect(calls[0][0].content).toContain('at least since Vue 2');
+    expect(calls[0][0].content).toContain('already written: **At least since Vue 2**, the oldest docs indexed.');
+  });
+
+  it('lets the LLM answer alone when the history search found no evidence', async () => {
+    const history: HistoryResult = { citations: [citation('3', 1)], earliest: null, oldest: '2' };
+    const { retrieval } = fakeRetrieval(() => [], undefined, history);
+    const events = await collect(new AskService(retrieval, fakeLlm(['Not found.']).llm), 'When was v-model added to Vue?');
+
+    expect(events.map((e) => e.type)).toEqual(['scope', 'citations', 'token', 'done']);
+    expect(events[2]).toEqual({ type: 'token', text: 'Not found.' });
   });
 
   it('falls back to the usual search when the history search has nothing to offer', async () => {

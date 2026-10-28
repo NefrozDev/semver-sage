@@ -9,6 +9,7 @@ import {
   resolveComparison,
   resolveScope,
   SearchScope,
+  sinceAnswerStart,
 } from '@semver-sage/server-core';
 import {
   AskRequest,
@@ -70,6 +71,8 @@ export class AskService {
     let scope: SearchScope;
     let citations: Citation[];
     let messages: ChatMessage[];
+    /** Written before the LLM's tokens ("since when?" verdict). */
+    let answerStart: string | null = null;
     const comparison = resolveComparison(request, indexed);
 
     if (comparison) {
@@ -95,6 +98,7 @@ export class AskService {
         yield { type: 'scope', scope: toPublic(scope), history: { earliest, oldest } };
         citations = history.citations;
         messages = buildSinceMessages(request.question, scope, history, citations);
+        answerStart = sinceAnswerStart(scope, history);
       } else {
         yield { type: 'scope', scope: toPublic(scope) };
         citations = await this.retrieval.search(request.question, scope);
@@ -110,6 +114,7 @@ export class AskService {
       return;
     }
 
+    if (answerStart) yield { type: 'token', text: answerStart };
     try {
       for await (const text of this.llm.stream(messages, signal)) {
         yield { type: 'token', text };

@@ -124,7 +124,9 @@ describe('selectHistory', () => {
   const v = (major: number) => major * 1_000_000;
   const old = hit({ sim: 0.7, firstVersionNum: v(6), lastVersionNum: v(11) });
   const older = hit({ sim: 0.6, firstVersionNum: v(4), lastVersionNum: v(5) });
-  const recent = [0.9, 0.88, 0.86, 0.84, 0.82].map((sim) => hit({ sim, firstVersionNum: v(12), lastVersionNum: v(14) }));
+  const recent = [0.9, 0.88, 0.86, 0.84, 0.82].map((sim) =>
+    hit({ sim, section: `Section ${sim}`, firstVersionNum: v(12), lastVersionNum: v(14) }),
+  );
 
   it('names the oldest evidence and cites it at its first version, the others at their newest', () => {
     const { earliestNum, picks } = selectHistory([...recent, old], [older], v(13));
@@ -140,6 +142,23 @@ describe('selectHistory', () => {
   it('does not cite the same chunk twice', () => {
     const { picks } = selectHistory([old, ...recent.slice(0, 1)], [old], v(14));
     expect(picks.map((p) => p.hit.id)).toEqual([old.id, recent[0].id]);
+  });
+
+  it('cites a section split into several chunks once per version, filling up with other sections', () => {
+    const part = (sim: number, section: string) =>
+      hit({ sim, section, urlPath: 'interceptors', firstVersionNum: v(4), lastVersionNum: v(4) });
+    const [intro1, intro2, basics] = [part(0.9, 'Interceptors'), part(0.89, 'Interceptors'), part(0.7, 'Basics')];
+    const later = hit({ sim: 0.95, section: 'Interceptors', urlPath: 'interceptors', firstVersionNum: v(12), lastVersionNum: v(12) });
+
+    const { earliestNum, picks } = selectHistory([later, intro1, intro2, basics], [], v(12));
+
+    expect(earliestNum).toBe(v(4));
+    expect(picks.map((p) => [p.hit.id, p.citeNum])).toEqual([
+      [intro1.id, v(4)],
+      [basics.id, v(4)],
+      // The same section in another version is a different citation.
+      [later.id, v(12)],
+    ]);
   });
 
   it('finds nothing without evidence', () => {

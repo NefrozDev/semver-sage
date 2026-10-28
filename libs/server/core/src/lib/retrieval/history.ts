@@ -145,15 +145,25 @@ export function selectHistory(relevant: HistoryHit[], older: HistoryHit[], upToN
   const evidence = dedupe([...older, ...relevant]);
   if (!evidence.length) return { earliestNum: null, picks: [] };
   const byAge = [...evidence].sort((a, b) => a.firstVersionNum - b.firstVersionNum || b.sim - a.sim);
-  const oldest = byAge.slice(0, OLDEST_SOURCES);
-  const closest = [...evidence]
-    .sort((a, b) => b.sim - a.sim)
-    .filter((h) => !oldest.includes(h))
-    .slice(0, HISTORY_TOP_K - oldest.length);
-  const picks = [
-    ...oldest.map((hit) => ({ hit, citeNum: hit.firstVersionNum })),
-    ...closest.map((hit) => ({ hit, citeNum: Math.min(hit.lastVersionNum, upToNum) })),
-  ].sort((a, b) => a.citeNum - b.citeNum);
+  const picks: HistorySelection['picks'] = [];
+  // A long section is split into several chunks: cite each version's section once.
+  const cited = new Set<string>();
+  const take = (hits: HistoryHit[], count: number, citeAt: (hit: HistoryHit) => number) => {
+    let taken = 0;
+    for (const hit of hits) {
+      if (taken === count) break;
+      const citeNum = citeAt(hit);
+      const key = `${citeNum}\n${hit.urlPath}\n${hit.section}`;
+      if (cited.has(key) || picks.some((p) => p.hit === hit)) continue;
+      cited.add(key);
+      picks.push({ hit, citeNum });
+      taken++;
+    }
+  };
+  take(byAge, OLDEST_SOURCES, (hit) => hit.firstVersionNum);
+  const bySimilarity = [...evidence].sort((a, b) => b.sim - a.sim);
+  take(bySimilarity, HISTORY_TOP_K - picks.length, (hit) => Math.min(hit.lastVersionNum, upToNum));
+  picks.sort((a, b) => a.citeNum - b.citeNum);
   return { earliestNum: byAge[0].firstVersionNum, picks };
 }
 
