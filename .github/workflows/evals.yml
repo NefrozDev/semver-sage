@@ -61,9 +61,11 @@ jobs:
           for fw in ${FRAMEWORKS//,/ }; do npm run ingestion -- ingest "$fw"; done
       - name: Evaluate (fails below evals/baseline.json)
         run: npm run eval -- --frameworks "$FRAMEWORKS" --configs production --assert
+      - name: Evaluate "since when?" questions (fails below evals/baseline.json)
+        run: npm run eval:since -- --frameworks "$FRAMEWORKS" --assert
       # The API against the same database (Nx starts it first); these tests never call the LLM.
       - name: API end-to-end tests
         run: npm run nx -- run api-e2e:e2e
       - name: Report
         if: always()
-        run: cat evals/results/latest.md >> "$GITHUB_STEP_SUMMARY" || true
+        run: cat evals/results/latest.md evals/results/since.md >> "$GITHUB_STEP_SUMMARY" || true

@@ -5,8 +5,8 @@ asked framework **and version** and matches an expected docs page or anchor.
 
 | Pipeline | Hit@1 | Hit@5 | Recall@5 | MRR | Version precision@5 | Latency |
 | --- | --- | --- | --- | --- | --- | --- |
-| Vector search, no version filter | 30.4% | 63.2% | 55.2% | 0.441 | 31.3% | 299 ms |
-| Vector search + version filter (production) | 74.9% | 95.9% | 89.3% | 0.843 | 100.0% | 22 ms |
+| Vector search, no version filter | 28.7% | 63.2% | 55.2% | 0.426 | 29.9% | 149 ms |
+| Vector search + version filter (production) | 74.9% | 95.9% | 89.3% | 0.844 | 100.0% | 17 ms |
 
 ## Production pipeline by framework
 
@@ -14,7 +14,7 @@ asked framework **and version** and matches an expected docs page or anchor.
 | --- | --- | --- | --- | --- | --- |
 | Angular | 28 | 89.3% | 100.0% | 0.940 | 100.0% |
 | Express | 9 | 55.6% | 77.8% | 0.675 | 100.0% |
-| NestJS | 11 | 90.9% | 100.0% | 0.939 | 100.0% |
+| NestJS | 11 | 90.9% | 100.0% | 0.955 | 100.0% |
 | Next.js | 15 | 46.7% | 86.7% | 0.640 | 100.0% |
 | Node.js | 26 | 73.1% | 100.0% | 0.853 | 100.0% |
 | Nuxt | 11 | 54.5% | 90.9% | 0.683 | 100.0% |

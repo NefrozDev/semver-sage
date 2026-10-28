@@ -33,8 +33,8 @@
   { "id": "ts-template-literal-types", "question": "When were template literal types added to TypeScript?", "framework": "typescript", "earliest": "4", "set": "tuning" },
   { "id": "ts-unknown", "question": "When was the unknown type added to TypeScript?", "framework": "typescript", "earliest": "3", "set": "tuning" },
   { "id": "ts-decorators", "question": "When were decorators added to TypeScript?", "framework": "typescript", "earliest": "1", "set": "tuning" },
-  { "id": "nest-interceptors", "question": "When did interceptors arrive in NestJS?", "framework": "nestjs", "earliest": "6", "set": "tuning" },
-  { "id": "nest-guards", "question": "When were guards introduced in NestJS?", "framework": "nestjs", "earliest": "6", "set": "tuning" },
+  { "id": "nest-interceptors", "question": "When did interceptors arrive in NestJS?", "framework": "nestjs", "earliest": "4", "set": "tuning", "note": "Nest 4 docs (Angular templates) already have the Interceptors page" },
+  { "id": "nest-guards", "question": "When were guards introduced in NestJS?", "framework": "nestjs", "earliest": "4", "set": "tuning" },
   { "id": "vue-teleport", "question": "When was Teleport added to Vue?", "framework": "vue", "earliest": "3", "set": "tuning" },
   { "id": "nuxt-usefetch", "question": "When was useFetch introduced in Nuxt?", "framework": "nuxt", "earliest": "3", "set": "tuning" },
   { "id": "nuxt-nitro", "question": "When did Nuxt add Nitro?", "framework": "nuxt", "earliest": "3", "set": "tuning" },
@@ -55,13 +55,13 @@
   { "id": "next-metadata", "question": "When was the Metadata API added to Next.js?", "framework": "nextjs", "earliest": "13", "set": "holdout" },
   { "id": "next-rewrites", "question": "When were rewrites introduced in Next.js?", "framework": "nextjs", "earliest": "9", "set": "holdout" },
   { "id": "next-isr", "question": "When did Next.js add Incremental Static Regeneration?", "framework": "nextjs", "earliest": "9", "set": "holdout" },
-  { "id": "vue-mixins", "question": "When were mixins introduced in Vue?", "framework": "vue", "earliest": "1", "set": "holdout" },
+  { "id": "vue-mixins", "question": "When were mixins introduced in Vue?", "framework": "vue", "earliest": "0.11", "set": "holdout", "note": "The mixins option arrived in Vue 0.11" },
   { "id": "vue-suspense", "question": "When was Suspense added to Vue?", "framework": "vue", "earliest": "3", "set": "holdout" },
   { "id": "svelte-bind-this", "question": "When was bind:this added to Svelte?", "framework": "svelte", "earliest": "3", "set": "holdout" },
   { "id": "ts-const-assertions", "question": "When were const assertions added to TypeScript?", "framework": "typescript", "earliest": "3", "set": "holdout" },
   { "id": "ts-keyof", "question": "When was the keyof operator added to TypeScript?", "framework": "typescript", "earliest": "2", "set": "holdout" },
   { "id": "ts-mapped-types", "question": "When were mapped types introduced in TypeScript?", "framework": "typescript", "earliest": "2", "set": "holdout" },
   { "id": "nuxt-layers", "question": "When were layers introduced in Nuxt?", "framework": "nuxt", "earliest": "3", "set": "holdout" },
-  { "id": "nest-graphql", "question": "When did NestJS add GraphQL support?", "framework": "nestjs", "earliest": "6", "set": "holdout" },
-  { "id": "express-static", "question": "When was express.static introduced in Express?", "framework": "express", "earliest": "3", "set": "holdout" }
+  { "id": "nest-graphql", "question": "When did NestJS add GraphQL support?", "framework": "nestjs", "earliest": "4", "set": "holdout", "note": "Nest 4 docs already cover GraphQL (graphql/quick-start)" },
+  { "id": "express-static", "question": "When was express.static introduced in Express?", "framework": "express", "earliest": "2", "set": "holdout", "note": "Express 2 renamed Connect's staticProvider() to static()" }
 ]
