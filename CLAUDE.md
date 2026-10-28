@@ -120,9 +120,11 @@ PRs #1–#6 are merged into `main` (last: #6 `feat/older-versions`: older versio
 resolution, checkout fix, prod docs). Branch `feat/answer-robustness` (SSE keep-alive, ingestion
 typecheck fix, "since when?" mode, NestJS URL fix, round 3 of older docs) has no PR yet; opening it
 is also what triggers the first SonarQube CI analysis. Production runs it (see Production below);
+local data = production data (138 versions);
 after the merge, put the VPS back on `main` (`git checkout main && git pull`, no rebuild).
 
-Indexed locally (138 versions, 86,109 chunk rows, 188,493 version-chunks, 232 MB; 2026-10-28):
+Indexed locally and in production (138 versions, 86,109 chunk rows, 188,493 version-chunks,
+232 MB; 2026-10-28):
 Angular 2–22, Express 1–5, NestJS 4–12, Next.js 1–16, Node 0.2/0.4/0.6/0.8/0.10/0.12 + 1–26,
 Nuxt 1–4, React 0.3–19 (35 versions: every 0.x, 15.x and 16.x minor, then 17–19), Svelte 1–5,
 TypeScript 1–6, Vue 0.10/0.11/0.12 + 1–3: every framework back to its oldest docs we know of
@@ -189,7 +191,11 @@ separate framework" answer (`notices.ts`), no search or LLM.
   `~/semver-sage`, ports bound to 127.0.0.1 via `.env`, plus an untracked
   `docker-compose.mailcow.yml` override on the server). Small shared box (2 vCPU, 3.7 GB RAM, disk
   ~85% full): never ingest there; ingest locally and restore a data dump (see Commands). The
-  HF Spaces + Neon + Groq guide in `docs/DEPLOY.md` is an unused alternative.
+  HF Spaces + Neon + Groq guide in `docs/DEPLOY.md` is an unused alternative. Since 2026-10-28 it
+  runs `feat/answer-robustness` (`726d705`) with the 138-version data (236 MB); the 119-version
+  data is kept in `/tmp/semver_sage_backup_before_v3.dump` on the server until the next refresh.
+  Checked through the public URL: "When did interceptors arrive in NestJS?" → "At least since
+  NestJS 4", 109 s with a cold model, 7 keep-alive pings.
 
 ## Next steps (in order)
 1. Switch SonarQube Cloud to CI analysis (`SONAR_TOKEN` secret, Automatic Analysis off) so
