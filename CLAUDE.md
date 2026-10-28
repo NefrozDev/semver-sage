@@ -23,9 +23,14 @@ tiers for a hosted demo. No AWS or other paid cloud.
 
 ## UI concept
 An illustrated **sage** (vector SVG, no pixel art) with three poses: **idle**, **reflecting**
-(while searching) and **talking** (while the answer streams). Answers appear in a card with a
-typewriter effect; citations carry version badges. Calm modern look: Fraunces + Inter, light and
-dark themes following the system setting.
+(while searching: levitates, eyes glowing blue) and **talking** (while the answer streams: starts
+with a burst of light from the crystal: glow, rays, shockwave, halo flash). On arrival: idle for
+0.5 s (2 s was too slow for the user), he waves hello once, and only then speaks the greeting
+(the sage's `greeted` output starts it, ~3.1 s after load; the user wanted the wave first, then
+the speaking). No wave once a question was asked (`greet` input); with reduced motion, no wave
+and the greeting starts at once. Answers
+appear in a card with a typewriter effect; citations carry version badges. Calm modern look:
+Fraunces + Inter, light and dark themes following the system setting.
 
 ## Tech stack
 - **Monorepo:** Nx (integrated, `angular-monorepo` preset)
@@ -123,7 +128,8 @@ PRs #1–#8 are merged into `main` (#7 `feat/answer-robustness`: SSE keep-alive,
 typecheck fix, "since when?" mode, NestJS URL fix, round 3 of older docs; #8
 `fix/since-when-followups`: Sonar S8786 in the Nest 4 converter, "never stops talking" fix; merge
 `6def526`). Production runs `main` (see Production below); local data = production data
-(138 versions).
+(138 versions). Branch `feat/sage-animations` (local, not pushed): wave hello, levitation with
+glowing eyes, bigger burst; the sage card clips its overflow so the burst stays inside.
 
 Indexed locally and in production (138 versions, 86,109 chunk rows, 188,493 version-chunks,
 232 MB; 2026-10-28):
@@ -154,7 +160,8 @@ separate framework" answer (`notices.ts`), no search or LLM.
   done at 239 s. Clients must skip non-`data:` frames. Ollama `num_ctx` left at its 4096 default:
   prompts use 1.4–1.7k tokens, never truncated.
 - `apps/web`: signal store reading the SSE stream (`sage.store.ts`), SVG sage with
-  idle/reflecting/talking poses (`sage/`), typewriter answer card (`answer-card/`), citation cards
+  idle/reflecting/talking poses and a wave hello (`sage/`; Vitest spec runs in CI only, see
+  Environment; the animations are also checked by Playwright), typewriter answer card (`answer-card/`), citation cards
   with version badges (`citation-list/`), framework/version/compare pickers and package.json
   upload (`ask-form/`). Shows "API unreachable" instead of failing when the API is down.
 - `evals/`: 171 golden questions over all ten frameworks; metrics hit@k, MRR, version precision

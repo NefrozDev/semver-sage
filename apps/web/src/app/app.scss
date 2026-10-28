@@ -64,6 +64,8 @@ main {
   border: 1px solid var(--border);
   border-radius: 24px;
   box-shadow: var(--shadow);
+  // The crystal's burst of light reaches past the sage's SVG: keep it inside the card.
+  overflow: hidden;
 }
 
 .caption {
@@ -108,7 +110,8 @@ main {
     min-height: 0;
     overflow-y: auto;
     margin: 0;
-    padding: 0;
+    // Room between the version ranges and the scrollbar when the list scrolls (small screens).
+    padding: 0 12px 0 0;
     list-style: none;
     font-size: 14px;
   }

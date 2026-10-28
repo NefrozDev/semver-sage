@@ -46,9 +46,13 @@ export class App {
 
   protected readonly busy = computed(() => ['thinking', 'speaking'].includes(this.store.status()));
 
-  protected readonly answerText = computed(() =>
-    this.store.status() === 'idle' ? GREETING : this.store.answer(),
-  );
+  /** The sage waves hello first; the greeting is spoken once he's done (`greeted`). */
+  protected readonly greetingStarted = signal(false);
+
+  protected readonly answerText = computed(() => {
+    if (this.store.status() !== 'idle') return this.store.answer();
+    return this.greetingStarted() ? GREETING : '';
+  });
 
   protected readonly mood = computed<SageMood>(() => {
     const status = this.store.status();
