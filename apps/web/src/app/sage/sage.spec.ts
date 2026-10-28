@@ -154,12 +154,21 @@ describe('Sage', () => {
       expect(host.classList).not.toContain('settling');
     });
 
-    it('only after talking', () => {
+    it('eases back from reflecting too (Stop, or an error), with its own class', () => {
       create({ mood: 'reflecting', greet: false });
       set('mood', 'idle');
+      expect(host.classList).toContain('settling-from-reflecting');
       expect(host.classList).not.toContain('settling');
+      advance(SETTLE_MS);
+      expect(host.classList).not.toContain('settling-from-reflecting');
+    });
+
+    it('not when starting to reflect or to talk', () => {
+      create({ mood: 'idle', greet: false });
+      set('mood', 'reflecting');
       set('mood', 'talking');
       expect(host.classList).not.toContain('settling');
+      expect(host.classList).not.toContain('settling-from-reflecting');
     });
 
     it('stops settling at once if the sage moves on', () => {

@@ -66,6 +66,9 @@ svg {
 .glow {
   fill: #67e8f9;
   opacity: 0.18;
+  transition:
+    opacity 0.6s ease,
+    fill 0.6s ease;
   transform-box: fill-box;
   transform-origin: center;
   animation: glow 4.5s ease-in-out infinite;
@@ -275,9 +278,63 @@ svg {
   .head { animation: head-settle 0.9s ease-out both; }
 }
 
-// Leaving with the talking pose (`animate.leave`): Angular removes them once these end.
+// Back to standby after reflecting (Stop, or an error): the arm comes down from the beard (-74° at
+// the shoulder points the hanging arm at it), the bowed head straightens.
+:host(.settling-from-reflecting) {
+  .free-arm { animation: arm-settle-from-beard 0.8s cubic-bezier(0.3, 0.7, 0.4, 1) both; }
+  .head { animation: head-unbow 0.8s ease-out both; }
+}
+
+// Changing pose: what appears fades in (`animate.enter`), what goes fades out (`animate.leave`,
+// Angular removes it once the animation ends), arms swing into their new pose.
+.appearing {
+  animation: fade-in 0.6s ease-out both;
+}
+
 .fading {
   animation: fade-out 0.7s ease-out forwards;
+}
+
+// Reflecting: the forearm folds up from hanging to the beard, at the elbow.
+.raising-to-beard {
+  transform-origin: 84px 188px;
+  animation: forearm-raise 0.7s cubic-bezier(0.3, 0.7, 0.4, 1) both;
+}
+
+// Talking: the whole arm lifts from hanging into the open-palm gesture, at the shoulder.
+.lifting {
+  transform-origin: 90px 150px;
+  animation: arm-lift 0.6s cubic-bezier(0.3, 0.7, 0.4, 1) both;
+}
+
+// The staff hand grips lower while reflecting: hand, fingers and sleeve glide there and back.
+.staff-arm > .hand,
+.grip {
+  transition: transform 0.7s cubic-bezier(0.3, 0.7, 0.4, 1);
+}
+
+.staff-sleeve {
+  transition: d 0.7s cubic-bezier(0.3, 0.7, 0.4, 1);
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+}
+
+@keyframes forearm-raise {
+  from { transform: rotate(130deg); }
+}
+
+@keyframes arm-lift {
+  from { transform: rotate(-88deg); }
+}
+
+@keyframes arm-settle-from-beard {
+  from { transform: rotate(-74deg); }
+}
+
+@keyframes head-unbow {
+  from { transform: rotate(-4deg); }
 }
 
 .mouth.closing {

@@ -42,7 +42,8 @@ const LABELS: Record<SageMood, string> = {
   host: {
     '[class]': 'mood()',
     '[class.saluting]': "armPose() === 'salute'",
-    '[class.settling]': 'settling()',
+    '[class.settling]': "settlingFrom() === 'talking'",
+    '[class.settling-from-reflecting]': "settlingFrom() === 'reflecting'",
     role: 'img',
     '[attr.aria-label]': 'label()',
   },
@@ -112,13 +113,13 @@ const LABELS: Record<SageMood, string> = {
 
           @switch (pose()) {
             @case ('reflecting') {
-              <g class="eyes-glow">
+              <g class="eyes-glow" animate.enter="appearing" animate.leave="fading">
                 <ellipse cx="111" cy="99" rx="3.2" ry="3.6" />
                 <ellipse cx="129" cy="99" rx="3.2" ry="3.6" />
               </g>
             }
             @default {
-              <g class="eyes">
+              <g class="eyes" animate.enter="appearing" animate.leave="fading">
                 <ellipse cx="111" cy="99" rx="2.7" ry="3.4" />
                 <ellipse cx="129" cy="99" rx="2.7" ry="3.4" />
                 <circle cx="112" cy="97.8" r="0.9" fill="#fff" />
@@ -138,9 +139,9 @@ const LABELS: Record<SageMood, string> = {
 
         <!-- staff arm: staff, sleeve and hand pivot together at the shoulder. The hand grips the
              staff: palm behind it, fingers wrapped around it in front; lower while reflecting. -->
-        @let grip = 'translate(0 ' + (pose() === 'reflecting' ? 14 : 0) + ')';
+        @let grip = 'translateY(' + (pose() === 'reflecting' ? 14 : 0) + 'px)';
         <g class="staff-arm">
-          <ellipse class="hand" cx="178.5" cy="174" rx="7" ry="7.5" [attr.transform]="grip" />
+          <ellipse class="hand" cx="178.5" cy="174" rx="7" ry="7.5" [style.transform]="grip" />
           <g class="staff">
             <rect x="176" y="66" width="8" height="198" rx="4" fill="url(#sage-wood)" />
             <circle class="glow" cx="180" cy="48" r="24" />
@@ -170,12 +171,8 @@ const LABELS: Record<SageMood, string> = {
               </g>
             }
           </g>
-          @if (pose() === 'reflecting') {
-            <path class="sleeve" d="M150 150 Q164 168 174 186" />
-          } @else {
-            <path class="sleeve" d="M150 150 Q166 160 174 172" />
-          }
-          <g class="grip" [attr.transform]="grip">
+          <path class="sleeve staff-sleeve" [style.d]="staffSleeve()" />
+          <g class="grip" [style.transform]="grip">
             <path d="M174 169.4 Q180 167.4 186 169.6" />
             <path d="M174 173.8 Q180 171.8 186.2 174" />
             <path d="M174 178.2 Q180 176.2 185.8 178.4" />
@@ -199,17 +196,21 @@ const LABELS: Record<SageMood, string> = {
             @case ('reflecting') {
               <path class="sleeve" d="M90 150 Q76 170 84 188" />
               <g class="forearm">
-                <path class="sleeve" d="M84 188 Q102 186 109 161" />
-                <circle class="hand" cx="110" cy="156" r="7.5" />
+                <g animate.enter="raising-to-beard">
+                  <path class="sleeve" d="M84 188 Q102 186 109 161" />
+                  <circle class="hand" cx="110" cy="156" r="7.5" />
+                </g>
               </g>
             }
             @case ('talking') {
-              <path class="sleeve" d="M90 150 Q76 162 66 168" />
-              <g class="forearm">
-                <path class="sleeve" d="M66 168 Q54 164 49 153" />
-                <g class="hand palm">
-                  <ellipse cx="41" cy="146" rx="10" ry="6.5" transform="rotate(-40 41 146)" />
-                  <circle cx="49" cy="140" r="3" />
+              <g animate.enter="lifting">
+                <path class="sleeve" d="M90 150 Q76 162 66 168" />
+                <g class="forearm">
+                  <path class="sleeve" d="M66 168 Q54 164 49 153" />
+                  <g class="hand palm">
+                    <ellipse cx="41" cy="146" rx="10" ry="6.5" transform="rotate(-40 41 146)" />
+                    <circle cx="49" cy="140" r="3" />
+                  </g>
                 </g>
               </g>
             }
@@ -222,11 +223,13 @@ const LABELS: Record<SageMood, string> = {
       </g>
 
       @if (pose() === 'reflecting') {
+        <g animate.enter="appearing" animate.leave="fading">
         <g class="thoughts">
           <circle cx="120" cy="14" r="3.5" />
           <circle cx="152" cy="30" r="2.5" />
           <circle cx="88" cy="30" r="2.5" />
           <path d="M120 2 l2.2 4.6 5 .6 -3.7 3.4 1 5 -4.5 -2.5 -4.5 2.5 1 -5 -3.7 -3.4 5 -.6 Z" />
+        </g>
         </g>
       }
       </g>
@@ -256,19 +259,27 @@ export class Sage {
     this.saluting() && this.greet() && this.pose() !== 'reflecting' ? 'salute' : this.pose(),
   );
 
-  /** Just stopped talking: CSS eases the arm, staff and head back to standby instead of snapping. */
-  protected readonly settling = signal(false);
+  /**
+   * Just back to standby, and from which pose: CSS eases the arms, staff and head back instead of
+   * snapping (host classes `settling` and `settling-from-reflecting`).
+   */
+  protected readonly settlingFrom = signal<'talking' | 'reflecting' | null>(null);
+
+  /** The staff sleeve ends at the hand, which grips lower while reflecting; CSS transitions `d`. */
+  protected readonly staffSleeve = computed(() =>
+    this.pose() === 'reflecting' ? 'path("M150 150 Q164 168 174 186")' : 'path("M150 150 Q166 160 174 172")',
+  );
 
   constructor() {
     let previousPose = this.pose();
     effect((onCleanup) => {
       const pose = this.pose();
-      if (previousPose === 'talking' && pose === 'idle') {
-        this.settling.set(true);
-        const done = setTimeout(() => this.settling.set(false), SETTLE_MS);
+      if ((previousPose === 'talking' || previousPose === 'reflecting') && pose === 'idle') {
+        this.settlingFrom.set(previousPose);
+        const done = setTimeout(() => this.settlingFrom.set(null), SETTLE_MS);
         onCleanup(() => {
           clearTimeout(done);
-          this.settling.set(false);
+          this.settlingFrom.set(null);
         });
       }
       previousPose = pose;
