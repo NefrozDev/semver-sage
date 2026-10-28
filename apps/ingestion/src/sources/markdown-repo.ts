@@ -1,4 +1,4 @@
-import { readdir, readFile } from 'node:fs/promises';
+import { readdir, readFile, stat } from 'node:fs/promises';
 import { join, posix, relative, sep } from 'node:path';
 import { chunkMarkdown, ChunkOptions } from '../chunker';
 import type { SourcePage, VersionSource } from './types';
@@ -14,8 +14,13 @@ export interface MarkdownRepoOptions extends Omit<ChunkOptions, 'slugify'> {
   extensions?: string[];
 }
 
+/** Files under `dir` with one of `extensions`; `dir` may also be a single file (a README). */
 async function walk(dir: string, extensions: string[]): Promise<string[]> {
-  const entries = await readdir(dir, { withFileTypes: true }).catch(() => []);
+  const entries = await readdir(dir, { withFileTypes: true }).catch(() => null);
+  if (!entries) {
+    const isFile = (await stat(dir).catch(() => null))?.isFile();
+    return isFile && extensions.some((ext) => dir.endsWith(ext)) ? [dir] : [];
+  }
   const nested = await Promise.all(
     entries.map((e) => {
       const full = join(dir, e.name);

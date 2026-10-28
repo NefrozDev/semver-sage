@@ -3,11 +3,13 @@ import {
   ANGULARJS_NOTICE,
   buildCompareMessages,
   buildMessages,
+  buildSinceMessages,
   ChatMessage,
   LlmProvider,
   resolveComparison,
   resolveScope,
   SearchScope,
+  sinceAnswerStart,
 } from '@semver-sage/server-core';
 import {
   AskRequest,
@@ -16,7 +18,9 @@ import {
   comparisonTopic,
   FRAMEWORKS,
   isAngularJsQuestion,
+  isSinceWhenQuestion,
   ResolvedScope,
+  sinceTopics,
 } from '@semver-sage/types';
 import { LLM_PROVIDER } from '../llm';
 import { RetrievalService } from '../retrieval/retrieval.service';
@@ -67,6 +71,8 @@ export class AskService {
     let scope: SearchScope;
     let citations: Citation[];
     let messages: ChatMessage[];
+    /** Written before the LLM's tokens ("since when?" verdict). */
+    let answerStart: string | null = null;
     const comparison = resolveComparison(request, indexed);
 
     if (comparison) {
@@ -83,9 +89,21 @@ export class AskService {
       messages = buildCompareMessages(request.question, from, to, citations);
     } else {
       scope = resolveScope(request, indexed);
-      yield { type: 'scope', scope: toPublic(scope) };
-      citations = await this.retrieval.search(request.question, scope);
-      messages = buildMessages(request.question, scope, citations);
+      // "Since when?" questions search every version up to the scope's, not just that one.
+      const history = isSinceWhenQuestion(request.question)
+        ? await this.retrieval.searchHistory(request.question, sinceTopics(request.question), scope)
+        : null;
+      if (history) {
+        const { earliest, oldest } = history;
+        yield { type: 'scope', scope: toPublic(scope), history: { earliest, oldest } };
+        citations = history.citations;
+        messages = buildSinceMessages(request.question, scope, history, citations);
+        answerStart = sinceAnswerStart(scope, history);
+      } else {
+        yield { type: 'scope', scope: toPublic(scope) };
+        citations = await this.retrieval.search(request.question, scope);
+        messages = buildMessages(request.question, scope, citations);
+      }
     }
     yield { type: 'citations', citations };
 
@@ -96,6 +114,7 @@ export class AskService {
       return;
     }
 
+    if (answerStart) yield { type: 'token', text: answerStart };
     try {
       for await (const text of this.llm.stream(messages, signal)) {
         yield { type: 'token', text };

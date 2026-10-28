@@ -8,9 +8,11 @@ import type { SourceAdapter, VersionSource } from './types';
 const REPO = 'nodejs/node';
 const MIN_MAJOR = 1;
 const LAST_IOJS_MAJOR = 3;
-/** Before io.js, stable Node lines were the even 0.x minors; 0.8 is the oldest one worth indexing. */
-const isLegacyStableLine = (t: ReleaseTag) => t.major === 0 && t.minor >= 8 && t.minor % 2 === 0;
+/** Before io.js, stable Node lines were the even 0.x minors; 0.2 is the first with API docs. */
+const isLegacyStableLine = (t: ReleaseTag) => t.major === 0 && t.minor >= 2 && t.minor % 2 === 0;
 const SKIP_PAGES = new Set(['index', 'all', '_toc']);
+/** Node 0.2 documents the whole API on one page. */
+const SINGLE_PAGE_API = 'doc/api.markdown';
 
 /** "doc/api/child_process.markdown" -> "child_process" */
 const pageName = (sourcePath: string) => posix.basename(sourcePath).replace(/\.(md|markdown)$/, '');
@@ -63,9 +65,9 @@ export function nodeLegacyId(heading: string, sourcePath: string): string {
 }
 
 /**
- * Node.js API docs from nodejs/node `doc/api`: the 0.8, 0.10 and 0.12 lines, then the newest release
- * of every major since 1. Majors 1–3 were io.js (the fork that merged back as Node 4); their docs
- * are cited on iojs.org.
+ * Node.js API docs from nodejs/node `doc/api`: the stable 0.x lines (0.2 to 0.12), then the newest
+ * release of every major since 1. Majors 1–3 were io.js (the fork that merged back as Node 4); their
+ * docs are cited on iojs.org.
  */
 export function nodeVersions(tags: ReleaseTag[]): VersionSource[] {
   const lines = [...latestPerMinor(tags, isLegacyStableLine), ...latestPerMajor(tags, (t) => t.major >= MIN_MAJOR)];
@@ -73,7 +75,7 @@ export function nodeVersions(tags: ReleaseTag[]): VersionSource[] {
     version: t.major === 0 ? `0.${t.minor}` : String(t.major),
     repo: REPO,
     ref: t.tag,
-    paths: ['doc/api'],
+    paths: [t.major === 0 && t.minor < 4 ? SINGLE_PAGE_API : 'doc/api'],
     docsBaseUrl:
       t.major >= 1 && t.major <= LAST_IOJS_MAJOR
         ? `https://iojs.org/dist/${t.tag}/doc/`
@@ -96,9 +98,11 @@ export const nodeAdapter: SourceAdapter = {
       splitDepth: 4,
       slugify: nodeLegacyId,
       preprocess: renderNodeMetadata,
-      // "doc/api/fs.md" -> "api/fs.html"
-      toUrlPath: (sourcePath) =>
-        SKIP_PAGES.has(pageName(sourcePath)) ? null : `api/${pageName(sourcePath)}.html`,
+      // "doc/api/fs.md" -> "api/fs.html"; Node 0.2's single page is "api.html"
+      toUrlPath: (sourcePath) => {
+        if (sourcePath === SINGLE_PAGE_API) return 'api.html';
+        return SKIP_PAGES.has(pageName(sourcePath)) ? null : `api/${pageName(sourcePath)}.html`;
+      },
     });
   },
 };

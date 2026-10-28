@@ -1,5 +1,5 @@
 import { Injectable, signal } from '@angular/core';
-import type { AskRequest, AskStreamEvent, Citation, ResolvedScope } from '@semver-sage/types';
+import type { AskRequest, AskStreamEvent, Citation, HistoryScope, ResolvedScope } from '@semver-sage/types';
 
 export type SageStatus = 'idle' | 'thinking' | 'speaking' | 'done' | 'error';
 
@@ -11,6 +11,8 @@ export class SageStore {
   readonly scope = signal<ResolvedScope | null>(null);
   /** Set in compare mode: the version `scope` is compared against. */
   readonly compare = signal<ResolvedScope | null>(null);
+  /** Set in "since when?" mode: every version from `history.oldest` to the scope's was searched. */
+  readonly history = signal<HistoryScope | null>(null);
   readonly citations = signal<Citation[]>([]);
   readonly answer = signal('');
   readonly error = signal<string | null>(null);
@@ -26,6 +28,7 @@ export class SageStore {
     this.question.set(request.question);
     this.scope.set(null);
     this.compare.set(null);
+    this.history.set(null);
     this.citations.set([]);
     this.answer.set('');
     this.error.set(null);
@@ -79,6 +82,7 @@ export class SageStore {
       case 'scope':
         this.scope.set(event.scope);
         this.compare.set(event.compare ?? null);
+        this.history.set(event.history ?? null);
         break;
       case 'citations':
         this.citations.set(event.citations);

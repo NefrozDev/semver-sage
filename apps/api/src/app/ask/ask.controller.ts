@@ -9,6 +9,12 @@ import { AskService } from './ask.service';
 /** "2", "18.20.8", "v5.x": anything longer isn't a version. */
 const MAX_VERSION_LENGTH = 32;
 
+/**
+ * SSE comment interval. A cold CPU LLM can take over a minute to its first token, and reverse
+ * proxies drop silent streams (nginx: 60 s), which cut answers off in production.
+ */
+export const HEARTBEAT_MS = 15_000;
+
 export function validate(body: unknown): AskRequest {
   const { question, framework, version, compareVersion } = (body ?? {}) as Record<string, unknown>;
   if (typeof question !== 'string' || !question.trim() || question.length > 1000) {
@@ -56,7 +62,12 @@ export class AskController {
     res.flushHeaders();
 
     const abort = new AbortController();
-    res.on('close', () => abort.abort());
+    // Comment lines are ignored by SSE clients; they only keep the connection alive.
+    const heartbeat = setInterval(() => res.write(': ping\n\n'), HEARTBEAT_MS);
+    res.on('close', () => {
+      clearInterval(heartbeat);
+      abort.abort();
+    });
     const send = (event: AskStreamEvent) => res.write(`data: ${JSON.stringify(event)}\n\n`);
 
     try {
@@ -65,8 +76,10 @@ export class AskController {
         send(event);
       }
     } catch (err) {
-      send({ type: 'error', message: (err as Error).message });
+      // A disconnect aborts the LLM call: nobody is left to read the error.
+      if (!abort.signal.aborted) send({ type: 'error', message: (err as Error).message });
     } finally {
+      clearInterval(heartbeat);
       res.end();
     }
   }

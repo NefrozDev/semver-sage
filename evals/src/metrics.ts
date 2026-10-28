@@ -69,6 +69,56 @@ export function summarize(scores: ItemScore[]): Summary {
   };
 }
 
+/** A "since when?" question and the oldest indexed version whose docs cover its subject. */
+export interface SinceItem {
+  id: string;
+  question: string;
+  framework: Framework;
+  earliest: string;
+  /** "tuning" questions were used to calibrate the search; "holdout" ones were not. */
+  set: 'tuning' | 'holdout';
+  note?: string;
+}
+
+export interface SinceScore {
+  id: string;
+  set: SinceItem['set'];
+  /** The question is recognized as a "since when?" question. */
+  detected: boolean;
+  /** The search names the expected version as the earliest. */
+  correct: boolean;
+  /** A source from the expected version is among the citations. */
+  cited: boolean;
+}
+
+export function scoreSince(
+  item: SinceItem,
+  detected: boolean,
+  earliest: string | null,
+  citedVersions: string[],
+): SinceScore {
+  return {
+    id: item.id,
+    set: item.set,
+    detected,
+    correct: earliest === item.earliest,
+    cited: citedVersions.includes(item.earliest),
+  };
+}
+
+export interface SinceSummary {
+  count: number;
+  detection: number;
+  accuracy: number;
+  cited: number;
+}
+
+export function summarizeSince(scores: SinceScore[]): SinceSummary {
+  const rate = (key: 'detected' | 'correct' | 'cited') =>
+    scores.length ? scores.filter((s) => s[key]).length / scores.length : 0;
+  return { count: scores.length, detection: rate('detected'), accuracy: rate('correct'), cited: rate('cited') };
+}
+
 /** Citation markers like [2] in an answer, and how many point at a source that doesn't exist. */
 export function citationStats(answer: string, sourceCount: number) {
   const refs = [...answer.matchAll(/\[(\d{1,2})\]/g)].map((m) => Number(m[1]));

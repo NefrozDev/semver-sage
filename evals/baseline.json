@@ -41,5 +41,17 @@
       "hit5": 1,
       "reciprocalRank": 0.883
     }
+  },
+  "since": {
+    "angular": 1,
+    "express": 1,
+    "nestjs": 1,
+    "nextjs": 1,
+    "node": 1,
+    "nuxt": 1,
+    "react": 1,
+    "svelte": 1,
+    "typescript": 1,
+    "vue": 1
   }
 }

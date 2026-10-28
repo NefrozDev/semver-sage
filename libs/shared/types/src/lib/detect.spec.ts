@@ -4,7 +4,9 @@ import {
   detectFrameworks,
   detectFromPackageJson,
   isAngularJsQuestion,
+  isSinceWhenQuestion,
   primaryMention,
+  sinceTopic,
 } from './detect';
 
 const first = (q: string) => {
@@ -133,6 +135,58 @@ describe('comparisonTopic', () => {
 
   it('falls back to the question when nothing is left', () => {
     expect(comparisonTopic('Vue 2 vs 3?')).toBe('Vue 2 vs 3?');
+  });
+});
+
+describe('isSinceWhenQuestion', () => {
+  it.each([
+    'When did interceptors arrive in NestJS?',
+    'Since when does Node have built-in fetch?',
+    'since which version does TypeScript support satisfies?',
+    'When was useId added to React?',
+    'When were signals introduced in Angular?',
+    'Which React version introduced createContext?',
+    'What version of Node added fetch?',
+    'In which version of Vue was Teleport introduced?',
+    'How long has Next.js had middleware?',
+    'When did standalone components become available in Angular?',
+    'Was the App Router first introduced in Next.js 13?',
+  ])('detects "%s"', (question) => {
+    expect(isSinceWhenQuestion(question)).toBe(true);
+  });
+
+  it.each([
+    'How do interceptors work in NestJS?',
+    'When is ngOnInit called?',
+    'When was the component created in the lifecycle?',
+    'How do I use addEventListener in React?',
+    'What changed in v-model between Vue 2 and 3?',
+    'Which version should I use for a new project?',
+  ])('ignores "%s"', (question) => {
+    expect(isSinceWhenQuestion(question)).toBe(false);
+  });
+});
+
+describe('sinceTopic', () => {
+  it.each([
+    ['When did interceptors arrive in NestJS?', 'interceptors'],
+    ['Since when does Node have built-in fetch?', 'built-in fetch'],
+    ['When was useId added to React?', 'useId'],
+    ['Which React version introduced createContext?', 'createContext'],
+    ['In which version of Vue was Teleport introduced?', 'Teleport'],
+    ['How long has Node 22 had fetch?', 'fetch'],
+    ['When was the @defer block added in Angular?', '@defer block'],
+    // A framework name that is part of an identifier stays.
+    ['When was React.memo introduced?', 'React.memo'],
+    ['When was express.json() added?', 'express.json()'],
+    // "add" only as a whole word: identifiers starting with it are kept.
+    ['When was addEventListener supported?', 'addEventListener'],
+  ])('%s -> %s', (question, topic) => {
+    expect(sinceTopic(question)).toBe(topic);
+  });
+
+  it('falls back to the question when nothing is left', () => {
+    expect(sinceTopic('Since when?')).toBe('Since when?');
   });
 });
 

@@ -3,11 +3,11 @@
     "name": "Vector search, no version filter",
     "summary": {
       "count": 171,
-      "hit1": 0.30409356725146197,
+      "hit1": 0.28654970760233917,
       "hit5": 0.631578947368421,
       "recall5": 0.5516569200779727,
-      "reciprocalRank": 0.44104706209969374,
-      "versionPrecision5": 0.3134502923976607
+      "reciprocalRank": 0.425549986076302,
+      "versionPrecision5": 0.29941520467836247
     },
     "byFramework": {
       "angular": {
@@ -20,43 +20,43 @@
       },
       "express": {
         "count": 9,
-        "hit1": 0.1111111111111111,
+        "hit1": 0,
         "hit5": 0.6666666666666666,
         "recall5": 0.5555555555555556,
-        "reciprocalRank": 0.350925925925926,
-        "versionPrecision5": 0.37777777777777777
+        "reciprocalRank": 0.2537037037037037,
+        "versionPrecision5": 0.35555555555555557
       },
       "nestjs": {
         "count": 11,
-        "hit1": 0.36363636363636365,
+        "hit1": 0.2727272727272727,
         "hit5": 0.8181818181818182,
-        "recall5": 0.7727272727272727,
-        "reciprocalRank": 0.5477272727272727,
-        "versionPrecision5": 0.32727272727272727
+        "recall5": 0.8181818181818182,
+        "reciprocalRank": 0.48787878787878786,
+        "versionPrecision5": 0.29090909090909095
       },
       "nextjs": {
         "count": 15,
         "hit1": 0.2,
         "hit5": 0.5333333333333333,
         "recall5": 0.5333333333333333,
-        "reciprocalRank": 0.3347089947089947,
-        "versionPrecision5": 0.2533333333333333
+        "reciprocalRank": 0.3217460317460317,
+        "versionPrecision5": 0.23999999999999996
       },
       "node": {
         "count": 26,
         "hit1": 0.038461538461538464,
         "hit5": 0.15384615384615385,
         "recall5": 0.1346153846153846,
-        "reciprocalRank": 0.10341880341880341,
+        "reciprocalRank": 0.1094017094017094,
         "versionPrecision5": 0.038461538461538464
       },
       "nuxt": {
         "count": 11,
-        "hit1": 0.45454545454545453,
+        "hit1": 0.36363636363636365,
         "hit5": 0.7272727272727273,
         "recall5": 0.5909090909090909,
-        "reciprocalRank": 0.5484848484848485,
-        "versionPrecision5": 0.47272727272727266
+        "reciprocalRank": 0.4878787878787879,
+        "versionPrecision5": 0.4181818181818182
       },
       "react": {
         "count": 16,
@@ -86,12 +86,12 @@
         "count": 27,
         "hit1": 0.5555555555555556,
         "hit5": 0.9629629629629629,
-        "recall5": 0.7345679012345678,
-        "reciprocalRank": 0.7152263374485598,
-        "versionPrecision5": 0.5703703703703704
+        "recall5": 0.7160493827160493,
+        "reciprocalRank": 0.7000000000000001,
+        "versionPrecision5": 0.5333333333333334
       }
     },
-    "avgMs": 298.7426900584795
+    "avgMs": 148.58479532163742
   },
   {
     "name": "Vector search + version filter (production)",
@@ -100,7 +100,7 @@
       "hit1": 0.7485380116959064,
       "hit5": 0.9590643274853801,
       "recall5": 0.8927875243664717,
-      "reciprocalRank": 0.8433862433862436,
+      "reciprocalRank": 0.8443609022556393,
       "versionPrecision5": 1
     },
     "byFramework": {
@@ -125,7 +125,7 @@
         "hit1": 0.9090909090909091,
         "hit5": 1,
         "recall5": 1,
-        "reciprocalRank": 0.9393939393939393,
+        "reciprocalRank": 0.9545454545454546,
         "versionPrecision5": 1
       },
       "nextjs": {
@@ -185,6 +185,6 @@
         "versionPrecision5": 1
       }
     },
-    "avgMs": 22.426900584795323
+    "avgMs": 17.46783625730994
   }
 ]

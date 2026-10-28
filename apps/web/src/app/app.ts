@@ -78,7 +78,21 @@ export class App {
     const name = FRAMEWORKS[scope.framework].label;
     const compare = this.store.compare();
     if (compare) return `Comparing ${name} ${scope.version} → ${compare.version}`;
+    const history = this.store.history();
+    if (history) return `${name} ${history.oldest}–${scope.version} history`;
     return scope.version ? `${name} ${scope.version} docs` : null;
+  });
+
+  /** "Since when?" mode: what the search found, shown next to the scope. */
+  protected readonly historyNote = computed(() => {
+    const history = this.store.history();
+    const framework = this.store.scope()?.framework;
+    if (!history || !framework) return null;
+    const name = FRAMEWORKS[framework].label;
+    if (!history.earliest) return `No clear mention in the ${name} docs.`;
+    return history.earliest === history.oldest
+      ? `Already in the oldest indexed docs (${name} ${history.oldest}).`
+      : `First found in the ${name} ${history.earliest} docs.`;
   });
 
   /** A new question replaces the previous answer, which starts at the top of the page. */

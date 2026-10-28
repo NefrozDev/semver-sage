@@ -66,6 +66,31 @@ describe('SageStore', () => {
     expect(store.error()).toBeNull();
   });
 
+  it('keeps the searched history of a "since when?" answer, and clears it for the next question', async () => {
+    const [, ...rest] = events;
+    const history = { oldest: '1', earliest: '2' };
+    fetchMock.mockResolvedValueOnce(streamed(sse([{ ...events[0], history } as AskStreamEvent, ...rest]), 64));
+    await store.ask({ question: 'When were filters added to Vue?' });
+    expect(store.history()).toEqual(history);
+    expect(store.compare()).toBeNull();
+
+    fetchMock.mockResolvedValueOnce(streamed(sse(events), 64));
+    await store.ask({ question: 'Vue 2 filters?' });
+    expect(store.history()).toBeNull();
+  });
+
+  it.each([1, 5, 10_000])('ignores the keep-alive pings the API sends while the LLM warms up (%i chars)', async (size) => {
+    const [scope, citations, ...answer] = sse(events).split(/(?<=\n\n)/);
+    const body = [scope, citations, ': ping\n\n', ': ping\n\n', ...answer].join('');
+    fetchMock.mockResolvedValue(streamed(body, size));
+    await store.ask({ question: 'Vue 2 filters?' });
+
+    expect(store.answer()).toBe('Use Vue.filter [1].');
+    expect(store.citations()).toHaveLength(1);
+    expect(store.status()).toBe('done');
+    expect(store.error()).toBeNull();
+  });
+
   it('posts the request as JSON', async () => {
     fetchMock.mockResolvedValue(streamed(sse(events), 100));
     await store.ask({ question: 'q', framework: 'vue', version: '2' });
