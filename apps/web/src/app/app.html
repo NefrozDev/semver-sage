@@ -9,7 +9,7 @@
     </header>
 
     <aside class="sage-panel">
-      <app-sage [mood]="mood()" />
+      <app-sage [mood]="mood()" [greet]="store.status() === 'idle'" />
       <p class="caption" [class]="mood()">
         <span class="dot"></span>{{ caption() }}
       </p>

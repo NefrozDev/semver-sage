@@ -15,10 +15,12 @@ test.describe('asking a question', () => {
     await expect(box).toHaveValue('');
     expect(api.requests).toEqual([{ question: 'How do I register a global filter in Vue 2?' }]);
 
-    // Waiting for the answer: reflecting pose, examples gone, Stop instead of Ask.
+    // Waiting for the answer: reflecting (levitating, eyes glowing), examples gone, Stop instead of Ask.
     const sage = page.locator('app-sage');
     await expect(sage).toHaveClass(/reflecting/);
     await expect(sage.locator('.thoughts')).toBeVisible();
+    await expect(sage.locator('.eyes-glow ellipse')).toHaveCount(2);
+    await expect(sage.locator('.lift')).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, -12)');
     await expect(page.locator('.caption')).toHaveText('Reflecting…');
     await expect(page.getByRole('button', { name: 'Stop' })).toBeVisible();
     await expect(page.locator('.examples')).toHaveCount(0);
@@ -33,6 +35,11 @@ test.describe('asking a question', () => {
     await expect(sage).toHaveClass(/talking/);
     await expect(sage.locator('.palm')).toBeVisible();
     await expect(sage.locator('.spark .star')).toBeVisible();
+    // The answer starts with a burst on the crystal; the sage is back on the ground.
+    await expect(sage.locator('.burst .rays path')).toHaveCount(12);
+    await expect(sage.locator('.burst .shockwave')).toHaveCount(1);
+    await expect(sage.locator('.eyes-glow')).toHaveCount(0);
+    await expect(sage.locator('.lift')).toHaveCSS('transform', 'none');
 
     // Finished: idle again, with who answered and how long it took.
     await expect(sage).toHaveClass(/idle/, { timeout: 15_000 });

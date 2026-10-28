@@ -1,6 +1,13 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, input, signal } from '@angular/core';
 
 export type SageMood = 'idle' | 'reflecting' | 'talking' | 'error';
+
+/** The wave hello starts this long after the page opens… */
+export const SALUTE_DELAY_MS = 2000;
+/** …and lasts as long as its CSS animation (`salute-raise`). */
+export const SALUTE_MS = 2600;
+/** Light rays of the burst on the crystal when the answer starts, every 30°. */
+const RAY_ANGLES = Array.from({ length: 12 }, (_, i) => i * 30);
 
 const LABELS: Record<SageMood, string> = {
   idle: 'The sage is waiting for your question',
@@ -11,14 +18,21 @@ const LABELS: Record<SageMood, string> = {
 
 /**
  * The sage, in three poses: idle (staff in hand, breathing, blinking, arms swaying), reflecting
- * (eyes closed, stroking his beard, thoughts orbiting) and talking (open-palm gesture, moving mouth,
- * staff raised, a spark on the crystal, the crystal rippling). "error" is the idle pose with a
- * worried brow and a dimmed crystal. Arms rotate at the shoulder and elbow so sleeves follow hands.
+ * (levitating, eyes glowing blue, stroking his beard, thoughts orbiting) and talking (open-palm
+ * gesture, moving mouth, staff raised, a burst of light then a spark on the crystal, the crystal
+ * rippling). "error" is the idle pose with a worried brow and a dimmed crystal. With `greet`, he
+ * waves hello once, shortly after the page opens. Arms rotate at the shoulder and elbow so sleeves
+ * follow hands.
  */
 @Component({
   selector: 'app-sage',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { '[class]': 'mood()', role: 'img', '[attr.aria-label]': 'label()' },
+  host: {
+    '[class]': 'mood()',
+    '[class.saluting]': "armPose() === 'salute'",
+    role: 'img',
+    '[attr.aria-label]': 'label()',
+  },
   template: `
     <svg viewBox="0 0 240 280" xmlns="http://www.w3.org/2000/svg">
       <defs>
@@ -47,11 +61,22 @@ const LABELS: Record<SageMood, string> = {
           <stop offset="0.45" stop-color="#67e8f9" />
           <stop offset="1" stop-color="#0e7490" />
         </radialGradient>
+        <radialGradient id="sage-burst">
+          <stop offset="0" stop-color="#ffffff" />
+          <stop offset="0.35" stop-color="#cffafe" stop-opacity="0.85" />
+          <stop offset="1" stop-color="#22d3ee" stop-opacity="0" />
+        </radialGradient>
       </defs>
 
       <circle class="halo" cx="120" cy="138" r="104" />
-      <ellipse class="shadow" cx="120" cy="266" rx="74" ry="8" />
+      <!-- the shadow stays on the ground and shrinks while the sage levitates -->
+      <g class="shadow-lift">
+        <ellipse class="shadow" cx="120" cy="266" rx="74" ry="8" />
+      </g>
 
+      <!-- lift: rises while reflecting; hover: floats up and down once risen -->
+      <g class="lift">
+      <g class="hover">
       <g class="figure">
         <!-- robe -->
         <path d="M88 140 C76 172 66 220 58 262 Q120 276 182 262 C174 220 164 172 152 140 Q120 128 88 140 Z" fill="url(#sage-robe)" />
@@ -74,9 +99,9 @@ const LABELS: Record<SageMood, string> = {
 
           @switch (pose()) {
             @case ('reflecting') {
-              <g class="eyes-closed">
-                <path d="M106 99 Q111 103 116 99" />
-                <path d="M124 99 Q129 103 134 99" />
+              <g class="eyes-glow">
+                <ellipse cx="111" cy="99" rx="3.2" ry="3.6" />
+                <ellipse cx="129" cy="99" rx="3.2" ry="3.6" />
               </g>
             }
             @default {
@@ -109,10 +134,19 @@ const LABELS: Record<SageMood, string> = {
             }
             <path class="crystal" d="M180 26 L191 46 L180 68 L169 46 Z" fill="url(#sage-crystal)" />
             <path d="M180 26 L180 68 M169 46 L191 46" stroke="#ffffff" stroke-width="0.8" opacity="0.5" />
-            <!-- created when the answer starts, so the flash plays once and the star keeps twinkling -->
+            <!-- created when the answer starts, so the burst plays once and the star keeps twinkling -->
             @if (pose() === 'talking') {
+              <g class="burst">
+                <circle class="burst-glow" cx="180" cy="44" r="30" fill="url(#sage-burst)" />
+                <circle class="shockwave" cx="180" cy="44" r="12" />
+                <g class="rays">
+                  @for (angle of rayAngles; track angle) {
+                    <path d="M180 30 L180 4" [attr.transform]="'rotate(' + angle + ' 180 44)'" />
+                  }
+                </g>
+              </g>
               <g class="spark">
-                <circle class="flash" cx="180" cy="40" r="14" />
+                <circle class="flash" cx="180" cy="40" r="14" fill="url(#sage-burst)" />
                 <circle class="mote" cx="180" cy="24" r="1.6" style="--dx: -9px" />
                 <circle class="mote" cx="180" cy="24" r="1.2" style="--dx: 8px" />
                 <circle class="mote" cx="180" cy="24" r="1.4" style="--dx: 2px" />
@@ -131,7 +165,18 @@ const LABELS: Record<SageMood, string> = {
 
         <!-- free arm: upper arm pivots at the shoulder, forearm and hand at the elbow -->
         <g class="free-arm">
-          @switch (pose()) {
+          @switch (armPose()) {
+            @case ('salute') {
+              <!-- raised beside the hood, palm out; CSS swings it up from the side, waves, lowers it -->
+              <path class="sleeve" d="M90 150 Q74 148 64 134" />
+              <g class="forearm">
+                <path class="sleeve" d="M64 134 Q57 122 56 106" />
+                <g class="hand palm">
+                  <ellipse cx="55" cy="97" rx="6.5" ry="9.5" />
+                  <circle cx="62" cy="104" r="3" />
+                </g>
+              </g>
+            }
             @case ('reflecting') {
               <path class="sleeve" d="M90 150 Q76 170 84 188" />
               <g class="forearm">
@@ -165,14 +210,42 @@ const LABELS: Record<SageMood, string> = {
           <path d="M120 2 l2.2 4.6 5 .6 -3.7 3.4 1 5 -4.5 -2.5 -4.5 2.5 1 -5 -3.7 -3.4 5 -.6 Z" />
         </g>
       }
+      </g>
+      </g>
     </svg>
   `,
   styleUrl: './sage.scss',
 })
 export class Sage {
   readonly mood = input<SageMood>('idle');
+  /** Wave hello once, SALUTE_DELAY_MS after the page opens, if this is still true by then. */
+  readonly greet = input(false);
 
   /** Error reuses the idle pose; CSS adds the worried brow. */
   protected readonly pose = computed(() => (this.mood() === 'error' ? 'idle' : this.mood()));
   protected readonly label = computed(() => LABELS[this.mood()]);
+  protected readonly rayAngles = RAY_ANGLES;
+
+  private readonly saluting = signal(false);
+  /** The free arm: the salute takes over from the idle or talking arm while it plays. */
+  protected readonly armPose = computed(() =>
+    this.saluting() && this.greet() && this.pose() !== 'reflecting' ? 'salute' : this.pose(),
+  );
+
+  constructor() {
+    let end: ReturnType<typeof setTimeout> | undefined;
+    const start = setTimeout(() => {
+      if (!this.greet() || prefersReducedMotion()) return;
+      this.saluting.set(true);
+      end = setTimeout(() => this.saluting.set(false), SALUTE_MS);
+    }, SALUTE_DELAY_MS);
+    inject(DestroyRef).onDestroy(() => {
+      clearTimeout(start);
+      clearTimeout(end);
+    });
+  }
 }
+
+/** Without motion, a raised arm frozen for a few seconds would just look odd: skip the salute. */
+const prefersReducedMotion = () =>
+  typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
