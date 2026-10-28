@@ -95,6 +95,15 @@ svg {
   fill: #f3d5bd;
 }
 
+// Fingers wrapped around the staff, in front of it; a fine shadow separates them.
+.grip path {
+  fill: none;
+  stroke: #f3d5bd;
+  stroke-width: 3.8;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0.6px 0.3px rgb(120 72 40 / 0.45));
+}
+
 // Joints, in SVG user units: the shoulders, and each pose's elbow.
 .staff-arm {
   transform-origin: 150px 150px;
@@ -255,6 +264,46 @@ svg {
     transform-origin: 64px 134px;
     animation: salute-wave 2.6s ease-in-out both;
   }
+}
+
+// Back to standby after speaking: the arm swings down from where the gesture was (88° at the
+// shoulder points the hanging arm out sideways), the staff and head ease back; after the mood
+// rules, which also animate them.
+:host(.settling) {
+  .free-arm { animation: arm-settle 0.9s cubic-bezier(0.3, 0.7, 0.4, 1) both; }
+  .staff-arm { animation: staff-settle 0.9s ease-out both; }
+  .head { animation: head-settle 0.9s ease-out both; }
+}
+
+// Leaving with the talking pose (`animate.leave`): Angular removes them once these end.
+.fading {
+  animation: fade-out 0.7s ease-out forwards;
+}
+
+.mouth.closing {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: mouth-close 0.3s ease-in forwards;
+}
+
+@keyframes arm-settle {
+  from { transform: rotate(88deg); }
+}
+
+@keyframes staff-settle {
+  from { transform: rotate(-2deg) translateY(-1px); }
+}
+
+@keyframes head-settle {
+  from { transform: rotate(0.8deg) translateY(0.5px); }
+}
+
+@keyframes fade-out {
+  to { opacity: 0; }
+}
+
+@keyframes mouth-close {
+  to { transform: scaleY(0); }
 }
 
 @keyframes breathe {
