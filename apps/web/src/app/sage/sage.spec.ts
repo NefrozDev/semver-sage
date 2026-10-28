@@ -72,7 +72,7 @@ describe('Sage', () => {
 
     it('does not wave once a question was asked, and does not hold the page back', () => {
       create();
-      advance(1000);
+      advance(SALUTE_DELAY_MS - 100);
       set('greet', false);
       advance(SALUTE_DELAY_MS);
       expect(host.classList).not.toContain('saluting');
@@ -114,7 +114,7 @@ describe('Sage', () => {
 
     it('cancels the pending wave when destroyed', () => {
       create();
-      advance(1000);
+      advance(SALUTE_DELAY_MS - 100);
       fixture.destroy();
       vi.advanceTimersByTime(SALUTE_DELAY_MS + SALUTE_MS);
       expect(fixture.componentInstance['armPose']()).toBe('idle');
