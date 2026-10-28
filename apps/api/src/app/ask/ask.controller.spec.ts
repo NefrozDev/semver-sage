@@ -58,7 +58,7 @@ describe('AskController.ask (SSE stream)', () => {
     return Object.assign(new EventEmitter(), {
       writeHead: vi.fn(),
       flushHeaders: vi.fn(),
-      write: vi.fn((_chunk: string) => true),
+      write: vi.fn<(chunk: string) => boolean>(() => true),
       end: vi.fn(),
     });
   }
