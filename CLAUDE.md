@@ -166,8 +166,8 @@ separate framework" answer (`notices.ts`), no search or LLM.
   done at 239 s. Clients must skip non-`data:` frames. Ollama `num_ctx` left at its 4096 default:
   prompts use 1.4–1.7k tokens, never truncated.
 - `apps/web`: signal store reading the SSE stream (`sage.store.ts`), SVG sage with
-  idle/reflecting/talking poses and a wave hello (`sage/`; Vitest spec runs in CI only, see
-  Environment; the animations are also checked by Playwright), typewriter answer card (`answer-card/`), citation cards
+  idle/reflecting/talking poses and a wave hello (`sage/`; Vitest spec, plus Playwright for the
+  animations), typewriter answer card (`answer-card/`), citation cards
   with version badges (`citation-list/`), framework/version/compare pickers and package.json
   upload (`ask-form/`). Shows "API unreachable" instead of failing when the API is down.
 - `evals/`: 171 golden questions over all ten frameworks; metrics hit@k, MRR, version precision
@@ -271,5 +271,9 @@ separate framework" answer (`notices.ts`), no search or LLM.
 - Commits: no Co-Authored-By / AI attribution lines (user preference).
 
 Environment: Windows, Node 24.15 (was 22.15 until 2026-10-27). GitHub CLI (`gh`) is not installed.
-`web:test` fails locally with "Vitest failed to find the runner" (both specs, also on `main`) while
-CI is green: a local environment issue, not investigated further; rely on CI for web unit tests.
+`web:test` failing locally with "Vitest failed to find the runner" (CI green) means
+`NX_WORKSPACE_ROOT_PATH` holds a lowercase drive (`c:\Dev\...`, inherited from VS Code): Nx hands
+it to Angular's unit-test builder, Node then loads `@vitest/runner` twice (`file:///c:/` and
+`file:///C:/`) and the tests get the copy whose runner was never set. Run with
+`$env:NX_WORKSPACE_ROOT_PATH = 'C:\Dev\angularapps\semver-sage'` (PowerShell) and all web specs run
+locally; do so before every web change instead of relying on CI.
