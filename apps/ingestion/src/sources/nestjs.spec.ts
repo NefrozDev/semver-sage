@@ -1,7 +1,14 @@
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
-import { cleanNestMarkdown, componentSnippets, nestHtmlToMarkdown, nestjsAdapter, nestSnapshotVersions } from './nestjs';
+import {
+  cleanNestMarkdown,
+  componentSnippets,
+  nestHtmlToMarkdown,
+  nestjsAdapter,
+  nestSnapshotVersions,
+  stripTags,
+} from './nestjs';
 
 describe('nestSnapshotVersions', () => {
   it('snapshots master just before each next major shipped, cited on GitHub at the commit', async () => {
@@ -180,5 +187,23 @@ describe('nestjsAdapter.loadPages', () => {
 
     expect(onGithub.map((p) => p.urlPath)).toEqual(['providers', 'interceptors']);
     expect(onSite.map((p) => p.urlPath)).toEqual(['providers', 'interceptors']);
+  });
+});
+
+describe('stripTags', () => {
+  it.each([
+    ['<p class="x">Text <b>bold</b></p>', 'Text bold'],
+    ['a < b and c', 'a < b and c'],
+    ['open <tag without end', 'open <tag without end'],
+    ['<<a>b>', 'b>'],
+    ['', ''],
+  ])('%j -> %j', (html, text) => {
+    expect(stripTags(html)).toBe(text);
+  });
+
+  it('stays fast on many unclosed "<"', () => {
+    const started = performance.now();
+    stripTags('<'.repeat(200_000));
+    expect(performance.now() - started).toBeLessThan(200);
   });
 });

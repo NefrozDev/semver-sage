@@ -58,13 +58,26 @@ export function componentSnippets(componentTs: string): Map<string, string> {
 }
 
 /** Private-use character marking where a code block goes back. */
-const BLOCK_MARK = '';
+const BLOCK_MARK = String.fromCodePoint(0xe000);
 
 const ENTITIES: Record<string, string> ={ lt: '<', gt: '>', amp: '&', quot: '"', apos: "'", nbsp: ' ' };
 const decodeEntities = (text: string) =>
   text.replace(/&(#\d+|[a-z]+);/g, (entity, code: string) =>
     code.startsWith('#') ? String.fromCodePoint(Number(code.slice(1))) : (ENTITIES[code] ?? entity),
   );
+
+/** Drops the remaining tags. A loop, as `/<[^>]*>/g` backtracks quadratically on unclosed "<" (S8786). */
+export function stripTags(html: string): string {
+  let out = '';
+  let from = 0;
+  for (;;) {
+    const open = html.indexOf('<', from);
+    const close = open < 0 ? -1 : html.indexOf('>', open);
+    if (close < 0) return out + html.slice(from);
+    out += html.slice(from, open);
+    from = close + 1;
+  }
+}
 
 /**
  * Turns a pre-2019 page template into markdown in the layout of the later docs ("###" title, "####"
@@ -90,9 +103,8 @@ export function nestHtmlToMarkdown(html: string, snippets: Map<string, string>):
     .replace(/<li\b[^>]*>/g, '\n- ')
     .replace(/<\/t[dh]>\s*<t[dh]\b[^>]*>/g, ' | ')
     .replace(/<\/?(?:p|blockquote|ul|ol|table|tr|div|figure|li)\b[^>]*>/g, '\n')
-    .replace(/<br\s*\/?>/g, '\n')
-    .replace(/<[^>]*>/g, '');
-  return decodeEntities(text)
+    .replace(/<br\s*\/?>/g, '\n');
+  return decodeEntities(stripTags(text))
     .split('\n')
     .map((line) => line.trim())
     .join('\n')
