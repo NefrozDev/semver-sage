@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, input, output, signal } from '@angular/core';
 
 export type SageMood = 'idle' | 'reflecting' | 'talking' | 'error';
 
@@ -21,8 +21,8 @@ const LABELS: Record<SageMood, string> = {
  * (levitating, eyes glowing blue, stroking his beard, thoughts orbiting) and talking (open-palm
  * gesture, moving mouth, staff raised, a burst of light then a spark on the crystal, the crystal
  * rippling). "error" is the idle pose with a worried brow and a dimmed crystal. With `greet`, he
- * waves hello once, shortly after the page opens. Arms rotate at the shoulder and elbow so sleeves
- * follow hands.
+ * waves hello once, shortly after the page opens, then emits `greeted` so the page can start
+ * speaking the greeting. Arms rotate at the shoulder and elbow so sleeves follow hands.
  */
 @Component({
   selector: 'app-sage',
@@ -220,6 +220,11 @@ export class Sage {
   readonly mood = input<SageMood>('idle');
   /** Wave hello once, SALUTE_DELAY_MS after the page opens, if this is still true by then. */
   readonly greet = input(false);
+  /**
+   * The wave is over (or skipped: reduced motion, or `greet` turned false): time to speak the
+   * greeting. Emitted once.
+   */
+  readonly greeted = output<void>();
 
   /** Error reuses the idle pose; CSS adds the worried brow. */
   protected readonly pose = computed(() => (this.mood() === 'error' ? 'idle' : this.mood()));
@@ -234,11 +239,22 @@ export class Sage {
 
   constructor() {
     let end: ReturnType<typeof setTimeout> | undefined;
-    const start = setTimeout(() => {
-      if (!this.greet() || prefersReducedMotion()) return;
-      this.saluting.set(true);
-      end = setTimeout(() => this.saluting.set(false), SALUTE_MS);
-    }, SALUTE_DELAY_MS);
+    // Without motion there is no wave to wait for: speak right away.
+    const reducedMotion = prefersReducedMotion();
+    const start = setTimeout(
+      () => {
+        if (!this.greet() || reducedMotion) {
+          this.greeted.emit();
+          return;
+        }
+        this.saluting.set(true);
+        end = setTimeout(() => {
+          this.saluting.set(false);
+          this.greeted.emit();
+        }, SALUTE_MS);
+      },
+      reducedMotion ? 0 : SALUTE_DELAY_MS,
+    );
     inject(DestroyRef).onDestroy(() => {
       clearTimeout(start);
       clearTimeout(end);

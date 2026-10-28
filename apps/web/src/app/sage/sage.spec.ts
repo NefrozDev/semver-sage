@@ -5,11 +5,15 @@ describe('Sage', () => {
   let fixture: ComponentFixture<Sage>;
   let host: HTMLElement;
 
+  let greeted = vi.fn<() => void>();
+
   /** Creates the sage (its wave timer starts now) with the given inputs. */
   function create(inputs: { mood?: SageMood; greet?: boolean } = {}) {
     fixture = TestBed.createComponent(Sage);
     fixture.componentRef.setInput('mood', inputs.mood ?? 'idle');
     fixture.componentRef.setInput('greet', inputs.greet ?? true);
+    greeted = vi.fn<() => void>();
+    fixture.componentInstance.greeted.subscribe(greeted);
     fixture.detectChanges();
     host = fixture.nativeElement as HTMLElement;
   }
@@ -35,7 +39,7 @@ describe('Sage', () => {
   });
 
   describe('waving hello', () => {
-    it('raises the free arm 2 s after it appears, then lowers it for good', () => {
+    it('raises the free arm 2 s after it appears, lowers it for good, then lets the page speak', () => {
       create();
       advance(SALUTE_DELAY_MS - 1);
       expect(host.classList).not.toContain('saluting');
@@ -46,29 +50,34 @@ describe('Sage', () => {
       expect(host.classList).toContain('idle');
       expect(freeArm()).toEqual(SALUTE_ARM);
       expect(host.querySelector('.free-arm .palm')).not.toBeNull();
+      // Not before the wave is over.
+      expect(greeted).not.toHaveBeenCalled();
 
       advance(SALUTE_MS);
       expect(host.classList).not.toContain('saluting');
       expect(freeArm()).toEqual(IDLE_ARM);
+      expect(greeted).toHaveBeenCalledTimes(1);
       // Once only.
       advance(30_000);
       expect(host.classList).not.toContain('saluting');
+      expect(greeted).toHaveBeenCalledTimes(1);
     });
 
-    it('takes over the talking arm when the greeting is still being typed', () => {
+    it('takes over the talking arm if the sage is already speaking', () => {
       create({ mood: 'talking' });
       advance(SALUTE_DELAY_MS);
       expect(freeArm()).toEqual(SALUTE_ARM);
       expect(host.classList).toContain('talking');
     });
 
-    it('does not wave once a question was asked', () => {
+    it('does not wave once a question was asked, and does not hold the page back', () => {
       create();
       advance(1000);
       set('greet', false);
       advance(SALUTE_DELAY_MS);
       expect(host.classList).not.toContain('saluting');
       expect(freeArm()).toEqual(IDLE_ARM);
+      expect(greeted).toHaveBeenCalledTimes(1);
     });
 
     it('stops at once when a question is asked mid-wave', () => {
@@ -89,23 +98,27 @@ describe('Sage', () => {
       expect(host.classList).not.toContain('saluting');
     });
 
-    it('does not wave when the system asks for reduced motion', () => {
+    it('does not wave when the system asks for reduced motion, and lets the page speak at once', () => {
       const matchMedia = vi.fn((query: string) => ({ matches: query === '(prefers-reduced-motion: reduce)' }));
       vi.stubGlobal('matchMedia', matchMedia);
       create();
-      advance(SALUTE_DELAY_MS + 100);
-
+      advance(0);
       expect(matchMedia).toHaveBeenCalledWith('(prefers-reduced-motion: reduce)');
+      expect(greeted).toHaveBeenCalledTimes(1);
+
+      advance(SALUTE_DELAY_MS + 100);
       expect(host.classList).not.toContain('saluting');
       expect(freeArm()).toEqual(IDLE_ARM);
+      expect(greeted).toHaveBeenCalledTimes(1);
     });
 
     it('cancels the pending wave when destroyed', () => {
       create();
       advance(1000);
       fixture.destroy();
-      vi.advanceTimersByTime(SALUTE_DELAY_MS);
+      vi.advanceTimersByTime(SALUTE_DELAY_MS + SALUTE_MS);
       expect(fixture.componentInstance['armPose']()).toBe('idle');
+      expect(greeted).not.toHaveBeenCalled();
     });
   });
 

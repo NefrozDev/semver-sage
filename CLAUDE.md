@@ -24,10 +24,12 @@ tiers for a hosted demo. No AWS or other paid cloud.
 ## UI concept
 An illustrated **sage** (vector SVG, no pixel art) with three poses: **idle**, **reflecting**
 (while searching: levitates, eyes glowing blue) and **talking** (while the answer streams: starts
-with a burst of light from the crystal: glow, rays, shockwave, halo flash). 2 s after the page
-opens he waves hello once, unless a question was asked (`greet` input; skipped with reduced
-motion). Answers appear in a card with a typewriter effect; citations carry version badges. Calm
-modern look: Fraunces + Inter, light and dark themes following the system setting.
+with a burst of light from the crystal: glow, rays, shockwave, halo flash). On arrival: idle for
+2 s, he waves hello once, and only then speaks the greeting (the sage's `greeted` output starts
+it, ~4.6 s after load; the user wanted the wave first, then the speaking). No wave once a question
+was asked (`greet` input); with reduced motion, no wave and the greeting starts at once. Answers
+appear in a card with a typewriter effect; citations carry version badges. Calm modern look:
+Fraunces + Inter, light and dark themes following the system setting.
 
 ## Tech stack
 - **Monorepo:** Nx (integrated, `angular-monorepo` preset)
