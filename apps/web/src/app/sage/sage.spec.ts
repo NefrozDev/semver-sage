@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { SALUTE_DELAY_MS, SALUTE_MS, Sage, SageMood } from './sage';
+import { SALUTE_DELAY_MS, SALUTE_MS, Sage, SageMood, SETTLE_MS } from './sage';
 
 describe('Sage', () => {
   let fixture: ComponentFixture<Sage>;
@@ -139,6 +139,45 @@ describe('Sage', () => {
       create({ mood: 'reflecting' });
       advance(SALUTE_DELAY_MS);
       expect(host.classList).not.toContain('saluting');
+    });
+  });
+
+  describe('back to standby after speaking', () => {
+    it('eases back (host class "settling") for SETTLE_MS once the sage stops talking', () => {
+      create({ mood: 'talking', greet: false });
+      set('mood', 'idle');
+      expect(host.classList).toContain('settling');
+
+      advance(SETTLE_MS - 1);
+      expect(host.classList).toContain('settling');
+      advance(1);
+      expect(host.classList).not.toContain('settling');
+    });
+
+    it('eases back from reflecting too (Stop, or an error), with its own class', () => {
+      create({ mood: 'reflecting', greet: false });
+      set('mood', 'idle');
+      expect(host.classList).toContain('settling-from-reflecting');
+      expect(host.classList).not.toContain('settling');
+      advance(SETTLE_MS);
+      expect(host.classList).not.toContain('settling-from-reflecting');
+    });
+
+    it('not when starting to reflect or to talk', () => {
+      create({ mood: 'idle', greet: false });
+      set('mood', 'reflecting');
+      set('mood', 'talking');
+      expect(host.classList).not.toContain('settling');
+      expect(host.classList).not.toContain('settling-from-reflecting');
+    });
+
+    it('stops settling at once if the sage moves on', () => {
+      create({ mood: 'talking', greet: false });
+      set('mood', 'idle');
+      set('mood', 'reflecting');
+      expect(host.classList).not.toContain('settling');
+      advance(SETTLE_MS);
+      expect(host.classList).not.toContain('settling');
     });
   });
 

@@ -124,12 +124,18 @@ cost recall on large scopes; one version is at most ~6k chunks). Record:
 `evals/results/hybrid-rerank-ablation.md`.
 
 ## Current state
-PRs #1–#8 are merged into `main` (#7 `feat/answer-robustness`: SSE keep-alive, ingestion
+PRs #1–#10 are merged into `main` (#7 `feat/answer-robustness`: SSE keep-alive, ingestion
 typecheck fix, "since when?" mode, NestJS URL fix, round 3 of older docs; #8
-`fix/since-when-followups`: Sonar S8786 in the Nest 4 converter, "never stops talking" fix; merge
-`6def526`). Production runs `main` (see Production below); local data = production data
-(138 versions). Branch `feat/sage-animations` (local, not pushed): wave hello, levitation with
-glowing eyes, bigger burst; the sage card clips its overflow so the burst stays inside.
+`fix/since-when-followups`: Sonar S8786 in the Nest 4 converter, "never stops talking" fix; #10
+`feat/sage-animations`: wave hello then greeting, levitation with glowing eyes, bigger burst, the
+sage card clips its overflow, room next to the version ranges; merge `c2529ed`). Branch
+`feat/calmer-speech` (pushed, PR to open): typewriter at ~50 chars/s, slower talking gestures,
+eased return to standby, staff hand gripping the staff, crossfades between poses (component style
+budget raised to 10/12 kB). **Production runs it** (see Production below); after the merge, put
+the VPS back on `main` (`git checkout main && git pull`, no rebuild). Local data = production data
+(138 versions). The local Docker app
+(:8080) must be rebuilt (`docker compose build app && docker compose up -d --no-deps app`) to show
+code changes: it once served a 41-hour-old image and hid the new wave.
 
 Indexed locally and in production (138 versions, 86,109 chunk rows, 188,493 version-chunks,
 232 MB; 2026-10-28):
@@ -205,7 +211,7 @@ separate framework" answer (`notices.ts`), no search or LLM.
   `docker-compose.mailcow.yml` override on the server). Small shared box (2 vCPU, 3.7 GB RAM, disk
   ~85% full): never ingest there; ingest locally and restore a data dump (see Commands). The
   HF Spaces + Neon + Groq guide in `docs/DEPLOY.md` is an unused alternative. Since 2026-10-28 it
-  runs `main` (`6def526`; the image was built from `4df7c18`, same code) with the 138-version
+  runs `feat/calmer-speech` (`8eb049b`, deployed 2026-10-28 05:27) with the 138-version
   data (236 MB); the 119-version data is kept in `/tmp/semver_sage_backup_before_v3.dump` on the
   server until the next refresh. Checked through the public URL: "When did interceptors arrive in
   NestJS?" → "At least since NestJS 4"; a "since when?" answer's first token (with the verdict)

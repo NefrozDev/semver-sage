@@ -66,6 +66,9 @@ svg {
 .glow {
   fill: #67e8f9;
   opacity: 0.18;
+  transition:
+    opacity 0.6s ease,
+    fill 0.6s ease;
   transform-box: fill-box;
   transform-origin: center;
   animation: glow 4.5s ease-in-out infinite;
@@ -93,6 +96,15 @@ svg {
 
 .hand {
   fill: #f3d5bd;
+}
+
+// Fingers wrapped around the staff, in front of it; a fine shadow separates them.
+.grip path {
+  fill: none;
+  stroke: #f3d5bd;
+  stroke-width: 3.8;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0.6px 0.3px rgb(120 72 40 / 0.45));
 }
 
 // Joints, in SVG user units: the shoulders, and each pose's elbow.
@@ -154,7 +166,7 @@ svg {
   transform-origin: center;
   animation:
     star-in 0.6s ease-out both,
-    star-twinkle 1.4s ease-in-out 0.6s infinite;
+    star-twinkle 2s ease-in-out 0.6s infinite;
 }
 
 .mote {
@@ -208,30 +220,30 @@ svg {
   .brows { transform: translateY(-2px); }
   .glow { opacity: 0.32; }
   .halo { animation: halo-flash 1.3s ease-out; }
-  .head { animation: nod 2.2s ease-in-out infinite; }
-  .staff-arm { animation: staff-lift 2.2s ease-in-out infinite; }
+  .head { animation: nod 3.2s ease-in-out infinite; }
+  .staff-arm { animation: staff-lift 3.2s ease-in-out infinite; }
 
   .crystal {
     transform-box: fill-box;
     transform-origin: center;
     animation:
       crystal-pop 0.6s ease-out,
-      flare 1.4s ease-in-out 0.6s infinite;
+      flare 2.4s ease-in-out 0.6s infinite;
   }
 
   .free-arm {
-    animation: gesture 2.2s ease-in-out infinite;
+    animation: gesture 3.2s ease-in-out infinite;
   }
 
   .forearm {
     transform-origin: 66px 168px;
-    animation: gesture-forearm 2.2s ease-in-out infinite;
+    animation: gesture-forearm 3.2s ease-in-out infinite;
   }
 
   .mouth {
     transform-box: fill-box;
     transform-origin: center;
-    animation: talk 0.26s ease-in-out infinite alternate;
+    animation: talk 0.42s ease-in-out infinite alternate;
   }
 
 }
@@ -255,6 +267,100 @@ svg {
     transform-origin: 64px 134px;
     animation: salute-wave 2.6s ease-in-out both;
   }
+}
+
+// Back to standby after speaking: the arm swings down from where the gesture was (88° at the
+// shoulder points the hanging arm out sideways), the staff and head ease back; after the mood
+// rules, which also animate them.
+:host(.settling) {
+  .free-arm { animation: arm-settle 0.9s cubic-bezier(0.3, 0.7, 0.4, 1) both; }
+  .staff-arm { animation: staff-settle 0.9s ease-out both; }
+  .head { animation: head-settle 0.9s ease-out both; }
+}
+
+// Back to standby after reflecting (Stop, or an error): the arm comes down from the beard (-74° at
+// the shoulder points the hanging arm at it), the bowed head straightens.
+:host(.settling-from-reflecting) {
+  .free-arm { animation: arm-settle-from-beard 0.8s cubic-bezier(0.3, 0.7, 0.4, 1) both; }
+  .head { animation: head-unbow 0.8s ease-out both; }
+}
+
+// Changing pose: what appears fades in (`animate.enter`), what goes fades out (`animate.leave`,
+// Angular removes it once the animation ends), arms swing into their new pose.
+.appearing {
+  animation: fade-in 0.6s ease-out both;
+}
+
+.fading {
+  animation: fade-out 0.7s ease-out forwards;
+}
+
+// Reflecting: the forearm folds up from hanging to the beard, at the elbow.
+.raising-to-beard {
+  transform-origin: 84px 188px;
+  animation: forearm-raise 0.7s cubic-bezier(0.3, 0.7, 0.4, 1) both;
+}
+
+// Talking: the whole arm lifts from hanging into the open-palm gesture, at the shoulder.
+.lifting {
+  transform-origin: 90px 150px;
+  animation: arm-lift 0.6s cubic-bezier(0.3, 0.7, 0.4, 1) both;
+}
+
+// The staff hand grips lower while reflecting: hand, fingers and sleeve glide there and back.
+.staff-arm > .hand,
+.grip {
+  transition: transform 0.7s cubic-bezier(0.3, 0.7, 0.4, 1);
+}
+
+.staff-sleeve {
+  transition: d 0.7s cubic-bezier(0.3, 0.7, 0.4, 1);
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+}
+
+@keyframes forearm-raise {
+  from { transform: rotate(130deg); }
+}
+
+@keyframes arm-lift {
+  from { transform: rotate(-88deg); }
+}
+
+@keyframes arm-settle-from-beard {
+  from { transform: rotate(-74deg); }
+}
+
+@keyframes head-unbow {
+  from { transform: rotate(-4deg); }
+}
+
+.mouth.closing {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: mouth-close 0.3s ease-in forwards;
+}
+
+@keyframes arm-settle {
+  from { transform: rotate(88deg); }
+}
+
+@keyframes staff-settle {
+  from { transform: rotate(-2deg) translateY(-1px); }
+}
+
+@keyframes head-settle {
+  from { transform: rotate(0.8deg) translateY(0.5px); }
+}
+
+@keyframes fade-out {
+  to { opacity: 0; }
+}
+
+@keyframes mouth-close {
+  to { transform: scaleY(0); }
 }
 
 @keyframes breathe {
