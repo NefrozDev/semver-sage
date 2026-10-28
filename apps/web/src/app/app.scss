@@ -110,7 +110,8 @@ main {
     min-height: 0;
     overflow-y: auto;
     margin: 0;
-    padding: 0;
+    // Room between the version ranges and the scrollbar when the list scrolls (small screens).
+    padding: 0 12px 0 0;
     list-style: none;
     font-size: 14px;
   }
