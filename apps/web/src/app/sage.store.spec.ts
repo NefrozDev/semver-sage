@@ -66,6 +66,19 @@ describe('SageStore', () => {
     expect(store.error()).toBeNull();
   });
 
+  it('keeps the searched history of a "since when?" answer, and clears it for the next question', async () => {
+    const [, ...rest] = events;
+    const history = { oldest: '1', earliest: '2' };
+    fetchMock.mockResolvedValueOnce(streamed(sse([{ ...events[0], history } as AskStreamEvent, ...rest]), 64));
+    await store.ask({ question: 'When were filters added to Vue?' });
+    expect(store.history()).toEqual(history);
+    expect(store.compare()).toBeNull();
+
+    fetchMock.mockResolvedValueOnce(streamed(sse(events), 64));
+    await store.ask({ question: 'Vue 2 filters?' });
+    expect(store.history()).toBeNull();
+  });
+
   it.each([1, 5, 10_000])('ignores the keep-alive pings the API sends while the LLM warms up (%i chars)', async (size) => {
     const [scope, citations, ...answer] = sse(events).split(/(?<=\n\n)/);
     const body = [scope, citations, ': ping\n\n', ': ping\n\n', ...answer].join('');

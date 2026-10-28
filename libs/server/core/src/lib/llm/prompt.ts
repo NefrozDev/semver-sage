@@ -46,6 +46,44 @@ export function buildMessages(question: string, scope: ResolvedScope, citations:
   ];
 }
 
+/**
+ * "Since when?" mode: excerpts come from every indexed version, oldest first. The search's verdict
+ * (the oldest version whose docs mention the subject) is stated so a small model doesn't have to
+ * work it out from the version ranges.
+ */
+export function buildSinceMessages(
+  question: string,
+  scope: ResolvedScope,
+  history: { earliest: string | null; oldest: string },
+  citations: Citation[],
+): ChatMessage[] {
+  const name = scope.framework ? FRAMEWORKS[scope.framework].label : 'the framework';
+  const verdict = history.earliest
+    ? `The search found it in the docs of ${name} ${history.earliest} at the earliest.`
+    : 'The search found no clear mention of it.';
+  const atOldest =
+    history.earliest === history.oldest
+      ? `${history.oldest} is the oldest indexed version, so say it exists at least since ${name} ` +
+        `${history.oldest}: older docs aren't indexed.`
+      : `Older indexed versions (back to ${history.oldest}) don't mention it.`;
+  const system = [
+    'You are Semver Sage, a wise and friendly expert on JavaScript framework documentation.',
+    `The user asks since which version something exists in ${name}. The indexed ${name} docs go from ` +
+      `version ${history.oldest} to ${scope.version}.`,
+    `${verdict} ${history.earliest ? atOldest : ''}`.trim(),
+    'Rules:',
+    `- Start with the version in bold, e.g. "**Since ${name} ${history.earliest ?? 'X'}.**", then explain briefly.`,
+    '- If an excerpt states a more precise version ("Added in: v17.5.0", "new in 16.8", "experimental"), ' +
+      'give it too, and mention backports or experimental stages it describes.',
+    ...SHARED_RULES,
+  ].join('\n');
+
+  return [
+    { role: 'system', content: system },
+    { role: 'user', content: userMessage(citations, question) },
+  ];
+}
+
 /** Compare mode: explain what changed from `from` to `to`, using excerpts from both versions. */
 export function buildCompareMessages(
   question: string,

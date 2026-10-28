@@ -1,5 +1,5 @@
 import { Logger } from '@nestjs/common';
-import type { ChatMessage, LlmProvider, SearchScope } from '@semver-sage/server-core';
+import type { ChatMessage, HistoryResult, LlmProvider, SearchScope } from '@semver-sage/server-core';
 import { versionToNum, type AskStreamEvent, type Citation, type Framework } from '@semver-sage/types';
 import type { RetrievalService } from '../retrieval/retrieval.service';
 import { AskService } from './ask.service';
@@ -27,16 +27,25 @@ const citation = (version: string, n = 1): Citation => ({
   snippet: `Docs text ${version}.${n}`,
 });
 
-function fakeRetrieval(results: (scope: SearchScope) => Citation[], versions = [indexed('vue', '2'), indexed('vue', '3')]) {
+function fakeRetrieval(
+  results: (scope: SearchScope) => Citation[],
+  versions = [indexed('vue', '2'), indexed('vue', '3')],
+  history: HistoryResult | null = null,
+) {
   const searches: { question: string; scope: SearchScope; topK?: number }[] = [];
+  const historySearches: { question: string; topics: string[]; scope: SearchScope }[] = [];
   const retrieval = {
     indexedVersions: async () => versions,
     search: async (question: string, scope: SearchScope, topK?: number) => {
       searches.push({ question, scope, topK });
       return results(scope);
     },
+    searchHistory: async (question: string, topics: string[], scope: SearchScope) => {
+      historySearches.push({ question, topics, scope });
+      return history;
+    },
   };
-  return { retrieval: retrieval as unknown as RetrievalService, searches };
+  return { retrieval: retrieval as unknown as RetrievalService, searches, historySearches };
 }
 
 function fakeLlm(tokens: string[] | Error = ['Use ', 'Vue.filter [1].']) {
@@ -96,6 +105,50 @@ describe('AskService', () => {
       [4, '3'],
     ]);
     expect(calls[0][0].content).toContain('what changed between Vue 2 and Vue 3');
+  });
+
+  it('answers "since when?" questions from every version: history scope, oldest-first sources', async () => {
+    const history: HistoryResult = { citations: [citation('2', 1), citation('3', 2)], earliest: '2', oldest: '2' };
+    const { retrieval, searches, historySearches } = fakeRetrieval(() => [citation('3')], undefined, history);
+    const { llm, calls } = fakeLlm(['**Since Vue 2.**']);
+    const events = await collect(new AskService(retrieval, llm), 'When was v-model added to Vue?');
+
+    expect(events.map((e) => e.type)).toEqual(['scope', 'citations', 'token', 'done']);
+    expect(events[0]).toEqual({
+      type: 'scope',
+      scope: { framework: 'vue', requestedVersion: null, version: '3', source: 'latest' },
+      history: { earliest: '2', oldest: '2' },
+    });
+    expect(events[1]).toEqual({ type: 'citations', citations: history.citations });
+    expect(historySearches).toEqual([
+      {
+        question: 'When was v-model added to Vue?',
+        topics: ['v-model'],
+        scope: expect.objectContaining({ framework: 'vue', versionNum: 3_000_000 }),
+      },
+    ]);
+    // The single-version search is not used.
+    expect(searches).toEqual([]);
+    expect(calls).toHaveLength(1);
+    expect(calls[0][0].content).toContain('since which version something exists in Vue');
+    expect(calls[0][0].content).toContain('at least since Vue 2');
+  });
+
+  it('falls back to the usual search when the history search has nothing to offer', async () => {
+    const { retrieval, searches, historySearches } = fakeRetrieval(() => [citation('3')], undefined, null);
+    const { llm, calls } = fakeLlm();
+    const events = await collect(new AskService(retrieval, llm), 'When was v-model added to Vue?');
+
+    expect(historySearches).toHaveLength(1);
+    expect(searches).toHaveLength(1);
+    expect(events[0]).not.toHaveProperty('history');
+    expect(calls[0][0].content).toContain('Answer the question for Vue 3');
+  });
+
+  it('does not search the history for other questions', async () => {
+    const { retrieval, historySearches } = fakeRetrieval(() => [citation('2')]);
+    await collect(new AskService(retrieval, fakeLlm().llm), 'How do filters work in Vue 2?');
+    expect(historySearches).toEqual([]);
   });
 
   it('says it found nothing without calling the LLM', async () => {

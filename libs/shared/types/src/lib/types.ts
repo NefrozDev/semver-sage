@@ -62,9 +62,19 @@ export interface Citation {
   snippet: string;
 }
 
+/** "Since when?" mode: every indexed version from `oldest` to the scope's version was searched. */
+export interface HistoryScope {
+  oldest: string;
+  /** Oldest version whose docs mention the subject, or null when nothing was found. */
+  earliest: string | null;
+}
+
 export type AskStreamEvent =
-  /** `compare` is set in compare mode: answers explain the change from `scope` to `compare`. */
-  | { type: 'scope'; scope: ResolvedScope; compare?: ResolvedScope }
+  /**
+   * `compare` is set in compare mode: answers explain the change from `scope` to `compare`.
+   * `history` is set in "since when?" mode.
+   */
+  | { type: 'scope'; scope: ResolvedScope; compare?: ResolvedScope; history?: HistoryScope }
   | { type: 'citations'; citations: Citation[] }
   | { type: 'token'; text: string }
   | { type: 'done'; model: string; elapsedMs: number }

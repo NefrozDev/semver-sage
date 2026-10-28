@@ -1,5 +1,5 @@
 import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
-import { Embedder, getConfig, Retriever, SearchScope } from '@semver-sage/server-core';
+import { Embedder, getConfig, HistoryResult, Retriever, SearchScope } from '@semver-sage/server-core';
 import type { Citation } from '@semver-sage/types';
 import { DatabaseService } from '../database.service';
 
@@ -26,5 +26,9 @@ export class RetrievalService implements OnApplicationBootstrap {
 
   search(question: string, scope: SearchScope, topK?: number): Promise<Citation[]> {
     return this.retriever.search(question, scope, { topK });
+  }
+
+  searchHistory(question: string, topics: string[], scope: SearchScope): Promise<HistoryResult | null> {
+    return this.retriever.searchHistory(question, topics, scope);
   }
 }

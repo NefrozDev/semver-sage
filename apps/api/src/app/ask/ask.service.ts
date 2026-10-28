@@ -3,6 +3,7 @@ import {
   ANGULARJS_NOTICE,
   buildCompareMessages,
   buildMessages,
+  buildSinceMessages,
   ChatMessage,
   LlmProvider,
   resolveComparison,
@@ -16,7 +17,9 @@ import {
   comparisonTopic,
   FRAMEWORKS,
   isAngularJsQuestion,
+  isSinceWhenQuestion,
   ResolvedScope,
+  sinceTopics,
 } from '@semver-sage/types';
 import { LLM_PROVIDER } from '../llm';
 import { RetrievalService } from '../retrieval/retrieval.service';
@@ -83,9 +86,20 @@ export class AskService {
       messages = buildCompareMessages(request.question, from, to, citations);
     } else {
       scope = resolveScope(request, indexed);
-      yield { type: 'scope', scope: toPublic(scope) };
-      citations = await this.retrieval.search(request.question, scope);
-      messages = buildMessages(request.question, scope, citations);
+      // "Since when?" questions search every version up to the scope's, not just that one.
+      const history = isSinceWhenQuestion(request.question)
+        ? await this.retrieval.searchHistory(request.question, sinceTopics(request.question), scope)
+        : null;
+      if (history) {
+        const { earliest, oldest } = history;
+        yield { type: 'scope', scope: toPublic(scope), history: { earliest, oldest } };
+        citations = history.citations;
+        messages = buildSinceMessages(request.question, scope, history, citations);
+      } else {
+        yield { type: 'scope', scope: toPublic(scope) };
+        citations = await this.retrieval.search(request.question, scope);
+        messages = buildMessages(request.question, scope, citations);
+      }
     }
     yield { type: 'citations', citations };
 

@@ -100,6 +100,78 @@ export function comparisonTopic(question: string): string {
   return topic.length >= 3 ? topic : question;
 }
 
+/** "introduced", "added", "arrive"...: verbs that ask when something appeared. */
+const APPEARED = String.raw`(?:introduc(?:e|ed|es|ing)|add(?:ed|s)?|arriv(?:e|ed|es)|appear(?:ed|s)?|releas(?:e|ed)|land(?:ed|s)?|ship(?:ped|s)?|launch(?:ed)?|bec[ao]me|brought|start(?:ed)?|began)\b`;
+
+const SINCE_WHEN_PATTERNS = [
+  /\bsince\s+(?:when|which|what)\b/i,
+  /\bhow\s+long\s+ha(?:s|ve)\b/i,
+  /\b(?:in|from)\s+(?:which|what)\s+version\b/i,
+  new RegExp(String.raw`\b(?:which|what)\s+(?:\w+\s+){0,2}?version\s+(?:\w+\s+){0,3}?(?:first\b|${APPEARED})`, 'i'),
+  new RegExp(String.raw`\bwhen\s+(?:was|were|did|has|have)\b.*?\b${APPEARED}`, 'i'),
+  /\b(?:first|initially)\s+(?:introduced|added|appeared|released|shipped|supported|available)\b/i,
+];
+
+/**
+ * Detects "since when?" questions: "When was useId added?", "Since when does Node have fetch?",
+ * "Which Angular version introduced signals?". These are answered from every indexed version.
+ */
+export function isSinceWhenQuestion(question: string): boolean {
+  return SINCE_WHEN_PATTERNS.some((re) => re.test(question));
+}
+
+/** Words around the subject of a "since when?" question. */
+const SINCE_FILLER = new Set(
+  [
+    'since when which what was were did does do has have had is are first initially get got',
+    'support supported supports available the a an in to of for with by it its there been be version versions',
+  ]
+    .join(' ')
+    .split(' '),
+);
+const APPEARED_WORD = new RegExp(`^${APPEARED}$`, 'i');
+
+/**
+ * The subject of a "since when?" question: "When did interceptors arrive in NestJS?" ->
+ * "interceptors". Framework names that are part of an identifier stay ("express.json()").
+ */
+export function sinceTopic(question: string): string {
+  return subjectOf(question, false);
+}
+
+/**
+ * Subjects to look for, most specific first: with a product name built on the framework's name
+ * ("Angular Elements", "React Server Components"), then without it ("Elements").
+ */
+export function sinceTopics(question: string): string[] {
+  return [...new Set([subjectOf(question, true), subjectOf(question, false)])];
+}
+
+function subjectOf(question: string, keepProductNames: boolean): string {
+  let topic = question;
+  for (const mention of detectFrameworks(question).reverse()) {
+    const next = topic.slice(mention.end);
+    if (/^\.\w/.test(next)) continue;
+    if (keepProductNames && !mention.version && /^ \p{Lu}/u.test(next)) continue;
+    topic = topic.slice(0, mention.index) + ' ' + next;
+  }
+  topic = topic
+    .replace(/(?<![\w.])v?\d+(?:\.\d+){0,2}(?![\w.])/g, ' ')
+    .replace(/\bhow\s+long\b/gi, ' ')
+    .replace(/[?!,:;]+/g, ' ');
+  const words = topic
+    .split(/\s+/)
+    .filter((word) => word && !SINCE_FILLER.has(word.toLowerCase()) && !APPEARED_WORD.test(word));
+  const subject = trimEndChars(words.join(' '), '.').trim();
+  return subject.length >= 2 ? subject : question;
+}
+
+function trimEndChars(text: string, char: string): string {
+  let end = text.length;
+  while (end > 0 && text[end - 1] === char) end--;
+  return text.slice(0, end);
+}
+
 /**
  * The mention a question is mainly about. A framework given with a version wins; TypeScript is
  * often only the language ("run a TypeScript file in Node 22", "Vue 3 with TypeScript"), so any

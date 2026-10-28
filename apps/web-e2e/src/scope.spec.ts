@@ -30,6 +30,28 @@ test.describe('scoping a question', () => {
     await expect(version).toHaveValue('2');
   });
 
+  test('"since when?" answers show the searched range and the earliest version found', async ({ page }) => {
+    await mockApi(page, {
+      hold: false,
+      events: [
+        {
+          type: 'scope',
+          scope: { framework: 'vue', requestedVersion: null, version: '3', source: 'latest' },
+          history: { oldest: '1', earliest: '2' },
+        },
+        ...answerEvents({ answer: '**Since Vue 2.**' }).slice(1),
+      ],
+    });
+    await page.goto('/');
+
+    await page.getByRole('textbox', { name: 'Your question' }).fill('When were filters added to Vue?');
+    await page.getByRole('button', { name: 'Ask' }).click();
+
+    await expect(page.locator('.scope .chip')).toHaveText('Vue 1–3 history');
+    await expect(page.locator('.scope .note')).toHaveText('First found in the Vue 2 docs.');
+    await expect(page.locator('app-answer-card')).toContainText('Since Vue 2.');
+  });
+
   test('a package.json scopes questions to the installed versions', async ({ page }) => {
     const api = await mockApi(page, { hold: false });
     await page.goto('/');

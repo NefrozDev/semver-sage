@@ -42,12 +42,15 @@
     @if (store.question() && store.status() !== 'idle') {
       <div class="asked">
         <h2 class="question">{{ store.question() }}</h2>
-        @if (scopeLabel() || store.scope()?.note) {
+        @if (scopeLabel() || store.scope()?.note || historyNote()) {
           <div class="scope">
             @if (scopeLabel(); as label) {
               <span class="chip">{{ label }}</span>
             }
             @if (store.scope()?.note; as note) {
+              <span class="note">{{ note }}</span>
+            }
+            @if (historyNote(); as note) {
               <span class="note">{{ note }}</span>
             }
           </div>
