@@ -114,15 +114,21 @@ export class AskService {
       return;
     }
 
-    if (answerStart) yield { type: 'token', text: answerStart };
+    // The verdict goes out with the LLM's first token, not before: the first token switches the UI
+    // to "speaking", and a cold model can take minutes to start, which looked like an answer that
+    // never ended.
+    let pendingStart = answerStart;
     try {
       for await (const text of this.llm.stream(messages, signal)) {
-        yield { type: 'token', text };
+        yield { type: 'token', text: pendingStart ? pendingStart + text : text };
+        pendingStart = null;
       }
+      if (pendingStart) yield { type: 'token', text: pendingStart };
       yield { type: 'done', model: this.llm.name, elapsedMs: Date.now() - started };
     } catch (err) {
       if (signal.aborted) return;
       this.logger.error(`LLM failed: ${(err as Error).message}`);
+      if (pendingStart) yield { type: 'token', text: pendingStart };
       yield {
         type: 'error',
         message: `${(err as Error).message}. The sources found are still listed below.`,

@@ -107,8 +107,11 @@ Elements" tried first); then a literal search for older evidence on the same pag
 for API names (`getServerSideProps`). Oldest evidence + closest hits (one per section and version),
 oldest first. The API writes the verdict line itself (`sinceAnswerStart`: "**Since Node.js 16.**",
 "**At least since NestJS 4**, the oldest docs indexed.") and the 3B LLM only describes the oldest
-excerpt: asked how a feature "evolved", it invented milestones. Scope event carries `history`; the
-web shows "<Framework> X–Y history" + "First found in …". Measured by `npm run eval:since`.
+excerpt: asked how a feature "evolved", it invented milestones. The verdict is sent with the LLM's
+first token (or alone if the LLM fails): sent before it, the UI switched to "speaking" while the
+cold model took ~100 s to start, and users saw an answer that "never stopped talking". Scope event
+carries `history`; the web shows "<Framework> X–Y history" + "First found in …". Measured by
+`npm run eval:since`.
 
 Decided 2026-10-25 from the evals: full-text search (RRF) and a cross-encoder reranker were dropped
 (97.7% vs 95.9% hit@5 for ~5.4 s per question on CPU), and the HNSW index too (approximate results
@@ -116,12 +119,11 @@ cost recall on large scopes; one version is at most ~6k chunks). Record:
 `evals/results/hybrid-rerank-ablation.md`.
 
 ## Current state
-PRs #1–#6 are merged into `main` (last: #6 `feat/older-versions`: older versions, bare-major
-resolution, checkout fix, prod docs). Branch `feat/answer-robustness` (SSE keep-alive, ingestion
-typecheck fix, "since when?" mode, NestJS URL fix, round 3 of older docs) has no PR yet; opening it
-is also what triggers the first SonarQube CI analysis. Production runs it (see Production below);
-local data = production data (138 versions);
-after the merge, put the VPS back on `main` (`git checkout main && git pull`, no rebuild).
+PRs #1–#7 are merged into `main` (last: #7 `feat/answer-robustness`: SSE keep-alive, ingestion
+typecheck fix, "since when?" mode, NestJS URL fix, round 3 of older docs; merge `0be48b3`).
+Production runs `main` (see Production below); local data = production data (138 versions).
+Branch `fix/since-when-followups` (local, not pushed): the S8786 issue SonarCloud found on PR #7
+and the "never stops talking" fix below.
 
 Indexed locally and in production (138 versions, 86,109 chunk rows, 188,493 version-chunks,
 232 MB; 2026-10-28):
@@ -144,7 +146,7 @@ separate framework" answer (`notices.ts`), no search or LLM.
   (on Windows git can't overwrite an identical read-only pack). `ingest.ts` takes the checkout as an
   option so tests can swap it.
 - `apps/api`: `POST /api/ask` (SSE: scope → citations → tokens → done; compare mode adds a
-  `compare` scope, "since when?" mode a `history` one and a verdict token before the LLM's),
+  `compare` scope, "since when?" mode a `history` one and the verdict with the LLM's first token),
   request validation, throttled per IP; the LLM is injected (`LLM_PROVIDER`);
   serves the web build when `STATIC_DIR` is set. Sends `: ping` SSE comments every 15 s: nginx
   (60 s `proxy_read_timeout`) was cutting streams at 62 s while a cold model warmed up. Measured
@@ -182,6 +184,10 @@ separate framework" answer (`notices.ts`), no search or LLM.
   `SonarSource/sonarqube-scan-action` pinned by SHA. CI analysis needs the `SONAR_TOKEN` secret
   and Automatic Analysis off; until then only Automatic Analysis runs (no coverage, and it
   ignores `sonar-project.properties`, so `.github/`, `Dockerfile` and e2e files get analyzed too).
+  Check from the public APIs: the `sonarqube` job's annotations
+  (`api.github.com/repos/NefrozDev/semver-sage/check-runs/<job id>/annotations`) say "The
+  SONAR_TOKEN secret is not set" when it skips; an analysis landing seconds after a push is the
+  automatic one, a CI one comes after the tests (minutes).
 - Supply chain (Sonar rules): `npm ci --ignore-scripts` everywhere, no `npx` in CI/Docker (use
   `npm run nx -- ...`, `npm run playwright:install`), third-party actions pinned by SHA. Regexes
   must stay linear (S8786): trim with `trimChar` or `trimEnd()` instead of `^x+|x+$`.
@@ -192,16 +198,20 @@ separate framework" answer (`notices.ts`), no search or LLM.
   `docker-compose.mailcow.yml` override on the server). Small shared box (2 vCPU, 3.7 GB RAM, disk
   ~85% full): never ingest there; ingest locally and restore a data dump (see Commands). The
   HF Spaces + Neon + Groq guide in `docs/DEPLOY.md` is an unused alternative. Since 2026-10-28 it
-  runs `feat/answer-robustness` (`726d705`) with the 138-version data (236 MB); the 119-version
-  data is kept in `/tmp/semver_sage_backup_before_v3.dump` on the server until the next refresh.
+  runs `main` (`0be48b3`; the image was built from `726d705`, same code) with the 138-version
+  data (236 MB); the 119-version data is kept in `/tmp/semver_sage_backup_before_v3.dump` on the
+  server until the next refresh.
   Checked through the public URL: "When did interceptors arrive in NestJS?" → "At least since
   NestJS 4", 109 s with a cold model, 7 keep-alive pings.
 
 ## Next steps (in order)
 1. Switch SonarQube Cloud to CI analysis (`SONAR_TOKEN` secret, Automatic Analysis off) so
-   coverage is reported, then handle what the first CI analysis finds. The user set it up on
-   2026-10-27; it gets verified by the first CI run, i.e. once the PR for `feat/answer-robustness`
-   is opened (PR #6's gate failure was duplication in two spec files, which CI analysis excludes).
+   coverage is reported, then handle what the first CI analysis finds. Not working yet
+   (2026-10-28): on PR #7 and its merge the `sonarqube` job skipped with "The SONAR_TOKEN secret is
+   not set", and Automatic Analysis still ran (gate OK, 1 issue: S8786 in `nestjs.ts`, fixed on
+   `fix/since-when-followups`). The user must add `SONAR_TOKEN` as a repository secret
+   (Settings > Secrets and variables > Actions > Repository secrets, not a variable or an
+   environment secret) and turn Automatic Analysis off in SonarCloud.
 2. Answer quality of llama3.2:3b: it embellishes details (in "since when?" answers it invented
    milestones until it was restricted to the oldest excerpt; "NestJS 12 interceptors are global by
    default" in a normal answer). A stronger free hosted model (Groq, OpenAI-compatible provider
