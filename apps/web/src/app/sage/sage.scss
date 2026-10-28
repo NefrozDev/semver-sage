@@ -154,7 +154,7 @@ svg {
   transform-origin: center;
   animation:
     star-in 0.6s ease-out both,
-    star-twinkle 1.4s ease-in-out 0.6s infinite;
+    star-twinkle 2s ease-in-out 0.6s infinite;
 }
 
 .mote {
@@ -208,30 +208,30 @@ svg {
   .brows { transform: translateY(-2px); }
   .glow { opacity: 0.32; }
   .halo { animation: halo-flash 1.3s ease-out; }
-  .head { animation: nod 2.2s ease-in-out infinite; }
-  .staff-arm { animation: staff-lift 2.2s ease-in-out infinite; }
+  .head { animation: nod 3.2s ease-in-out infinite; }
+  .staff-arm { animation: staff-lift 3.2s ease-in-out infinite; }
 
   .crystal {
     transform-box: fill-box;
     transform-origin: center;
     animation:
       crystal-pop 0.6s ease-out,
-      flare 1.4s ease-in-out 0.6s infinite;
+      flare 2.4s ease-in-out 0.6s infinite;
   }
 
   .free-arm {
-    animation: gesture 2.2s ease-in-out infinite;
+    animation: gesture 3.2s ease-in-out infinite;
   }
 
   .forearm {
     transform-origin: 66px 168px;
-    animation: gesture-forearm 2.2s ease-in-out infinite;
+    animation: gesture-forearm 3.2s ease-in-out infinite;
   }
 
   .mouth {
     transform-box: fill-box;
     transform-origin: center;
-    animation: talk 0.26s ease-in-out infinite alternate;
+    animation: talk 0.42s ease-in-out infinite alternate;
   }
 
 }

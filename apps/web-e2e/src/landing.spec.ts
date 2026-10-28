@@ -27,8 +27,8 @@ test.describe('landing', () => {
     await mockApi(page);
     await page.goto('/');
 
-    // Wave, then the whole greeting typed out.
-    await page.clock.runFor(10_000);
+    // Wave, then the whole greeting typed out (~50 characters a second).
+    await page.clock.runFor(15_000);
     await expect(page.locator('app-answer-card')).toContainText('exactly what you have installed.');
     await expect(page.locator('app-sage')).toHaveClass(/idle/);
     await expect(page.locator('.caption')).toHaveText('Ready when you are');

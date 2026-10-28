@@ -11,7 +11,11 @@ import {
 } from '@angular/core';
 import { renderAnswer } from '../markdown';
 
-const TICK_MS = 24;
+const TICK_MS = 40;
+/** About 50 characters a second: a pace one can read along with. */
+const CHARS_PER_TICK = 2;
+/** Beyond this backlog (a long answer arriving at once), speed up to catch up. */
+const CATCH_UP_AFTER = 200;
 
 /**
  * The sage's answer. Reveals `text` with a typewriter effect as it streams in;
@@ -67,7 +71,9 @@ export class AnswerCard {
 
     const timer = setInterval(() => {
       const remaining = this.text().length - this.shown();
-      if (remaining > 0) this.shown.update((n) => n + Math.max(1, Math.ceil(remaining / 30)));
+      if (remaining <= 0) return;
+      const step = remaining > CATCH_UP_AFTER ? Math.ceil(remaining / 100) : CHARS_PER_TICK;
+      this.shown.update((n) => Math.min(this.text().length, n + step));
     }, TICK_MS);
     inject(DestroyRef).onDestroy(() => clearInterval(timer));
   }
