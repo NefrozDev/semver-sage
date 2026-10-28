@@ -9,7 +9,7 @@ export interface VersionSource {
   repo: string;
   /** Git tag or branch holding this version's docs. */
   ref: string;
-  /** Folders or files to check out (sparse), relative to the repo root. */
+  /** Folders or single files to check out (sparse) and read, relative to the repo root. */
   paths: string[];
   /** Citation URL = docsBaseUrl + page urlPath. */
   docsBaseUrl: string;

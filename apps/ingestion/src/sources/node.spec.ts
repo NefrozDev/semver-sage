@@ -1,16 +1,24 @@
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import type { ReleaseTag } from '../git';
-import { nodeLegacyId, nodeVersions, renderNodeMetadata } from './node';
+import { nodeAdapter, nodeLegacyId, nodeVersions, renderNodeMetadata } from './node';
 
 describe('nodeVersions', () => {
   const tag = (version: string): ReleaseTag => {
     const [major, minor, patch] = version.split('.').map(Number);
     return { tag: `v${version}`, major, minor, patch };
   };
-  const tags = ['0.6.21', '0.8.28', '0.9.12', '0.10.47', '0.10.48', '0.11.16', '0.12.18', '1.8.4', '3.3.1', '4.9.1', '22.11.0']
-    .map(tag);
+  const tags = [
+    '0.1.104', '0.2.6', '0.3.8', '0.4.12', '0.6.21', '0.8.28', '0.9.12', '0.10.47', '0.10.48', '0.11.16', '0.12.18',
+    '1.8.4', '3.3.1', '4.9.1', '22.11.0',
+  ].map(tag);
 
-  it('indexes the 0.8/0.10/0.12 stable lines, then one release per major, oldest first', () => {
+  it('indexes the stable 0.x lines from 0.2, then one release per major, oldest first', () => {
     expect(nodeVersions(tags).map((v) => `${v.version}@${v.ref}`)).toEqual([
+      '0.2@v0.2.6',
+      '0.4@v0.4.12',
+      '0.6@v0.6.21',
       '0.8@v0.8.28',
       '0.10@v0.10.48',
       '0.12@v0.12.18',
@@ -27,6 +35,35 @@ describe('nodeVersions', () => {
     expect(base['1']).toBe('https://iojs.org/dist/v1.8.4/doc/');
     expect(base['3']).toBe('https://iojs.org/dist/v3.3.1/doc/');
     expect(base['4']).toBe('https://nodejs.org/docs/v4.9.1/');
+  });
+
+  it('reads Node 0.2 from its single API page, later lines from doc/api', () => {
+    const paths = Object.fromEntries(nodeVersions(tags).map((v) => [v.version, v.paths]));
+    expect(paths['0.2']).toEqual(['doc/api.markdown']);
+    expect(paths['0.4']).toEqual(['doc/api']);
+  });
+});
+
+describe('nodeAdapter.loadPages', () => {
+  let dir: string;
+  beforeEach(async () => {
+    dir = await mkdtemp(join(tmpdir(), 'node-docs-'));
+  });
+  afterEach(() => rm(dir, { recursive: true, force: true }));
+
+  it('maps Node 0.2 to api.html and doc/api pages to api/<module>.html, skipping the index', async () => {
+    await mkdir(join(dir, 'doc/api'), { recursive: true });
+    const text = 'Reads the entire contents of a file asynchronously and calls back with the data.';
+    await writeFile(join(dir, 'doc/api.markdown'), `## fs.readFile(filename, [callback])\n\n${text}`);
+    await writeFile(join(dir, 'doc/api/fs.markdown'), `## fs.readFile(filename, [encoding], [callback])\n\n${text}`);
+    await writeFile(join(dir, 'doc/api/_toc.markdown'), `## Table of contents\n\n${text}`);
+    const source = { version: '0.2', repo: 'nodejs/node', ref: 'v0.2.6', docsBaseUrl: 'https://nodejs.org/docs/v0.2.6/' };
+
+    const single = await nodeAdapter.loadPages(dir, { ...source, paths: ['doc/api.markdown'] });
+    const split = await nodeAdapter.loadPages(dir, { ...source, paths: ['doc/api'] });
+
+    expect(single.map((p) => p.urlPath)).toEqual(['api.html']);
+    expect(split.map((p) => p.urlPath)).toEqual(['api/fs.html']);
   });
 });
 
