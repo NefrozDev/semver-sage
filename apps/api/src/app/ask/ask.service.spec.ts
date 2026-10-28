@@ -113,10 +113,14 @@ describe('AskService', () => {
     const { llm, calls } = fakeLlm(['It was a directive.']);
     const events = await collect(new AskService(retrieval, llm), 'When was v-model added to Vue?');
 
-    expect(events.map((e) => e.type)).toEqual(['scope', 'citations', 'token', 'token', 'done']);
+    expect(events.map((e) => e.type)).toEqual(['scope', 'citations', 'token', 'done']);
     // The verdict is written by the API, so it always matches the search; the LLM adds the details.
-    expect(events[2]).toEqual({ type: 'token', text: '**At least since Vue 2**, the oldest docs indexed.\n\n' });
-    expect(events[3]).toEqual({ type: 'token', text: 'It was a directive.' });
+    // It goes out with the LLM's first token: earlier, the UI showed "speaking" while a cold model
+    // took minutes to start.
+    expect(events[2]).toEqual({
+      type: 'token',
+      text: '**At least since Vue 2**, the oldest docs indexed.\n\nIt was a directive.',
+    });
     expect(events[0]).toEqual({
       type: 'scope',
       scope: { framework: 'vue', requestedVersion: null, version: '3', source: 'latest' },
@@ -135,6 +139,30 @@ describe('AskService', () => {
     expect(calls).toHaveLength(1);
     expect(calls[0][0].content).toContain('since which version something exists in Vue');
     expect(calls[0][0].content).toContain('already written: **At least since Vue 2**, the oldest docs indexed.');
+  });
+
+  it('sends the verdict only once, before the rest of the LLM tokens', async () => {
+    const history: HistoryResult = { citations: [citation('2', 1)], earliest: '2', oldest: '1' };
+    const { retrieval } = fakeRetrieval(() => [], undefined, history);
+    const events = await collect(new AskService(retrieval, fakeLlm(['A', 'B']).llm), 'When was v-model added to Vue?');
+
+    expect(events.filter((e) => e.type === 'token')).toEqual([
+      { type: 'token', text: '**Since Vue 2.**\n\nA' },
+      { type: 'token', text: 'B' },
+    ]);
+  });
+
+  it('still shows the verdict when the LLM fails or says nothing', async () => {
+    const history: HistoryResult = { citations: [citation('2', 1)], earliest: '2', oldest: '1' };
+
+    const failing = fakeRetrieval(() => [], undefined, history);
+    const failed = await collect(new AskService(failing.retrieval, fakeLlm(new Error('LLM down')).llm), 'When was v-model added to Vue?');
+    expect(failed.map((e) => e.type)).toEqual(['scope', 'citations', 'token', 'error']);
+    expect(failed[2]).toEqual({ type: 'token', text: '**Since Vue 2.**\n\n' });
+
+    const silent = fakeRetrieval(() => [], undefined, history);
+    const empty = await collect(new AskService(silent.retrieval, fakeLlm([]).llm), 'When was v-model added to Vue?');
+    expect(empty.map((e) => e.type)).toEqual(['scope', 'citations', 'token', 'done']);
   });
 
   it('lets the LLM answer alone when the history search found no evidence', async () => {
