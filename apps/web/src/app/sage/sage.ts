@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, input
 export type SageMood = 'idle' | 'reflecting' | 'talking' | 'error';
 
 /** The wave hello starts this long after the page opens… */
-export const SALUTE_DELAY_MS = 2000;
+export const SALUTE_DELAY_MS = 500;
 /** …and lasts as long as its CSS animation (`salute-raise`). */
 export const SALUTE_MS = 2600;
 /** Light rays of the burst on the crystal when the answer starts, every 30°. */

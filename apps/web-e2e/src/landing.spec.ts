@@ -38,7 +38,7 @@ test.describe('landing', () => {
   // away: a retrying `not.toHaveClass` would just wait for a wave to end.
   const isWaving = async (page: Page) => /\bsaluting\b/.test((await page.locator('app-sage').getAttribute('class')) ?? '');
 
-  test('the sage waves hello two seconds after the page opens, then speaks the greeting', async ({ page }) => {
+  test('the sage waves hello half a second after the page opens, then speaks the greeting', async ({ page }) => {
     await page.clock.install();
     await mockApi(page);
     await page.goto('/');
@@ -48,7 +48,7 @@ test.describe('landing', () => {
 
     // Quiet until he waves: no greeting yet, not talking.
     await expect(sage).toHaveClass(/saluting/);
-    expect(await page.evaluate(() => performance.now())).toBeGreaterThanOrEqual(2_000);
+    expect(await page.evaluate(() => performance.now())).toBeGreaterThanOrEqual(500);
     await expect(sage).toHaveClass(/idle/);
     await expect(card).not.toContainText('Greetings');
     // The raised arm, with an open palm, replaces the hanging one.

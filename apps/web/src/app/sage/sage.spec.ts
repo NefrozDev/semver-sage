@@ -39,7 +39,7 @@ describe('Sage', () => {
   });
 
   describe('waving hello', () => {
-    it('raises the free arm 2 s after it appears, lowers it for good, then lets the page speak', () => {
+    it('raises the free arm shortly after it appears, lowers it for good, then lets the page speak', () => {
       create();
       advance(SALUTE_DELAY_MS - 1);
       expect(host.classList).not.toContain('saluting');
