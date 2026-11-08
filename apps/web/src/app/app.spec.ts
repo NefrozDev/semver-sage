@@ -16,7 +16,9 @@ describe('App', () => {
   it('greets the user and lists indexed versions', async () => {
     const fixture = TestBed.createComponent(App);
     TestBed.tick();
-    TestBed.inject(HttpTestingController)
+    const http = TestBed.inject(HttpTestingController);
+    http.expectOne('/api/auth/session').flush({ username: null, accountUrl: 'https://auth.example/account' });
+    http
       .expectOne('/api/versions')
       .flush([
         { framework: 'vue', version: '2', docsBaseUrl: '', chunkCount: 1, ingestedAt: '' },
@@ -26,6 +28,8 @@ describe('App', () => {
 
     const el = fixture.nativeElement as HTMLElement;
     expect(el.querySelector('h1')?.textContent).toContain('Semver Sage');
+    // Signing in is offered in the header, never required.
+    expect(el.querySelector('header.topbar app-account-menu a')?.textContent?.trim()).toBe('Sign in');
     expect(el.querySelector('app-answer-card .speaker')?.textContent).toContain('Sage');
     expect(el.querySelector('.indexed')?.textContent).toContain('Vue');
     expect(el.querySelector('.indexed .range')?.textContent).toBe('2, 3');

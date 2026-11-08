@@ -1,0 +1,54 @@
+:host {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px 14px;
+  min-height: 32px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.who strong {
+  color: var(--text);
+  font-weight: 600;
+  // A long username must not push the actions off a phone screen.
+  display: inline-block;
+  max-width: 16ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: bottom;
+  white-space: nowrap;
+}
+
+.action {
+  padding: 2px 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+
+  &:hover:not(:disabled),
+  &:focus-visible {
+    text-decoration: underline;
+  }
+
+  &:disabled {
+    color: var(--muted);
+    cursor: default;
+  }
+}
+
+.sign-in {
+  padding: 4px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+}
+
+.notice {
+  margin: 0;
+}

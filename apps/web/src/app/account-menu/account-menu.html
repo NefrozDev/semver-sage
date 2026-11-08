@@ -1,0 +1,13 @@
+@if (notice(); as notice) {
+  <p class="notice" role="status">{{ notice }}</p>
+}
+
+@if (user(); as user) {
+  @if (user.username; as username) {
+    <span class="who">Signed in as <strong>{{ username }}</strong></span>
+    <a class="action" [href]="user.accountUrl" target="_blank" rel="noopener">Account</a>
+    <button class="action" type="button" [disabled]="signingOut()" (click)="signOut()">Sign out</button>
+  } @else {
+    <a class="action sign-in" [href]="signInUrl()">Sign in</a>
+  }
+}

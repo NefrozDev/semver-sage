@@ -1,6 +1,7 @@
 import { httpResource } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { AskRequest, FRAMEWORKS, IndexedVersion, isAngularJsVersion, versionToNum } from '@semver-sage/types';
+import { AccountMenu } from './account-menu/account-menu';
 import { AnswerCard } from './answer-card/answer-card';
 import { AskForm } from './ask-form/ask-form';
 import { CitationList } from './citation-list/citation-list';
@@ -31,7 +32,7 @@ const CAPTIONS: Record<SageMood, string> = {
 @Component({
   selector: 'app-root',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Sage, AnswerCard, AskForm, CitationList],
+  imports: [AccountMenu, Sage, AnswerCard, AskForm, CitationList],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })

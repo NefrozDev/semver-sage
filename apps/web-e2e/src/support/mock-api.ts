@@ -1,5 +1,7 @@
 import type { Page } from '@playwright/test';
-import type { AskRequest, AskStreamEvent, Citation, IndexedVersion } from '@semver-sage/types';
+import type { AskRequest, AskStreamEvent, AuthSession, Citation, IndexedVersion } from '@semver-sage/types';
+
+export const ACCOUNT_URL = 'https://auth.example/account';
 
 const indexed = (framework: IndexedVersion['framework'], versions: string[]): IndexedVersion[] =>
   versions.map((version) => ({ framework, version, docsBaseUrl: '', chunkCount: 100, ingestedAt: '' }));
@@ -58,12 +60,17 @@ export async function mockApi(
     respond?: (request: AskRequest) => AskStreamEvent[];
     hold?: boolean;
     versions?: IndexedVersion[] | 'error';
+    /** Who is signed in with their Synapse account; nobody by default. */
+    username?: string;
   } = {},
 ): Promise<MockApi> {
   const requests: AskRequest[] = [];
   let release = () => undefined as void;
   let gate = options.hold === false ? Promise.resolve() : new Promise<void>((r) => (release = r));
 
+  await page.route('**/api/auth/session', (route) =>
+    route.fulfill({ json: { username: options.username ?? null, accountUrl: ACCOUNT_URL } satisfies AuthSession }),
+  );
   await page.route('**/api/versions', (route) =>
     options.versions === 'error'
       ? route.fulfill({ status: 502, body: 'Bad Gateway' })

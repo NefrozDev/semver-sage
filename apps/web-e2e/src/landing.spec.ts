@@ -1,5 +1,5 @@
 import { expect, Page, test } from '@playwright/test';
-import { mockApi } from './support/mock-api';
+import { ACCOUNT_URL, mockApi } from './support/mock-api';
 
 test.describe('landing', () => {
   test('greets, offers examples and lists the indexed versions', async ({ page }) => {
@@ -20,6 +20,43 @@ test.describe('landing', () => {
     // No question asked yet: no question heading, no sources.
     await expect(page.locator('.question')).toHaveCount(0);
     await expect(page.locator('app-citation-list')).toHaveCount(0);
+  });
+
+  test('offers to sign in with the Synapse account, without requiring it', async ({ page }) => {
+    await mockApi(page);
+    await page.goto('/?q=1');
+
+    await expect(page.getByRole('link', { name: 'Sign in' })).toHaveAttribute(
+      'href',
+      '/api/auth/login?returnTo=%2F%3Fq%3D1',
+    );
+    await expect(page.getByRole('button', { name: 'Ask' })).toBeVisible();
+  });
+
+  test('shows who is signed in, with their account and a way to sign out', async ({ page }) => {
+    await mockApi(page, { username: 'ada' });
+    let signOuts = 0;
+    await page.route('**/api/auth/logout', (route) => {
+      signOuts += 1;
+      return route.fulfill({ json: { redirectTo: '/signed-out' } });
+    });
+    await page.goto('/');
+
+    await expect(page.locator('app-account-menu')).toContainText('Signed in as ada');
+    await expect(page.getByRole('link', { name: 'Account' })).toHaveAttribute('href', ACCOUNT_URL);
+    await expect(page.getByRole('link', { name: 'Sign in' })).toHaveCount(0);
+
+    await page.getByRole('button', { name: 'Sign out' }).click();
+    await expect(page).toHaveURL(/\/signed-out$/);
+    expect(signOuts).toBe(1);
+  });
+
+  test('says once that a sign-in was cancelled', async ({ page }) => {
+    await mockApi(page);
+    await page.goto('/?signIn=cancelled');
+
+    await expect(page.getByRole('status')).toHaveText('Sign-in cancelled.');
+    await expect(page).toHaveURL(/\/$/);
   });
 
   test('the sage finishes his greeting and waits idle', async ({ page }) => {
