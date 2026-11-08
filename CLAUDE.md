@@ -20,6 +20,8 @@ tiers for a hosted demo. No AWS or other paid cloud.
 4. **"Since when?" questions**: e.g. "since when does Node have built-in fetch?": a history search
    over every indexed version finds the oldest docs mentioning the subject (see Retrieval pipeline).
 5. **Citations** on every answer (doc URL + section + version range).
+6. **Optional sign-in with the Synapse account** (the `synapse-auth` identity service shared by every
+   Synapse Engineering app): the header shows who is signed in; asking never needs an account.
 
 ## UI concept
 An illustrated **sage** (vector SVG, no pixel art) with three poses: **idle**, **reflecting**
@@ -157,6 +159,19 @@ separate framework" answer (`notices.ts`), no search or LLM.
   limits); a cached checkout already at the remote commit (`git ls-remote`) is not re-fetched
   (on Windows git can't overwrite an identical read-only pack). `ingest.ts` takes the checkout as an
   option so tests can swap it.
+- `apps/api/src/app/auth`: sign-in with the Synapse account (OpenID Connect, confidential client
+  `semver-sage`, code flow + PKCE via `openid-client`; config from `PUBLIC_URL`, `OIDC_ISSUER`,
+  `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`, defaults = synapse-auth's development clients file).
+  `GET /api/auth/login|callback|session`, `POST /api/auth/logout` (Origin/Referer must be
+  `PUBLIC_URL`), and two server-to-server calls from the identity service:
+  `backchannel-logout` (logout token) and `account-deleted` (signed `application/secevent+jwt`
+  notice, read as text in `main.ts`), both checked with `jose` against the service's keys.
+  Sessions: migration 005 `sessions` (SHA-256 of the cookie token, sub, username, oidc_sid; 30
+  days), the only personal data kept. The web's `account-menu` shows "Sign in" or "Signed in as
+  …", Account, Sign out; it renders nothing while the API is down. `/api/auth/session` always
+  answers 200 (`username: null` when nobody is signed in) so anonymous visits log no error.
+  Production: the identity service reaches the app as `http://semver-sage-app:3000` over the
+  mailcow network (its clients file), and the app reaches the service through its public URL.
 - `apps/api`: `POST /api/ask` (SSE: scope → citations → tokens → done; compare mode adds a
   `compare` scope, "since when?" mode a `history` one and the verdict with the LLM's first token),
   request validation, throttled per IP; the LLM is injected (`LLM_PROVIDER`);
@@ -261,6 +276,11 @@ separate framework" answer (`notices.ts`), no search or LLM.
   transaction (~20 s, queries wait on the lock meanwhile; a failure rolls back):
   `{ echo 'BEGIN;'; echo 'TRUNCATE chunks, doc_versions;'; docker exec -i semver-sage-postgres-1 pg_restore --data-only -f - < data.dump; echo 'COMMIT;'; } | docker exec -i semver-sage-postgres-1 psql -U sage -d semver_sage -q -v ON_ERROR_STOP=1`.
   No API restart needed: versions are read live.
+- Sign-in deployment (once, after synapse-auth is live with the `semver-sage` client): add
+  `PUBLIC_URL=https://semversage.synapseengineering.dev`,
+  `OIDC_ISSUER=https://auth.synapseengineering.dev/oidc` and `OIDC_CLIENT_SECRET` (=
+  `SEMVER_SAGE_CLIENT_SECRET` of synapse-auth's `.env`) to `~/semver-sage/.env`; migration 005 needs
+  `build migrate app`, `run --rm migrate`, then `up -d --no-deps app` (both compose files each time).
 - Deploy code to prod: on `ovh-vps` in `~/semver-sage`, check out the branch, then
   `docker compose -f docker-compose.yml -f docker-compose.mailcow.yml build app` and
   `... up -d --no-deps app` (both files, or the app loses its mailcow-network alias used by nginx).

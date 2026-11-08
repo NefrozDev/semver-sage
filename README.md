@@ -135,13 +135,30 @@ takes a few minutes. Framework ids: `angular express nestjs nextjs node nuxt rea
 | Path                | What                                                                         |
 | ------------------- | ---------------------------------------------------------------------------- |
 | `apps/web`          | Angular UI: animated sage, RPG dialog box, citations, compare mode, package.json upload |
-| `apps/api`          | NestJS: `POST /api/ask` (SSE), `GET /api/versions`, `GET /api/health`; serves the web build in Docker |
+| `apps/api`          | NestJS: `POST /api/ask` (SSE), `GET /api/versions`, `GET /api/health`, sign-in under `/api/auth`; serves the web build in Docker |
 | `apps/ingestion`    | CLI: docs repo → chunks → embeddings → Postgres, one source adapter per framework |
 | `libs/shared/types` | API types, framework metadata, version encoding, question/comparison/package.json detection |
 | `libs/server/core`  | Config, DB, migrations, embedder, retriever, LLM providers, prompts, notices |
 | `evals`             | Golden questions, retrieval metrics, pipeline ablation, answer checks        |
 | `db/migrations`     | SQL migrations                                                               |
 | `docs/DEPLOY.md`    | Free hosted demo: Hugging Face Spaces + Neon + Groq                          |
+
+## Signing in (optional)
+
+The header offers to sign in with the Synapse account, the one account of every Synapse
+Engineering app, served by the [synapse-auth](https://github.com/NefrozDev/synapse-auth) identity
+service. Asking questions never needs it: signing in only shows who is signed in, with links to the
+account page and to sign out of every app at once.
+
+The API is a confidential OpenID Connect client (code flow with PKCE, `openid-client`). Once the
+service vouches for someone, the API opens its own session: an HttpOnly cookie whose SHA-256 sits
+in the `sessions` table with the account id, the username and the identity session id. That is all
+Semver Sage keeps. The identity service calls back server to server when a session ends anywhere
+(`POST /api/auth/backchannel-logout`) or an account is deleted (`POST /api/auth/account-deleted`),
+and the matching sessions are deleted.
+
+Locally, run synapse-auth on :4300 with its development clients file: the defaults in
+`.env.example` match it (web dev server on :4200).
 
 ## Ingestion CLI
 
