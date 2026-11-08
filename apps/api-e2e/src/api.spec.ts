@@ -1,4 +1,4 @@
-import type { AskStreamEvent, IndexedVersion } from '@semver-sage/types';
+import type { AskStreamEvent, AuthSession, IndexedVersion } from '@semver-sage/types';
 
 // Against the real running API and database. The LLM is never needed: streams are read only up to
 // the sources, or end without one (AngularJS notice).
@@ -89,5 +89,49 @@ describe('POST /api/ask', () => {
     expect(events.map((e) => e.type)).toEqual(['scope', 'citations', 'token', 'done']);
     expect(events.at(-1)).toMatchObject({ type: 'done', model: 'none' });
     expect(events[2].type === 'token' && events[2].text).toContain('Angular 1.x is AngularJS');
+  });
+});
+
+describe('signing in with the Synapse account', () => {
+  it('answers that nobody is signed in, without an error, and links the account page', async () => {
+    const res = await fetch(`${API}/api/auth/session`);
+
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as AuthSession;
+    expect(body.username).toBeNull();
+    expect(body.accountUrl).toMatch(/^https?:\/\/.+\/account$/);
+  });
+
+  it('knows no one from a made-up session cookie (looked up in the sessions table)', async () => {
+    const res = await fetch(`${API}/api/auth/session`, { headers: { Cookie: 'semver_sage_session=made-up' } });
+
+    expect(res.status).toBe(200);
+    expect(((await res.json()) as AuthSession).username).toBeNull();
+  });
+
+  it('refuses a sign-out sent from another site', async () => {
+    const res = await fetch(`${API}/api/auth/logout`, {
+      method: 'POST',
+      headers: { Origin: 'https://evil.example', Cookie: 'semver_sage_session=made-up' },
+    });
+
+    expect(res.status).toBe(403);
+    expect(res.headers.get('set-cookie')).toBeNull();
+  });
+
+  it('refuses back-channel logouts and deletion notices the identity service did not sign', async () => {
+    const logout = await fetch(`${API}/api/auth/backchannel-logout`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: 'logout_token=not-a-jwt',
+    });
+    const deletion = await fetch(`${API}/api/auth/account-deleted`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/secevent+jwt' },
+      body: 'not-a-jwt',
+    });
+
+    expect(logout.status).toBe(400);
+    expect(deletion.status).toBe(400);
   });
 });

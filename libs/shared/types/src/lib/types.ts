@@ -79,3 +79,10 @@ export type AskStreamEvent =
   | { type: 'token'; text: string }
   | { type: 'done'; model: string; elapsedMs: number }
   | { type: 'error'; message: string };
+
+/** `GET /api/auth/session`: who is signed in with their Synapse account, if anyone. */
+export interface AuthSession {
+  username: string | null;
+  /** The Synapse account page (username, e-mail, password, deletion). */
+  accountUrl: string;
+}

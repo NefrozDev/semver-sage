@@ -15,6 +15,8 @@ async function bootstrap() {
   if (process.env.TRUST_PROXY === 'true') app.set('trust proxy', 1);
   const globalPrefix = 'api';
   app.setGlobalPrefix(globalPrefix);
+  // The identity service's account deletion notices are signed JWTs, sent as their own media type.
+  app.useBodyParser('text', { type: 'application/secevent+jwt' });
 
   // Single-container deployments: also serve the built web app, with SPA fallback to index.html.
   const staticDir = process.env.STATIC_DIR;
