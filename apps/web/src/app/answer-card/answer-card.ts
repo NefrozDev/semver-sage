@@ -19,7 +19,9 @@ const CATCH_UP_AFTER = 200;
 
 /**
  * The sage's answer. Reveals `text` with a typewriter effect as it streams in;
- * clicking the card skips to the end.
+ * clicking the card, or its "Show the whole answer" button from the keyboard, skips to the
+ * end (WCAG 2.2.2). The live region stays busy while it types, so screen readers read the
+ * answer once, whole, rather than every few letters.
  */
 @Component({
   selector: 'app-answer-card',
@@ -32,11 +34,17 @@ const CATCH_UP_AFTER = 200;
       @if (status(); as status) {
         <span class="status">{{ status }}</span>
       }
+      @if (typing()) {
+        <button type="button" class="skip" (click)="skip(); $event.stopPropagation()">
+          Show the whole answer
+        </button>
+      }
     </header>
-    <div class="body" aria-live="polite">
+    <div class="body" aria-live="polite" [attr.aria-busy]="typing() || thinking()">
       @if (thinking() && !text()) {
-        <div class="reflecting" aria-label="Searching the docs">
-          <span></span><span></span><span></span>
+        <div class="reflecting">
+          <span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
+          <span class="sr-only">Searching the docs</span>
         </div>
       } @else {
         <div class="answer" [class.typing]="typing()" [innerHTML]="html()"></div>

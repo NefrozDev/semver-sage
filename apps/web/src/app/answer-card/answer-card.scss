@@ -35,6 +35,17 @@ header {
   color: var(--muted);
 }
 
+.skip {
+  padding: 4px 10px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
 .body {
   min-height: 48px;
 }

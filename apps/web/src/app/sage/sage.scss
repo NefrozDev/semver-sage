@@ -31,9 +31,13 @@ svg {
     opacity 0.9s ease;
 }
 
+// The idle loops below play once, or a few times, and are over within five seconds: anything
+// moving on its own for longer would need a pause control (WCAG 2.2.2). Reflecting and talking
+// make some of them loop again, for as long as the wait or the typing, which Stop and
+// "Show the whole answer" end.
 .figure {
   transform-origin: 120px 262px;
-  animation: breathe 4.5s ease-in-out infinite;
+  animation: breathe 4.5s ease-in-out;
 }
 
 .head {
@@ -53,7 +57,7 @@ svg {
   fill: #1f1b3a;
   transform-box: fill-box;
   transform-origin: center;
-  animation: blink 5.5s infinite;
+  animation: blink 4.8s;
 }
 
 // Reflecting: eyes lit from within, pulsing with the crystal.
@@ -71,7 +75,7 @@ svg {
     fill 0.6s ease;
   transform-box: fill-box;
   transform-origin: center;
-  animation: glow 4.5s ease-in-out infinite;
+  animation: glow 4.5s ease-in-out;
 }
 
 .ripple {
@@ -80,7 +84,7 @@ svg {
   stroke-width: 2;
   transform-box: fill-box;
   transform-origin: center;
-  animation: ripple 1.6s ease-out infinite;
+  animation: ripple 1.6s ease-out 2;
 
   &.late {
     animation-delay: 0.8s;
@@ -110,12 +114,12 @@ svg {
 // Joints, in SVG user units: the shoulders, and each pose's elbow.
 .staff-arm {
   transform-origin: 150px 150px;
-  animation: sway 5s ease-in-out infinite;
+  animation: sway 5s ease-in-out;
 }
 
 .free-arm {
   transform-origin: 90px 150px;
-  animation: swing 5s ease-in-out -1.5s infinite;
+  animation: swing 5s ease-in-out -1.5s;
 }
 
 // The answer starts with a burst on the crystal: a wide glow, rays and a shockwave, then a spark on
@@ -199,8 +203,8 @@ svg {
   .shadow-lift { transform: scale(0.7); opacity: 0.55; }
   .head { transform: rotate(-4deg); }
   .brows { transform: translateY(1.5px); }
-  .glow { opacity: 0.35; animation-duration: 1.8s; }
-  .figure { animation-duration: 6s; }
+  .glow { opacity: 0.35; animation-duration: 1.8s; animation-iteration-count: infinite; }
+  .figure { animation-duration: 6s; animation-iteration-count: infinite; }
   .free-arm { animation: none; }
 
   .forearm {
@@ -211,7 +215,7 @@ svg {
 
 // Idle: a slow look around.
 :host(.idle) .head {
-  animation: look 7s ease-in-out infinite;
+  animation: look 4.8s ease-in-out;
 }
 
 // Talking: brows up, mouth moving, palm gesturing, staff raised, crystal bursting, then sparking
