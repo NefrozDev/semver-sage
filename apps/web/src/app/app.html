@@ -21,8 +21,9 @@
 
       @if (indexed().length) {
         <div class="indexed">
-          <h2>Knows the docs of</h2>
-          <ul>
+          <h2 id="indexed-title">Knows the docs of</h2>
+          <!-- It scrolls on short screens: focusable, so the keyboard can scroll it (WCAG 2.1.1). -->
+          <ul tabindex="0" aria-labelledby="indexed-title">
             @for (f of indexed(); track f.label) {
               <li><span>{{ f.label }}</span><span class="range">{{ f.range }}</span></li>
             }

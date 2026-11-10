@@ -11,6 +11,12 @@
   &:focus-within {
     border-color: var(--accent);
   }
+
+  // The whole box takes the focus ring when its question field has keyboard focus.
+  &:has(textarea:focus-visible) {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
 }
 
 .input-row {
@@ -68,7 +74,6 @@
     border-radius: 8px;
 
     &:focus-visible {
-      outline: none;
       border-color: var(--accent);
     }
 
@@ -102,6 +107,13 @@
   &:hover span,
   &:focus-within span {
     color: var(--accent);
+  }
+
+  // The file input is invisible: its label shows the focus ring.
+  &:has(input:focus-visible) {
+    border-radius: 8px;
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
   }
 }
 
