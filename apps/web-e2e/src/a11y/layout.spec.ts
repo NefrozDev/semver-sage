@@ -32,20 +32,20 @@ test.describe('every screen keeps its text whole with WCAG text spacing (1.4.12)
         [...document.querySelectorAll<HTMLElement>('body *')]
           .filter((element) => {
             const style = getComputedStyle(element);
-            const hides = [style.overflowX, style.overflowY].some(
-              (o) => o === 'hidden' || o === 'clip',
-            );
+            // Each axis on its own: a row that scrolls sideways loses nothing, even if it clips height.
+            const clips = (o: string) => o === 'hidden' || o === 'clip';
             // Visually hidden text and names cut with an ellipsis on purpose are not clipped text.
             const meant =
+              // Collapsed parts, hidden from assistive tech until opened, are not lost text either.
+              !!element.closest('[aria-hidden="true"], [inert], [hidden]') ||
               element.clientWidth <= 1 ||
               style.clip === 'rect(0px, 0px, 0px, 0px)' ||
               style.textOverflow === 'ellipsis';
             return (
-              hides &&
               !meant &&
               (element.textContent ?? '').trim() !== '' &&
-              (element.scrollHeight > element.clientHeight + 1 ||
-                element.scrollWidth > element.clientWidth + 1)
+              ((clips(style.overflowY) && element.scrollHeight > element.clientHeight + 1) ||
+                (clips(style.overflowX) && element.scrollWidth > element.clientWidth + 1))
             );
           })
           .map(
