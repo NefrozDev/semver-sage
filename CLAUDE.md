@@ -199,8 +199,14 @@ separate framework" answer (`notices.ts`), no search or LLM.
     `src/testing/fakes.ts`). `src/testing/` belongs to `tsconfig.spec.json`, not the app config:
     Vite's `tsconfigPaths` resolves `@semver-sage/*` through the tsconfig that includes a file;
   - `apps/api-e2e` (Vitest against the running API; no LLM needed);
-  - `apps/web-e2e` (Playwright, 14 tests, `/api` mocked via `page.route`; served from the
+  - `apps/web-e2e` (Playwright, `/api` mocked via `page.route`; served from the
     production build by `static-server.mjs`).
+    `src/a11y` holds the WCAG 2.2 AA checks on every state of `support/screens.ts`: axe in the
+    light and dark themes, the keyboard (each focus stop has an indicator at 3:1 and is not
+    hidden), reflow and text spacing at 320px, and motion. The sage's idle loops end within
+    five seconds (2.2.2); reflecting and talking loop only for as long as the wait or the
+    typing, which Stop and "Show the whole answer" end. A new state goes into `screens.ts`.
+    Screen readers and the wording of texts still need a manual check.
   The Vitest Nx plugin only infers `test` from `vitest.config.*`, so the integration and e2e
   configs have other names on purpose.
 - Coverage: `npm run test:coverage` (unit + integration) -> `coverage/**/lcov.info`, ~62% lines
