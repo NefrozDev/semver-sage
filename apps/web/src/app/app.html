@@ -4,8 +4,8 @@
 </header>
 
 <main>
-  <!-- The title and the sage stay put; only the conversation scrolls -->
-  <div class="side">
+  <!-- The title and the sage stay put when they fit the window; only the conversation scrolls -->
+  <div class="side" #side [class.pinned]="pinned()">
     <header class="brand">
       <svg class="mark" viewBox="0 0 24 24" aria-hidden="true">
         <path d="M12 2 L19 12 L12 22 L5 12 Z" />
@@ -22,8 +22,7 @@
       @if (indexed().length) {
         <div class="indexed">
           <h2 id="indexed-title">Knows the docs of</h2>
-          <!-- It scrolls on short screens: focusable, so the keyboard can scroll it (WCAG 2.1.1). -->
-          <ul tabindex="0" aria-labelledby="indexed-title">
+          <ul aria-labelledby="indexed-title">
             @for (f of indexed(); track f.label) {
               <li><span>{{ f.label }}</span><span class="range">{{ f.range }}</span></li>
             }

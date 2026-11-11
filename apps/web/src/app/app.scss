@@ -11,15 +11,18 @@
   margin-bottom: 16px;
 }
 
-// Title above the sage, pinned while the conversation scrolls. It must fit the viewport to stay
-// pinned, so on short screens the list of indexed docs scrolls on its own.
+// Title above the sage, pinned while the conversation scrolls, but only when it fits the window
+// (`pinned`, set by the component): on short screens it scrolls with the page instead.
 .side {
-  position: sticky;
-  top: 28px;
   display: flex;
   flex-direction: column;
   gap: 20px;
-  max-height: calc(100vh - 44px);
+
+  // 28px from the top, plus 16px below: PIN_ROOM in the component.
+  &.pinned {
+    position: sticky;
+    top: 28px;
+  }
 }
 
 .brand {
@@ -113,11 +116,8 @@ main {
   ul {
     display: grid;
     gap: 4px;
-    min-height: 0;
-    overflow-y: auto;
     margin: 0;
-    // Room between the version ranges and the scrollbar when the list scrolls (small screens).
-    padding: 0 12px 0 0;
+    padding: 0;
     list-style: none;
     font-size: 14px;
   }
@@ -271,9 +271,8 @@ main {
     gap: 20px;
   }
 
-  .side {
+  .side.pinned {
     position: static;
-    max-height: none;
   }
 
   .tagline {

@@ -1,4 +1,5 @@
 import { expect, Page, test } from '@playwright/test';
+import { FRAMEWORK_IDS } from '@semver-sage/types';
 import { ACCOUNT_URL, mockApi } from './support/mock-api';
 
 test.describe('landing', () => {
@@ -146,5 +147,32 @@ test.describe('dark theme', () => {
 
     const background = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
     expect(background).toBe('rgb(15, 15, 26)');
+  });
+});
+
+test.describe('the title and the sage', () => {
+  // Every framework the sage can know: the column is as tall as it gets.
+  const versions = FRAMEWORK_IDS.flatMap((framework) =>
+    ['1', '2', '3'].map((version) => ({ framework, version, docsBaseUrl: '', chunkCount: 1, ingestedAt: '' })),
+  );
+
+  test('stay put while they fit the window, and scroll with the page once it is too short', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 1000 });
+    await mockApi(page, { versions });
+    await page.goto('/');
+    await expect(page.locator('.indexed li')).toHaveCount(FRAMEWORK_IDS.length);
+    const side = page.locator('.side');
+    await expect(side).toHaveCSS('position', 'sticky');
+
+    await page.setViewportSize({ width: 1280, height: 600 });
+    await expect(side).toHaveCSS('position', 'static');
+
+    // The list never scrolls on its own, so it needs no focus stop to be read with the keyboard.
+    const list = page.locator('.indexed ul');
+    expect(await list.evaluate((ul) => ul.scrollHeight - ul.clientHeight)).toBeLessThanOrEqual(1);
+    await expect(list).not.toHaveAttribute('tabindex');
+    const last = page.locator('.indexed li').last();
+    await last.scrollIntoViewIfNeeded();
+    await expect(last).toBeInViewport();
   });
 });

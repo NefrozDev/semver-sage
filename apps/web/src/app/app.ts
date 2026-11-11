@@ -1,5 +1,15 @@
 import { httpResource } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  ElementRef,
+  afterNextRender,
+  computed,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { AskRequest, FRAMEWORKS, IndexedVersion, isAngularJsVersion, versionToNum } from '@semver-sage/types';
 import { AccountMenu } from './account-menu/account-menu';
 import { AnswerCard } from './answer-card/answer-card';
@@ -21,6 +31,9 @@ const EXAMPLES = [
   'What does useActionState do in React 19?',
   'How did components work in Angular 2?',
 ];
+
+/** What a pinned side column needs besides its own height: its top offset and a margin below. */
+const PIN_ROOM = 44;
 
 const CAPTIONS: Record<SageMood, string> = {
   idle: 'Ready when you are',
@@ -49,6 +62,30 @@ export class App {
 
   /** The sage waves hello first; the greeting is spoken once he's done (`greeted`). */
   protected readonly greetingStarted = signal(false);
+
+  private readonly side = viewChild.required<ElementRef<HTMLElement>>('side');
+  /**
+   * The title and the sage stay put only while they fit the window whole. Otherwise they scroll
+   * with the page, so no part of them (the list of indexed docs) has to scroll on its own.
+   */
+  protected readonly pinned = signal(false);
+
+  constructor() {
+    const destroyRef = inject(DestroyRef);
+    afterNextRender(() => {
+      const side = this.side().nativeElement;
+      const update = () => this.pinned.set(side.offsetHeight + PIN_ROOM <= window.innerHeight);
+      update();
+      // The column grows when the list of indexed docs arrives; the window can change height.
+      const observer = new ResizeObserver(update);
+      observer.observe(side);
+      window.addEventListener('resize', update);
+      destroyRef.onDestroy(() => {
+        observer.disconnect();
+        window.removeEventListener('resize', update);
+      });
+    });
+  }
 
   protected readonly answerText = computed(() => {
     if (this.store.status() !== 'idle') return this.store.answer();
