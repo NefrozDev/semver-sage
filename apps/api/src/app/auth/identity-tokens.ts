@@ -3,6 +3,8 @@ import { jwtVerify, type JWTVerifyGetKey } from 'jose';
 /** The event the identity service sends when an account is deleted. */
 export const ACCOUNT_DELETED_EVENT =
   'https://auth.synapseengineering.dev/events/account-deleted';
+// An identifier fixed by the Back-Channel Logout 1.0 spec, never fetched:
+// tokens carry it as is, so it stays http.
 const BACKCHANNEL_LOGOUT_EVENT =
   'http://schemas.openid.net/event/backchannel-logout';
 
